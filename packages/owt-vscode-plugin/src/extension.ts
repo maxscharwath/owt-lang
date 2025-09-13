@@ -327,6 +327,8 @@ export function activate(context: vscode.ExtensionContext) {
     // Break down complex regex into simpler parts
     // Break down complex regex into simpler parts to reduce complexity
     // Simplified regex patterns to avoid complexity issues
+    // Simplified regex patterns to reduce complexity
+    // Break down complex regex into simpler parts to reduce complexity
     const valPattern = /(\n|^)\s*val\s+([A-Za-z_][\w-]*)\s*(?::\s*([^=;\n]+))?\s*=\s*([^;\n]+);?/g;
     const varPattern = /(\n|^)\s*var\s+([A-Za-z_][\w-]*)\s*(?::\s*([^=;\n]+))?(?:\s*=\s*([^;\n]+))?;?/g;
     const declared = new Set<string>();
@@ -444,7 +446,7 @@ export function activate(context: vscode.ExtensionContext) {
               } else if (c === '{' && j > i) {
                 // attribute expression ={
                 if (j - 1 >= 0 && src[j - 1] === '=') {
-                  j = pushExpr(j) - 1; // -1 because for-loop will ++
+                  pushExpr(j); // -1 because for-loop will ++
                 }
               } else if (c === '>' ) {
                 selfClose = j - 1 >= 0 && src[j - 1] === '/';

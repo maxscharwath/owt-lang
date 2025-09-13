@@ -60,7 +60,7 @@ export type Attribute = BaseNode & {
 };
 
 export type ShorthandAttribute = BaseNode & {
-  type: 'ShorthandAttribute'; // Example: {onClick}
+  type: 'ShorthandAttribute'; // Example usage: {onClick}
   name: string;
 };
 

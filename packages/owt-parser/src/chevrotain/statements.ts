@@ -96,12 +96,7 @@ export function parseVarVal(r: Reader): VarDecl | ValDecl {
   }
 }
 
-export function parseFunctionDecl(r: Reader): FunctionDecl {
-  const start = r.next(); // 'function'
-  const nameTok = r.next();
-  if ((nameTok.tokenType?.name ?? '') !== 'Identifier') throw new Error('Expected function name');
-  
-  // Parse parameters with type annotations
+function parseParameters(r: Reader): string {
   r.next(); // '('
   let depth = 0;
   let paramsCode = '';
@@ -114,25 +109,27 @@ export function parseFunctionDecl(r: Reader): FunctionDecl {
     paramsCode += emitBetween(paramsCode, x);
   }
   r.next(); // ')'
+  return paramsCode.trim();
+}
+
+function parseReturnType(r: Reader): string | undefined {
+  if (!r.match('Colon')) return undefined;
   
-  // Parse return type (optional)
-  let returnType: string | undefined = undefined;
-  if (r.match('Colon')) {
-    r.next(); // ':'
-    let returnDepth = 0;
-    let code = '';
-    while (!r.eof()) {
-      const t = r.peek();
-      if (returnDepth === 0 && (t.tokenType?.name === 'LBrace' || t.tokenType?.name === 'Semicolon')) break;
-      const x = r.next();
-      if (x.tokenType?.name === 'LParen' || x.tokenType?.name === 'LBrace' || x.tokenType?.name === 'LBracket') returnDepth++;
-      if (x.tokenType?.name === 'RParen' || x.tokenType?.name === 'RBrace' || x.tokenType?.name === 'RBracket') returnDepth = Math.max(0, returnDepth - 1);
-      code += emitBetween(code, x);
-    }
-    returnType = code.trim();
+  r.next(); // ':'
+  let returnDepth = 0;
+  let code = '';
+  while (!r.eof()) {
+    const t = r.peek();
+    if (returnDepth === 0 && (t.tokenType?.name === 'LBrace' || t.tokenType?.name === 'Semicolon')) break;
+    const x = r.next();
+    if (x.tokenType?.name === 'LParen' || x.tokenType?.name === 'LBrace' || x.tokenType?.name === 'LBracket') returnDepth++;
+    if (x.tokenType?.name === 'RParen' || x.tokenType?.name === 'RBrace' || x.tokenType?.name === 'RBracket') returnDepth = Math.max(0, returnDepth - 1);
+    code += emitBetween(code, x);
   }
-  
-  // Parse function body
+  return code.trim();
+}
+
+function parseFunctionBody(r: Reader): string {
   r.next(); // '{'
   let bodyDepth = 0;
   let bodyCode = '';
@@ -144,14 +141,26 @@ export function parseFunctionDecl(r: Reader): FunctionDecl {
     if (x.tokenType?.name === 'RParen' || x.tokenType?.name === 'RBrace' || x.tokenType?.name === 'RBracket') bodyDepth = Math.max(0, bodyDepth - 1);
     bodyCode += emitBetween(bodyCode, x);
   }
-  const end = r.next(); // '}'
+  r.next(); // '}'
+  return bodyCode.trim();
+}
+
+export function parseFunctionDecl(r: Reader): FunctionDecl {
+  const start = r.next(); // 'function'
+  const nameTok = r.next();
+  if ((nameTok.tokenType?.name ?? '') !== 'Identifier') throw new Error('Expected function name');
   
-  const body: Expr = { type: 'Expr', code: bodyCode.trim(), loc: locFrom(start as any, end as any) } as any;
+  const params = parseParameters(r);
+  const returnType = parseReturnType(r);
+  const bodyCode = parseFunctionBody(r);
+  const end = r.prev();
+  
+  const body: Expr = { type: 'Expr', code: bodyCode, loc: locFrom(start as any, end as any) } as any;
   
   return {
     type: 'FunctionDecl',
     name: nameTok.image,
-    params: paramsCode.trim(),
+    params,
     returnType,
     body,
     loc: locFrom(start as any, end as any)

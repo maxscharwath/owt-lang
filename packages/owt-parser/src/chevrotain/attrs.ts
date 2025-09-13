@@ -2,44 +2,39 @@ import type { Attribute, ShorthandAttribute, SpreadAttribute } from '@owt/ast';
 import { Reader, readBalanced, emitBetween } from './reader.js';
 import { locFrom } from './loc.js';
 
-export function parseAttribute(r: Reader): Attribute | ShorthandAttribute | SpreadAttribute {
-  if (r.match('LBrace')) {
-    const lb = r.next(); // '{'
-    // detect '...'
-    let dots = 0;
-    while (r.match('Dot')) { r.next(); dots++; }
-    if (dots === 3) {
-      // spread: we already consumed '{' and '...'; capture until matching '}'
-      let depth = 1;
-      let code = '';
-      let end = lb as any;
-      while (!r.eof()) {
-        const t = r.next();
-        end = t as any;
-        const name = t.tokenType?.name ?? '';
-        if (name === 'LBrace') { 
-          code += emitBetween(code, t as any); 
-          depth++; 
-          continue; 
-        }
-        if (name === 'RBrace') { 
-          depth--; 
-          if (depth === 0) break; 
-          code += '}'; 
-          continue; 
-        }
-        code += emitBetween(code, t as any);
-      }
-      const expr = { type: 'Expr', code: code.trim(), loc: locFrom(lb, end) };
-      return { type: 'SpreadAttribute', argument: expr, loc: locFrom(lb, end) } as SpreadAttribute;
+function parseSpreadAttribute(r: Reader, lb: any): SpreadAttribute {
+  let depth = 1;
+  let code = '';
+  let end = lb as any;
+  while (!r.eof()) {
+    const t = r.next();
+    end = t as any;
+    const name = t.tokenType?.name ?? '';
+    if (name === 'LBrace') { 
+      code += emitBetween(code, t as any); 
+      depth++; 
+      continue; 
     }
-    // shorthand: {name}
-    const nameTok = r.next();
-    if ((nameTok.tokenType?.name ?? '') !== 'Identifier') throw new Error('Expected identifier in shorthand attribute');
-    const rb = r.next(); // '}'
-    return { type: 'ShorthandAttribute', name: nameTok.image, loc: locFrom(lb, rb) } as ShorthandAttribute;
+    if (name === 'RBrace') { 
+      depth--; 
+      if (depth === 0) break; 
+      code += '}'; 
+      continue; 
+    }
+    code += emitBetween(code, t as any);
   }
-  // name [= (string|{expr})]
+  const expr = { type: 'Expr', code: code.trim(), loc: locFrom(lb, end) };
+  return { type: 'SpreadAttribute', argument: expr, loc: locFrom(lb, end) } as SpreadAttribute;
+}
+
+function parseShorthandAttribute(r: Reader, lb: any): ShorthandAttribute {
+  const nameTok = r.next();
+  if ((nameTok.tokenType?.name ?? '') !== 'Identifier') throw new Error('Expected identifier in shorthand attribute');
+  const rb = r.next(); // '}'
+  return { type: 'ShorthandAttribute', name: nameTok.image, loc: locFrom(lb, rb) } as ShorthandAttribute;
+}
+
+function parseRegularAttribute(r: Reader): Attribute {
   const nameTok = r.next();
   if ((nameTok.tokenType?.name ?? '') !== 'Identifier') throw new Error('Expected attribute name');
   let value: Attribute['value'] = null;
@@ -59,4 +54,18 @@ export function parseAttribute(r: Reader): Attribute | ShorthandAttribute | Spre
     }
   }
   return { type: 'Attribute', name: nameTok.image, value, loc: locFrom(nameTok, endTok) } as Attribute;
+}
+
+export function parseAttribute(r: Reader): Attribute | ShorthandAttribute | SpreadAttribute {
+  if (r.match('LBrace')) {
+    const lb = r.next(); // '{'
+    // detect '...'
+    let dots = 0;
+    while (r.match('Dot')) { r.next(); dots++; }
+    if (dots === 3) {
+      return parseSpreadAttribute(r, lb);
+    }
+    return parseShorthandAttribute(r, lb);
+  }
+  return parseRegularAttribute(r);
 }
