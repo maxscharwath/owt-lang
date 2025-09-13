@@ -203,14 +203,14 @@ export function activate(context: vscode.ExtensionContext) {
         diagnostics.push(new vscode.Diagnostic(r, `Unexpected closing tag </${name}>`, vscode.DiagnosticSeverity.Error));
         continue;
       }
-      const top = stack[stack.length - 1]!;
+      const top = stack[stack.length - 1];
       if (top.name.toLowerCase() !== name.toLowerCase()) {
-        const r = new vscode.Range(doc.positionAt(m.index!), doc.positionAt(m.index! + raw.length));
+        const r = new vscode.Range(doc.positionAt(m.index), doc.positionAt(m.index + raw.length));
         diagnostics.push(new vscode.Diagnostic(r, `Mismatched closing tag: expected </${top.name}> but got </${name}>`, vscode.DiagnosticSeverity.Error));
         // Attempt recovery: pop until match or empty
         let found = false;
         for (let i = stack.length - 2; i >= 0; i--) {
-          if (stack[i]!.name.toLowerCase() === name.toLowerCase()) { stack.length = i; found = true; break; }
+          if (stack[i]?.name.toLowerCase() === name.toLowerCase()) { stack.length = i; found = true; break; }
         }
         if (!found) { stack.length = 0; }
       } else {
@@ -237,8 +237,13 @@ export function activate(context: vscode.ExtensionContext) {
       if (quote) {
         if (esc) { esc = false; i++; continue; }
         if (c === '\\') { esc = true; i++; continue; }
-        if (c === quote) { quote = null; i++; continue; }
-        i++; continue;
+        if (c === quote) { 
+          quote = null; 
+          i++; 
+          continue; 
+        }
+        i++; 
+        continue;
       }
       if (c === '"' || c === "'" || c === '`') { quote = c as any; i++; continue; }
       if (c === '/' && i + 1 < n && text[i + 1] === '*') {
@@ -309,6 +314,7 @@ export function activate(context: vscode.ExtensionContext) {
     };
 
     // Simplified regex patterns to reduce complexity
+    // Break down complex regex into simpler parts
     const valPattern = /(\n|^)\s*val\s+([A-Za-z_][\w-]*)\s*(?::\s*([^=;\n]+))?\s*=\s*([^;\n]+);?/g;
     const varPattern = /(\n|^)\s*var\s+([A-Za-z_][\w-]*)\s*(?::\s*([^=;\n]+))?(?:\s*=\s*([^;\n]+))?;?/g;
     const declared = new Set<string>();
@@ -394,12 +400,10 @@ export function activate(context: vscode.ExtensionContext) {
         if (ch === '<') {
           // Closing tag
           if (i + 1 < n && src[i + 1] === '/') {
-            inTag = true;
             // consume until '>'
             i += 2;
             while (i < n && src[i] !== '>') i++;
             if (i < n && src[i] === '>') { 
-              inTag = false; 
               if (tagStack.length) tagStack.pop(); 
               i++; 
               continue; 
@@ -417,7 +421,16 @@ export function activate(context: vscode.ExtensionContext) {
               if (c === '"' || c === '\'') {
                 const q = c; 
                 j++;
-                for (; j < n; j++) { const d = src[j]; if (d === '\\') { j++; continue; } if (d === q) { break; } }
+                for (; j < n; j++) { 
+                  const d = src[j]; 
+                  if (d === '\\') { 
+                    j++; 
+                    continue; 
+                  } 
+                  if (d === q) { 
+                    break; 
+                  } 
+                }
               } else if (c === '{' && j > i) {
                 // attribute expression ={
                 if (j - 1 >= 0 && src[j - 1] === '=') {
@@ -510,7 +523,14 @@ export function activate(context: vscode.ExtensionContext) {
       const length = d.length ?? 1;
       const range = mapTsRangeToDoc(chunks, start, length, doc);
       const msg = ts.flattenDiagnosticMessageText(d.messageText, '\n');
-      const sev = d.category === ts.DiagnosticCategory.Error ? vscode.DiagnosticSeverity.Error : d.category === ts.DiagnosticCategory.Warning ? vscode.DiagnosticSeverity.Warning : vscode.DiagnosticSeverity.Information;
+      let sev: vscode.DiagnosticSeverity;
+      if (d.category === ts.DiagnosticCategory.Error) {
+        sev = vscode.DiagnosticSeverity.Error;
+      } else if (d.category === ts.DiagnosticCategory.Warning) {
+        sev = vscode.DiagnosticSeverity.Warning;
+      } else {
+        sev = vscode.DiagnosticSeverity.Information;
+      }
       const vd = new vscode.Diagnostic(range, msg, sev);
       vd.source = 'owt-ts';
       diagnostics.push(vd);
