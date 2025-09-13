@@ -5,7 +5,7 @@ import { locFrom } from './loc.js';
 function parseSpreadAttribute(r: Reader, lb: any): SpreadAttribute {
   let depth = 1;
   let code = '';
-  let end = lb as any;
+  let end: any = lb;
   while (!r.eof()) {
     const t = r.next();
     end = t as any;

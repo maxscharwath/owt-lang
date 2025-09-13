@@ -329,6 +329,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Simplified regex patterns to avoid complexity issues
     // Simplified regex patterns to reduce complexity
     // Break down complex regex into simpler parts to reduce complexity
+    // Use simpler regex patterns to avoid complexity issues
     const valPattern = /(\n|^)\s*val\s+([A-Za-z_][\w-]*)\s*(?::\s*([^=;\n]+))?\s*=\s*([^;\n]+);?/g;
     const varPattern = /(\n|^)\s*var\s+([A-Za-z_][\w-]*)\s*(?::\s*([^=;\n]+))?(?:\s*=\s*([^;\n]+))?;?/g;
     const declared = new Set<string>();
@@ -375,6 +376,7 @@ export function activate(context: vscode.ExtensionContext) {
       let i = 0;
       let inTag = false;
       let tagStack: string[] = [];
+      
       const pushExpr = (startBrace: number) => {
         let j = startBrace + 1;
         let depth = 1;
@@ -398,6 +400,7 @@ export function activate(context: vscode.ExtensionContext) {
         if (expr) out.push({ start: startBrace, end, expr });
         return end;
       };
+      
       function prevNonWs(pos: number): string | null {
         let k = pos;
         while (k >= 0) {
@@ -407,55 +410,76 @@ export function activate(context: vscode.ExtensionContext) {
         }
         return null;
       }
+      
+      function handleClosingTag(i: number): number {
+        i += 2;
+        while (i < n && src[i] !== '>') i++;
+        if (i < n && src[i] === '>') { 
+          if (tagStack.length) tagStack.pop(); 
+          i++; 
+        }
+        return i;
+      }
+      
+      function handleOpeningTag(i: number): number {
+        let j = i + 1;
+        while (j < n && src[j] && /[A-Za-z0-9_-]/.test(src[j])) j++;
+        const name = src.slice(i + 1, j);
+        let selfClose = false;
+        
+        for (; j < n; j++) {
+          const c = src[j];
+          if (c === '"' || c === '\'') {
+            const q = c; 
+            for (; j < n; j++) { 
+              const d = src[j]; 
+              if (d === '\\') { 
+                continue; 
+              } 
+              if (d === q) { 
+                break; 
+              } 
+            }
+          } else if (c === '{' && j > i) {
+            if (j - 1 >= 0 && src[j - 1] === '=') {
+              pushExpr(j);
+            }
+          } else if (c === '>') {
+            if (j > 0 && src[j - 1] === '/') {
+              selfClose = true;
+            }
+            if (!selfClose) {
+              tagStack.push(name);
+            }
+            j++;
+            break;
+          }
+        }
+        return j;
+      }
+      
+      function handleTextNode(i: number): number {
+        let j = i;
+        while (j < n && src[j] !== '<') {
+          if (src[j] === '{') {
+            const prev = prevNonWs(j - 1);
+            if (prev && prev !== '=') {
+              j = pushExpr(j);
+              continue;
+            }
+          }
+          j++;
+        }
+        return j;
+      }
 
       while (i < n) {
         const ch = src[i];
-        // Enter/exit tags
         if (ch === '<') {
-          // Closing tag
           if (i + 1 < n && src[i + 1] === '/') {
-            // consume until '>'
-            i += 2;
-            while (i < n && src[i] !== '>') i++;
-            if (i < n && src[i] === '>') { 
-              if (tagStack.length) tagStack.pop(); 
-              i++; 
-              continue; 
-            }
+            i = handleClosingTag(i);
           } else {
-            // opening/selfclosing tag
-            // read tag name
-            let j = i + 1;
-            while (j < n && src[j] && /[A-Za-z0-9_-]/.test(src[j])) j++;
-            const name = src.slice(i + 1, j);
-            let selfClose = false;
-            // scan attrs until '>'
-            for (; j < n; j++) {
-              const c = src[j];
-              if (c === '"' || c === '\'') {
-                const q = c; 
-                for (; j < n; j++) { 
-                  const d = src[j]; 
-                  if (d === '\\') { 
-                    continue; 
-                  } 
-                  if (d === q) { 
-                    break; 
-                  } 
-                }
-              } else if (c === '{' && j > i) {
-                // attribute expression ={
-                if (j - 1 >= 0 && src[j - 1] === '=') {
-                  pushExpr(j); // -1 because for-loop will ++
-                }
-              } else if (c === '>' ) {
-                selfClose = j - 1 >= 0 && src[j - 1] === '/';
-                break;
-              }
-            }
-            if (!selfClose && name) tagStack.push(name);
-            i = j;
-            continue;
+            i = handleOpeningTag(i);
           }
         }
         // Text content between tags: allow {expr} (but not control blocks like 'if (...) {')

@@ -7,8 +7,9 @@ import { readTextRun as readTextTuple } from './text.js';
 import { parseAttribute as parseAttr } from './attrs.js';
 
 type Tok = IToken;
+type AttributeTypes = Attribute | ShorthandAttribute | SpreadAttribute;
 
-function parseElementHeader(r: Reader): { name: string; attributes: (Attribute | ShorthandAttribute | SpreadAttribute)[]; selfClosing: boolean; lt: any; gt: any } {
+function parseElementHeader(r: Reader): { name: string; attributes: AttributeTypes[]; selfClosing: boolean; lt: any; gt: any } {
   const lt = r.next(); // '<'
   let closing = false;
   if (r.match('Slash')) { r.next(); closing = true; }
@@ -47,7 +48,7 @@ function parseSlotPlaceholder(name: string, attributes: (Attribute | ShorthandAt
 
 function parseStyleElement(r: Reader, lt: any): SlotPlaceholder {
   let content = '';
-  let endTok: Tok = r.prev() as any;
+  let endTok: Tok = lt;
   while (!r.eof()) {
     if (r.match('Lt') && (r.peek(1).tokenType?.name ?? '') === 'Slash' && (r.peek(2).image ?? '').toLowerCase() === 'style') {
       r.next(); r.next(); r.next(); // < / style
@@ -58,45 +59,58 @@ function parseStyleElement(r: Reader, lt: any): SlotPlaceholder {
     content += t2.image ?? '';
     endTok = t2 as any;
   }
-  const style: StyleBlock = { type: 'StyleBlock', content, loc: locFromWithComments(lt as any, endTok as any, (r as any).comments) } as any;
-  return { type: 'SlotPlaceholder', name: '__style__', loc: style.loc } as any;
+  const style: StyleBlock = { type: 'StyleBlock', content, loc: locFromWithComments(lt as any, endTok as any, (r as any).comments) };
+  return { type: 'SlotPlaceholder', name: '__style__', loc: style.loc };
+}
+
+function parseClosingTag(r: Reader, element: Element): boolean {
+  if ((r.peek(1).tokenType?.name ?? '') !== 'Slash') return false;
+  
+  r.next(); r.next();
+  const closeName = r.next();
+  if ((closeName.image ?? '').toLowerCase() !== element.name.toLowerCase()) {
+    throw new Error(`Mismatched closing tag: expected </${element.name}> but got </${closeName.image}>`);
+  }
+  r.next(); // '>'
+  return true;
+}
+
+function parseElementChild(r: Reader, element: Element, parseStatementOrNode: (r: Reader) => Node | null): boolean {
+  const peekTok = r.peek();
+  const nm = peekTok.tokenType?.name ?? '';
+  
+  if (nm === 'Lt') {
+    if (parseClosingTag(r, element)) return true;
+    element.children.push(parseElement(r, parseStatementOrNode));
+    return false;
+  }
+  
+  if (nm === 'LBrace') {
+    element.children.push(readBracesExpr(r));
+    return false;
+  }
+  
+  if (nm === 'IfKw' || nm === 'ForKw') {
+    const node = parseStatementOrNode(r);
+    if (node) element.children.push(node);
+    return false;
+  }
+  
+  const textRun = readTextTuple(r);
+  if (textRun) element.children.push({ type: 'Text', value: textRun.value, loc: locFrom(textRun.start as any, textRun.end as any) } as Text);
+  return false;
 }
 
 function parseElementChildren(r: Reader, element: Element, parseStatementOrNode: (r: Reader) => Node | null): void {
   while (!r.eof()) {
-    const peekTok = r.peek();
-    const nm = peekTok.tokenType?.name ?? '';
-    if (nm === 'Lt') {
-      if ((r.peek(1).tokenType?.name ?? '') === 'Slash') {
-        // closing tag
-        r.next(); r.next();
-        const closeName = r.next();
-        if ((closeName.image ?? '').toLowerCase() !== element.name.toLowerCase()) throw new Error(`Mismatched closing tag: expected </${element.name}> but got </${closeName.image}>`);
-        r.next(); // '>'
-        break;
-      } else {
-        element.children.push(parseElement(r, parseStatementOrNode));
-        continue;
-      }
-    }
-    if (nm === 'LBrace') {
-      element.children.push(readBracesExpr(r));
-      continue;
-    }
-    if (nm === 'IfKw' || nm === 'ForKw') {
-      const node = parseStatementOrNode(r);
-      if (node) element.children.push(node);
-      continue;
-    }
-    const textRun = readTextTuple(r);
-    if (textRun) element.children.push({ type: 'Text', value: textRun.value, loc: locFrom(textRun.start as any, textRun.end as any) } as Text);
+    if (parseElementChild(r, element, parseStatementOrNode)) break;
   }
 }
 
 export function parseElement(r: Reader, parseStatementOrNode: (r: Reader) => Node | null): Element | SlotPlaceholder {
   const { name, attributes, selfClosing, lt, gt } = parseElementHeader(r);
   
-  const element: Element = { type: 'Element', name, attributes, children: [], selfClosing, loc: locFromWithComments(lt as any, gt as any, (r as any).comments) } as Element;
+  const element: Element = { type: 'Element', name, attributes, children: [], selfClosing, loc: locFromWithComments(lt as any, gt as any, (r as any).comments) };
   
   // slot placeholder special-case
   if (name.toLowerCase() === 'slot') {
