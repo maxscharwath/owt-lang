@@ -160,39 +160,55 @@ function generateComponentProps(el: Element, ctxVar: string): { code: string; pr
   return { code, propsVar };
 }
 
+function processEventAttribute(a: Attribute, ref: string, ctxVar: string, eventInfo: { is: boolean; event?: string }): string {
+  if (!a.value) return '';
+  if (a.value.type === 'Expr') {
+    const handler = generateEventHandler(a, ctxVar);
+    return `${ref}.addEventListener(${JSON.stringify(eventInfo.event!)}, ${handler});\n`;
+  }
+  return '';
+}
+
+function processReactiveAttribute(a: Attribute, ref: string, ctxVar: string): string {
+  if (a.value?.type !== 'Expr') return '';
+  const simple = simpleVarFromExpr(a.value);
+  if (simple && __currentVarNames.includes(simple)) {
+    // Generate reactive binding for input elements
+    const updater = uid('u');
+    let code = `${ref}.${a.name} = String(${genExpr(a.value)});\n`;
+    code += `const ${updater} = () => { ${ref}.${a.name} = String(${ctxVar}.${simple}); };\n`;
+    code += `${ctxVar}.__subs[${JSON.stringify(simple)}] ||= []; ${ctxVar}.__subs[${JSON.stringify(simple)}].push(${updater});\n`;
+    return code;
+  }
+  return `${ref}.${a.name} = String(${genExpr(a.value)});\n`;
+}
+
 function processRegularAttribute(a: Attribute, ref: string, ctxVar: string): string {
   const eventInfo = isEventAttribute(a.name);
   if (eventInfo.is && eventInfo.event) {
-    if (!a.value) return '';
-    if (a.value.type === 'Expr') {
-      const handler = generateEventHandler(a, ctxVar);
-      return `${ref}.addEventListener(${JSON.stringify(eventInfo.event)}, ${handler});\n`;
-    }
-    return '';
-  } else if (a.value == null) {
+    return processEventAttribute(a, ref, ctxVar, eventInfo);
+  }
+  
+  if (a.value == null) {
     return `${ref}.setAttribute(${JSON.stringify(a.name)}, "");\n`;
-  } else if (a.value.type === 'Text') {
+  }
+  
+  if (a.value.type === 'Text') {
     return `${ref}.setAttribute(${JSON.stringify(a.name)}, ${JSON.stringify(a.value.value)});\n`;
-  } else if (a.value.type === 'Expr') {
+  }
+  
+  if (a.value.type === 'Expr') {
     // Handle boolean attributes specially
     if (BOOLEAN_ATTRIBUTES.has(a.name)) {
       return `${ref}.${a.name} = ${genExpr(a.value)};\n`;
     }
     // Handle reactive input attributes (value, textContent) as properties
     if (REACTIVE_INPUT_ATTRIBUTES.has(a.name)) {
-      const simple = simpleVarFromExpr(a.value);
-      if (simple && __currentVarNames.includes(simple)) {
-        // Generate reactive binding for input elements
-        const updater = uid('u');
-        let code = `${ref}.${a.name} = String(${genExpr(a.value)});\n`;
-        code += `const ${updater} = () => { ${ref}.${a.name} = String(${ctxVar}.${simple}); };\n`;
-        code += `${ctxVar}.__subs[${JSON.stringify(simple)}] ||= []; ${ctxVar}.__subs[${JSON.stringify(simple)}].push(${updater});\n`;
-        return code;
-      }
-      return `${ref}.${a.name} = String(${genExpr(a.value)});\n`;
+      return processReactiveAttribute(a, ref, ctxVar);
     }
     return `${ref}.setAttribute(${JSON.stringify(a.name)}, String(${genExpr(a.value)}));\n`;
   }
+  
   return '';
 }
 
@@ -560,20 +576,16 @@ function generateComponentBody(comp: Component, compSource: string, ctx: string,
   return body;
 }
 
-function genComponent(comp: Component, compSource?: string): string {
-  idCounter = 0;
-  const ctx = uid('ctx');
-  const frag = uid('root');
-  let body = `const ${ctx} = { props, __root: null, __update: () => {}, __subs: Object.create(null), __notify: (names) => { try { devLog('notify', { component: ${JSON.stringify(comp.name)}, names }); } catch {} const __ran = new Set(); for (const n of names || []) { const arr = (${ctx}.__subs[n] || []); for (const fn of arr) { if (__ran.has(fn)) continue; __ran.add(fn); try { fn(); } catch {} } } } };\n`;
-  
-  // Gather var/val declarations
+function generateContextObject(ctx: string, compName: string): string {
+  return `const ${ctx} = { props, __root: null, __update: () => {}, __subs: Object.create(null), __notify: (names) => { try { devLog('notify', { component: ${JSON.stringify(compName)}, names }); } catch {} const __ran = new Set(); for (const n of names || []) { const arr = (${ctx}.__subs[n] || []); for (const fn of arr) { if (__ran.has(fn)) continue; __ran.add(fn); try { fn(); } catch {} } } } };\n`;
+}
+
+function processComponentDeclarations(comp: Component, compSource?: string) {
   const __vars = (comp.body as any[]).filter(n => n && n.type === 'VarDecl') as VarDecl[];
   const __vals = (comp.body as any[]).filter(n => n && n.type === 'ValDecl') as ValDecl[];
   
-  // Validate var initializers
   validateVarInitializers(__vars);
   
-  // Process val declarations
   const { valInits: __valInits, valDeps: __valDeps } = processValDeclarations(__vals, __vars);
   
   // Fallback: also scan raw component source for val declarations if parser missed them
@@ -583,21 +595,44 @@ function genComponent(comp: Component, compSource?: string): string {
     Object.assign(__valDeps, sourceVals.valDeps);
   }
   
+  return { __vars, __vals, __valInits, __valDeps };
+}
+
+function generateVariableInitializations(ctx: string, __vars: VarDecl[]): string {
+  let body = '';
+  for (const v of __vars) {
+    body += `if (${ctx}.${v.name} === undefined) { ${ctx}.${v.name} = ${v.init ? genExpr(v.init as any) : 'undefined'}; }\n`;
+  }
+  return body;
+}
+
+function generateLocalBindings(ctx: string, __vars: VarDecl[], __vals: ValDecl[]): string {
+  let body = '';
+  for (const v of __vars) body += `  let ${v.name} = ${ctx}.${v.name};\n`;
+  for (const v of __vals) body += `  const ${v.name} = ${genExpr(v.init as any)};\n`;
+  return body;
+}
+
+function genComponent(comp: Component, compSource?: string): string {
+  idCounter = 0;
+  const ctx = uid('ctx');
+  const frag = uid('root');
+  let body = generateContextObject(ctx, comp.name);
+  
+  const { __vars, __vals, __valInits, __valDeps } = processComponentDeclarations(comp, compSource);
+  
   __currentVarNames = __vars.map(v => v.name);
   __currentValInits = __valInits;
   __currentValDeps = __valDeps;
   
   // Initialize persistent vars once
-  for (const v of __vars) {
-    body += `if (${ctx}.${v.name} === undefined) { ${ctx}.${v.name} = ${v.init ? genExpr(v.init as any) : 'undefined'}; }\n`;
-  }
+  body += generateVariableInitializations(ctx, __vars);
   
   // Generate render function body
   body += generateComponentBody(comp, compSource || '', ctx, frag);
   
   // Local bindings for vars/vals
-  for (const v of __vars) body += `  let ${v.name} = ${ctx}.${v.name};\n`;
-  for (const v of __vals) body += `  const ${v.name} = ${genExpr(v.init as any)};\n`;
+  body += generateLocalBindings(ctx, __vars, __vals);
   
   // Process function declarations
   const __functions = (comp.body as any[]).filter(n => n && n.type === 'FunctionDecl') as FunctionDecl[];

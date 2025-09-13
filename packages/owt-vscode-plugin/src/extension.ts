@@ -265,7 +265,7 @@ export function activate(context: vscode.ExtensionContext) {
       i++;
     }
     if (stack.length) {
-      const off = stack[stack.length - 1]!;
+      const off = stack[stack.length - 1];
       const r = new vscode.Range(doc.positionAt(off), doc.positionAt(off + 1));
       diagnostics.push(new vscode.Diagnostic(r, "Unclosed '{'", vscode.DiagnosticSeverity.Error));
     }
@@ -316,6 +316,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Simplified regex patterns to reduce complexity
     // Break down complex regex into simpler parts
     // Break down complex regex into simpler parts to reduce complexity
+    // Simplified regex patterns to avoid complexity issues
     const valPattern = /(\n|^)\s*val\s+([A-Za-z_][\w-]*)\s*(?::\s*([^=;\n]+))?\s*=\s*([^;\n]+);?/g;
     const varPattern = /(\n|^)\s*var\s+([A-Za-z_][\w-]*)\s*(?::\s*([^=;\n]+))?(?:\s*=\s*([^;\n]+))?;?/g;
     const declared = new Set<string>();
@@ -413,7 +414,7 @@ export function activate(context: vscode.ExtensionContext) {
             // opening/selfclosing tag
             // read tag name
             let j = i + 1;
-            while (j < n && src[j] && /[A-Za-z0-9_-]/.test(src[j]!)) j++;
+            while (j < n && src[j] && /[A-Za-z0-9_-]/.test(src[j])) j++;
             const name = src.slice(i + 1, j);
             let selfClose = false;
             // scan attrs until '>'
@@ -517,7 +518,8 @@ export function activate(context: vscode.ExtensionContext) {
       }
     };
     const program = ts.createProgram([fileName], options, host);
-    const sf = program.getSourceFile(fileName)!;
+    const sf = program.getSourceFile(fileName);
+    if (!sf) return [];
     const all = [
       ...program.getSyntacticDiagnostics(sf),
       ...program.getSemanticDiagnostics(sf)
@@ -559,7 +561,7 @@ export function activate(context: vscode.ExtensionContext) {
     const valNames = new Set<string>();
     let m: RegExpExecArray | null;
     while ((m = valDeclRe.exec(noComments))) {
-      valNames.add(m[1]!);
+      valNames.add(m[1]);
     }
 
     // For each val, find illegal writes: name =, name +=, ++name, name++
@@ -676,7 +678,7 @@ export function activate(context: vscode.ExtensionContext) {
         const endPos = doc.positionAt(j);
         const fullRange = new vscode.Range(startPos, endPos);
         const compSym = new vscode.DocumentSymbol(
-          name!,
+          name,
           m[1] ? 'export' : '',
           vscode.SymbolKind.Class,
           fullRange,
@@ -689,10 +691,10 @@ export function activate(context: vscode.ExtensionContext) {
         const children: vscode.DocumentSymbol[] = [];
         while ((dm = declRe.exec(body))) {
           const kind = dm[1] === 'var' ? vscode.SymbolKind.Variable : vscode.SymbolKind.Constant;
-          const name2 = dm[2]!;
-          const abs = lbraceIdx + dm.index!;
-          const r = new vscode.Range(doc.positionAt(abs), doc.positionAt(abs + dm[0]!.length));
-          children.push(new vscode.DocumentSymbol(name2, dm[1]!, kind, r, r));
+          const name2 = dm[2];
+          const abs = lbraceIdx + dm.index;
+          const r = new vscode.Range(doc.positionAt(abs), doc.positionAt(abs + dm[0].length));
+          children.push(new vscode.DocumentSymbol(name2, dm[1], kind, r, r));
         }
         compSym.children = children;
         symbols.push(compSym);
