@@ -50,8 +50,8 @@ export function parseChevrotain(source: string, opts: ParseOptions = {}): Progra
     throw new Error(`Lexer error at offset ${e.offset ?? -1}: ${e.message}`);
   }
   if (debug) log(`lex done (tokens=${lex.tokens.length})`);
-  const comments = ((lex as any).groups && (lex as any).groups.comments) ? (lex as any).groups.comments : [];
-  const r = new Reader(lex.tokens as Tok[], comments as any);
+  const comments = lex.groups?.comments ?? [];
+  const r = new Reader(lex.tokens, comments);
   const program = parseProgram(r, parseStatementOrNode);
   if (debug) log(`parse done (components=${program.body.length})`);
   return program;

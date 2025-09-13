@@ -30,8 +30,8 @@ export function parseAttribute(r: Reader): Attribute | ShorthandAttribute | Spre
         }
         code += emitBetween(code, t as any);
       }
-      const expr = { type: 'Expr', code: code.trim(), loc: locFrom(lb as any, end as any) } as any;
-      return { type: 'SpreadAttribute', argument: expr, loc: locFrom(lb as any, end as any) } as SpreadAttribute;
+      const expr = { type: 'Expr', code: code.trim(), loc: locFrom(lb, end) };
+      return { type: 'SpreadAttribute', argument: expr, loc: locFrom(lb, end) } as SpreadAttribute;
     }
     // shorthand: {name}
     const nameTok = r.next();
@@ -52,11 +52,11 @@ export function parseAttribute(r: Reader): Attribute | ShorthandAttribute | Spre
       endTok = s as any;
     } else if (r.match('LBrace')) {
       const inner = readBalanced(r, 'LBrace', 'RBrace');
-      value = { type: 'Expr', code: inner.code.trim(), loc: locFrom(inner.start, inner.end) } as any;
-      endTok = inner.end as any;
+      value = { type: 'Expr', code: inner.code.trim(), loc: locFrom(inner.start, inner.end) };
+      endTok = inner.end;
     } else {
       throw new Error('Expected attribute value');
     }
   }
-  return { type: 'Attribute', name: nameTok.image, value: value as any, loc: locFrom(nameTok as any, endTok as any) } as Attribute;
+  return { type: 'Attribute', name: nameTok.image, value, loc: locFrom(nameTok, endTok) } as Attribute;
 }

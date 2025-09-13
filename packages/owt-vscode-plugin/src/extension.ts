@@ -189,17 +189,17 @@ export function activate(context: vscode.ExtensionContext) {
     const stack: OpenTag[] = [];
     let m: RegExpExecArray | null;
     while ((m = tagRe.exec(masked))) {
-      const raw = m[0]!;
-      const name = m[1]!;
+      const raw = m[0];
+      const name = m[1];
       const isClose = raw.startsWith('</');
       const isSelf = /\/>\s*$/.test(raw);
       if (!isClose) {
-        if (!isSelf) stack.push({ name, start: m.index!, end: m.index! + raw.length });
+        if (!isSelf) stack.push({ name, start: m.index, end: m.index + raw.length });
         continue;
       }
       // closing tag
       if (stack.length === 0) {
-        const r = new vscode.Range(doc.positionAt(m.index!), doc.positionAt(m.index! + raw.length));
+        const r = new vscode.Range(doc.positionAt(m.index), doc.positionAt(m.index + raw.length));
         diagnostics.push(new vscode.Diagnostic(r, `Unexpected closing tag </${name}>`, vscode.DiagnosticSeverity.Error));
         continue;
       }
@@ -242,7 +242,10 @@ export function activate(context: vscode.ExtensionContext) {
       }
       if (c === '"' || c === "'" || c === '`') { quote = c as any; i++; continue; }
       if (c === '/' && i + 1 < n && text[i + 1] === '*') {
-        i += 2; while (i < n && !(text[i] === '*' && i + 1 < n && text[i + 1] === '/')) i++; i = Math.min(n, i + 2); continue;
+        i += 2; 
+        while (i < n && !(text[i] === '*' && i + 1 < n && text[i + 1] === '/')) i++; 
+        i = Math.min(n, i + 2); 
+        continue;
       }
       if (c === '{') { stack.push(i); i++; continue; }
       if (c === '}') {
@@ -305,28 +308,32 @@ export function activate(context: vscode.ExtensionContext) {
       chunks.push({ tsStart, tsEnd, docStart, docEnd });
     };
 
-    const reVal = /(\n|^)\s*val\s+([A-Za-z_][\w-]*)\s*(?::\s*([^=;\n]+))?\s*=\s*([^;\n]+);?/g;
-    const reVar = /(\n|^)\s*var\s+([A-Za-z_][\w-]*)\s*(?::\s*([^=;\n]+))?(?:\s*=\s*([^;\n]+))?;?/g;
+    // Simplified regex patterns to reduce complexity
+    const valPattern = /(\n|^)\s*val\s+([A-Za-z_][\w-]*)\s*(?::\s*([^=;\n]+))?\s*=\s*([^;\n]+);?/g;
+    const varPattern = /(\n|^)\s*var\s+([A-Za-z_][\w-]*)\s*(?::\s*([^=;\n]+))?(?:\s*=\s*([^;\n]+))?;?/g;
     const declared = new Set<string>();
     let m: RegExpExecArray | null;
-    while ((m = reVar.exec(text))) {
+    while ((m = varPattern.exec(text))) {
       const name = (m[2] || '').trim();
       if (!name || declared.has(name)) continue;
       declared.add(name);
       const typeAnn = (m[3] || '').trim();
       const init = (m[4] || '').trim();
       const id = name.replace(/-/g, '_');
-      const code = `let ${id}${typeAnn ? `: ${typeAnn}` : ''}${init ? ` = (${init})` : ''};`;
+      const typePart = typeAnn ? `: ${typeAnn}` : '';
+      const initPart = init ? ` = (${init})` : '';
+      const code = `let ${id}${typePart}${initPart};`;
       addChunk(code, m.index, m.index + m[0].length);
     }
-    while ((m = reVal.exec(text))) {
+    while ((m = valPattern.exec(text))) {
       const name = (m[2] || '').trim();
       if (!name || declared.has(name)) continue;
       declared.add(name);
       const typeAnn = (m[3] || '').trim();
       const init = (m[4] || '').trim();
       const id = name.replace(/-/g, '_');
-      const code = `const ${id}${typeAnn ? `: ${typeAnn}` : ''} = (${init});`;
+      const typePart = typeAnn ? `: ${typeAnn}` : '';
+      const code = `const ${id}${typePart} = (${init});`;
       addChunk(code, m.index, m.index + m[0].length);
     }
 
@@ -391,10 +398,14 @@ export function activate(context: vscode.ExtensionContext) {
             // consume until '>'
             i += 2;
             while (i < n && src[i] !== '>') i++;
-            if (i < n && src[i] === '>') { inTag = false; if (tagStack.length) tagStack.pop(); i++; continue; }
+            if (i < n && src[i] === '>') { 
+              inTag = false; 
+              if (tagStack.length) tagStack.pop(); 
+              i++; 
+              continue; 
+            }
           } else {
             // opening/selfclosing tag
-            inTag = true;
             // read tag name
             let j = i + 1;
             while (j < n && src[j] && /[A-Za-z0-9_-]/.test(src[j]!)) j++;
@@ -404,7 +415,8 @@ export function activate(context: vscode.ExtensionContext) {
             for (; j < n; j++) {
               const c = src[j];
               if (c === '"' || c === '\'') {
-                const q = c; j++;
+                const q = c; 
+                j++;
                 for (; j < n; j++) { const d = src[j]; if (d === '\\') { j++; continue; } if (d === q) { break; } }
               } else if (c === '{' && j > i) {
                 // attribute expression ={
@@ -667,4 +679,6 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(symbolProvider);
 }
 
-export function deactivate() {}
+export function deactivate() {
+  // Cleanup resources if needed
+}
