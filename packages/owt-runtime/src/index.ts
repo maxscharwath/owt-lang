@@ -34,3 +34,21 @@ export function rev<T>(x: Iterable<T> | ArrayLike<T> | null | undefined): Iterab
 export function iter<T>(x: Iterable<T> | ArrayLike<T> | null | undefined): Iterable<T> {
   return (x as any) ?? [];
 }
+
+// Development logging hooks
+export type DevLogger = (event: string, payload?: any) => void;
+
+let __devLogger: DevLogger | null = null;
+
+export function setDevLogger(logger: DevLogger | null) {
+  __devLogger = logger;
+}
+
+export function devLog(event: string, payload?: any) {
+  if (!__devLogger) return;
+  try {
+    __devLogger(event, payload);
+  } catch {
+    // ignore logger errors in production/dev
+  }
+}

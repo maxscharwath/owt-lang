@@ -1,1 +1,11 @@
-export { mount, type ComponentFn, type ComponentInstance } from '@owt/runtime';
+export {
+  mount,
+  type ComponentFn,
+  type ComponentInstance,
+  range,
+  rev,
+  toArray,
+  setDevLogger,
+  devLog,
+  type DevLogger,
+} from '@owt/runtime';

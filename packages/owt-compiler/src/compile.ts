@@ -49,12 +49,12 @@ function toIterable(expr: Expr): string {
   if (idx >= 0) {
     const left = c.slice(0, idx).trim();
     const right = c.slice(idx + 2).trim();
-    const base = `__range((${left}), (${right}))`;
-    return reversed ? `__rev(${base})` : base;
+    const base = `range((${left}), (${right}))`;
+    return reversed ? `rev(${base})` : base;
   }
   // Non-range iterable; if `rev` present, reverse the iterable
   const base = `(${c})`;
-  return reversed ? `__rev(${base})` : base;
+  return reversed ? `rev(${base})` : base;
 }
 
 let __currentVarNames: string[] = [];
@@ -211,11 +211,12 @@ function appendChildTo(parentRef: string, node: Node, ctxVar: string): { code: s
       code += `const ${anchor} = document.createComment("for");\n`;
       code += `${tmp}.appendChild(${anchor});\n`;
       const iter = toIterable(node.iterable);
-      const arr = uid('arr');
-      code += `const ${arr} = (${iter});\n`;
-      const idx = uid('i');
-      code += `for (let ${idx} = 0; ${idx} < (${arr}?.length ?? 0); ${idx}++) {\n`;
-      code += `  const ${node.item} = ${arr}[${idx}];\n`;
+      const src = uid('src');
+      const seen = uid('seen');
+      code += `const ${src} = (${iter});\n`;
+      code += `let ${seen} = false;\n`;
+      code += `for (const ${node.item} of ${src}) {\n`;
+      code += `  ${seen} = true;\n`;
       const frag = uid('frag');
       code += `  const ${frag} = document.createDocumentFragment();\n`;
       for (const n of node.body) code += appendChildTo(`${frag}`, n, ctxVar).code;
@@ -223,7 +224,7 @@ function appendChildTo(parentRef: string, node: Node, ctxVar: string): { code: s
       code += `}\n`;
       if (node.empty && node.empty.length) {
         const frag2 = uid('frag');
-        code += `if (!${arr} || ${arr}.length === 0) {\n`;
+        code += `if (!${seen}) {\n`;
         code += `  const ${frag2} = document.createDocumentFragment();\n`;
         for (const n of node.empty) code += appendChildTo(`${frag2}`, n, ctxVar).code;
         code += `  ${anchor}.parentNode && ${anchor}.parentNode.appendChild(${frag2});\n`;
@@ -241,8 +242,10 @@ function genComponent(comp: Component): string {
   idCounter = 0;
   const ctx = uid('ctx');
   const frag = uid('root');
-  let body = `const ${ctx} = { props, __root: null, __update: () => {} };\n`;
-  body += `${ctx}.__update = () => { if (${ctx}.__root && ${ctx}.__root.parentNode) { const p = ${ctx}.__root.parentNode; p.removeChild(${ctx}.__root); ${ctx}.__root = render(); p.appendChild(${ctx}.__root); } };\n`;
+  const start = uid('start');
+  const end = uid('end');
+  let body = `const ${ctx} = { props, ${start}: null, ${end}: null, __update: () => {} }\n`;
+  body += `${ctx}.__update = () => { if (${ctx}.${start} && ${ctx}.${end} && ${ctx}.${start}.parentNode) { const p = ${ctx}.${start}.parentNode; for (let n = ${ctx}.${start}.nextSibling; n && n !== ${ctx}.${end}; ) { const next = n.nextSibling; p.removeChild(n); n = next; } const __frag = render(); p.insertBefore(__frag, ${ctx}.${end}); } }\n`;
   // Gather var/val declarations
   const __vars = (comp.body as any[]).filter(n => n && n.type === 'VarDecl') as VarDecl[];
   const __vals = (comp.body as any[]).filter(n => n && n.type === 'ValDecl') as ValDecl[];
@@ -260,12 +263,18 @@ function genComponent(comp: Component): string {
   for (const n of comp.body) {
     body += appendChildTo(frag, n as any, ctx).code;
   }
+  body += `  // commit local var changes back to ctx\n`;
+  if (__vars.length) {
+    const __commits = __vars.map(v => `${ctx}.${v.name} = ${v.name};`).join(' ');
+    body += `  ${__commits}\n`;
+    body += `  devLog('commit', { component: ${JSON.stringify(comp.name)}, vars: { ${__vars.map(v=>`${v.name}: ${v.name}`).join(', ')} } });\n`;
+  }
   body += `  return ${frag};\n`;
   body += `}\n`;
   body += `return {\n`;
-  body += `  mount(target) { ${ctx}.__root = render(); target.appendChild(${ctx}.__root); },\n`;
-  body += `  update() { ${ctx}.__update(); },\n`;
-  body += `  destroy() { if (${ctx}.__root && ${ctx}.__root.parentNode) { ${ctx}.__root.parentNode.removeChild(${ctx}.__root); } }\n`;
+  body += `  mount(target) { ${ctx}.${start} = document.createComment("owt:start"); ${ctx}.${end} = document.createComment("owt:end"); target.appendChild(${ctx}.${start}); target.appendChild(${ctx}.${end}); const __frag = render(); target.insertBefore(__frag, ${ctx}.${end}); devLog('mount', { component: ${JSON.stringify(comp.name)} }); },\n`;
+  body += `  update() { devLog('update:start', { component: ${JSON.stringify(comp.name)} }); ${ctx}.__update(); devLog('update:end', { component: ${JSON.stringify(comp.name)} }); },\n`;
+  body += `  destroy() { if (${ctx}.${start} && ${ctx}.${end} && ${ctx}.${start}.parentNode) { const p = ${ctx}.${start}.parentNode; for (let n = ${ctx}.${start}.nextSibling; n && n !== ${ctx}.${end}; ) { const next = n.nextSibling; p.removeChild(n); n = next; } p.removeChild(${ctx}.${start}); p.removeChild(${ctx}.${end}); devLog('destroy', { component: ${JSON.stringify(comp.name)} }); } }\n`;
   body += `};\n`;
   const out = `${comp.export ? 'export ' : ''}function ${comp.name}(props) {\n${body}}\n`;
   return out;
@@ -282,10 +291,8 @@ export function compile(source: string, filename: string, opts: CompileOptions =
   code += `/* eslint-disable */\n`;
   code += `/* prettier-ignore */\n`;
   code += `// Runtime helpers\n`;
+  code += `import { range, toArray, rev, devLog } from 'owt';\n`;
   code += `function __applyProps(el, props) { if (!props) return; for (const k in props) { const v = props[k]; if (k.startsWith('on') && typeof v === 'function') { const evt = k.slice(2).toLowerCase(); el.addEventListener(evt, (e) => { v(e); }); } else if (v == null) { continue; } else if (k in el) { (el)[k] = v; } else { el.setAttribute(k, String(v)); } } }\n`;
-  code += `function __range(a, b) { const start = Number(a)|0, end = Number(b)|0; if (start > end) return []; const out = []; for (let i = start; i <= end; i++) out.push(i); return out; }\n`;
-  code += `function __toArray(x) { return Array.isArray(x) ? x.slice() : Array.from(x ?? []); }\n`;
-  code += `function __rev(x) { const a = __toArray(x); a.reverse(); return a; }\n`;
   for (const n of ast.body) {
     if ((n as Component).type === 'Component') {
       code += `\n` + genComponent(n as Component) + `\n`;

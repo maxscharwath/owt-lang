@@ -16,6 +16,8 @@ export function owt(opts: OwtPluginOptions = {}): Plugin {
   let root = '';
   const debug = opts.debug ?? envDebug();
   const log = opts.logger ?? ((msg: string) => console.log(`[owt:vite] ${msg}`));
+  let isDev = false;
+  let devLoggerInjected = false;
 
   return {
     name: 'vite-plugin-owt',
@@ -23,6 +25,8 @@ export function owt(opts: OwtPluginOptions = {}): Plugin {
     configResolved(config) {
       root = config.root;
       if (debug) log(`configResolved root=${JSON.stringify(root)}`);
+      // Consider dev if running the dev server or non-production mode
+      isDev = ((config as any).command === 'serve') || config.mode !== 'production';
     },
     async load(id) {
       if (cssCache.has(id)) {
@@ -39,6 +43,23 @@ export function owt(opts: OwtPluginOptions = {}): Plugin {
       try {
         const { js, css } = compile(code, filename, { debug, logger: (m) => debug && log(m) });
         let final = js.code;
+        // Inject dev logger once in dev mode
+        if (isDev && !devLoggerInjected) {
+          const preamble = `import { setDevLogger } from 'owt';\n` +
+            `if (typeof window !== 'undefined') { try {\n` +
+            `  // initialize once per dev session\n` +
+            `  if (!('__$owtDevLoggerInitialized' in window)) {\n` +
+            `    Object.defineProperty(window, '__$owtDevLoggerInitialized', { value: true, writable: false, configurable: false });\n` +
+            `    setDevLogger((event, payload) => {\n` +
+            `      // eslint-disable-next-line no-console\n` +
+            `      console.log('[owt:dev]', event, payload);\n` +
+            `    });\n` +
+            `  }\n` +
+            `} catch {} }\n`;
+          final = preamble + final;
+          devLoggerInjected = true;
+          if (debug) log('injected dev logger preamble');
+        }
         if (css && css.length) {
           const cssId = id + '?owt&type=style&lang.css';
           cssCache.set(cssId, css);

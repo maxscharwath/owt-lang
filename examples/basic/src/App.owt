@@ -5,6 +5,7 @@ export component App(props: { title: string }) {
     <h1>{props.title}</h1>
 
     <div>
+      <button onClick={() => console.log(count++)}>test</button>
       <button onClick={() => count++}>+</button>
       <button onClick={() => count = Math.max(0, count - 1)}>-</button>
       <p>Count: {count}</p>
