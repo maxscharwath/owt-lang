@@ -221,7 +221,7 @@ export function activate(context: vscode.ExtensionContext) {
       const r = new vscode.Range(doc.positionAt(unclosed.start), doc.positionAt(unclosed.end));
       diagnostics.push(new vscode.Diagnostic(r, `Unclosed tag <${unclosed.name}>`, vscode.DiagnosticSeverity.Error));
     }
-    for (const d of diagnostics) (d as any).source = 'owt';
+    for (const d of diagnostics) d.source = 'owt';
     return diagnostics;
   }
 
@@ -245,7 +245,7 @@ export function activate(context: vscode.ExtensionContext) {
         i++; 
         continue;
       }
-      if (c === '"' || c === "'" || c === '`') { quote = c as any; i++; continue; }
+      if (c === '"' || c === "'" || c === '`') { quote = c; i++; continue; }
       if (c === '/' && i + 1 < n && text[i + 1] === '*') {
         i += 2; 
         while (i < n && !(text[i] === '*' && i + 1 < n && text[i + 1] === '/')) i++; 
@@ -269,7 +269,7 @@ export function activate(context: vscode.ExtensionContext) {
       const r = new vscode.Range(doc.positionAt(off), doc.positionAt(off + 1));
       diagnostics.push(new vscode.Diagnostic(r, "Unclosed '{'", vscode.DiagnosticSeverity.Error));
     }
-    for (const d of diagnostics) (d as any).source = 'owt';
+    for (const d of diagnostics) d.source = 'owt';
     return diagnostics;
   }
 
@@ -315,6 +315,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Simplified regex patterns to reduce complexity
     // Break down complex regex into simpler parts
+    // Break down complex regex into simpler parts to reduce complexity
     const valPattern = /(\n|^)\s*val\s+([A-Za-z_][\w-]*)\s*(?::\s*([^=;\n]+))?\s*=\s*([^;\n]+);?/g;
     const varPattern = /(\n|^)\s*var\s+([A-Za-z_][\w-]*)\s*(?::\s*([^=;\n]+))?(?:\s*=\s*([^;\n]+))?;?/g;
     const declared = new Set<string>();
@@ -374,7 +375,7 @@ export function activate(context: vscode.ExtensionContext) {
             if (ch === q) { q = null; j++; continue; }
             j++; continue;
           }
-          if (ch === '"' || ch === "'" || ch === '`') { q = ch as any; j++; continue; }
+          if (ch === '"' || ch === "'" || ch === '`') { q = ch; j++; continue; }
           if (ch === '{') { depth++; j++; continue; }
           if (ch === '}') { depth--; j++; continue; }
           j++;
@@ -510,7 +511,10 @@ export function activate(context: vscode.ExtensionContext) {
       readFile: (f: string) => (f === fileName ? code : undefined),
       useCaseSensitiveFileNames: () => true,
       writeFile: () => {},
-      getSourceFile: (f: string, languageVersion: ts.ScriptTarget) => (f === fileName ? sourceFile : undefined)
+      getSourceFile: (f: string, languageVersion: ts.ScriptTarget) => {
+        if (f === fileName) return sourceFile;
+        return undefined;
+      }
     };
     const program = ts.createProgram([fileName], options, host);
     const sf = program.getSourceFile(fileName)!;
