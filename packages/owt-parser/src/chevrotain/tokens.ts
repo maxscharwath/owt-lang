@@ -51,7 +51,7 @@ export const CaseKw = createToken({ name: 'CaseKw', pattern: /\bcase\b/ });
 export const DefaultKw = createToken({ name: 'DefaultKw', pattern: /\bdefault\b/ });
 export const SlotKw = createToken({ name: 'SlotKw', pattern: /\bslot\b/ });
 
-export const Identifier = createToken({ name: 'Identifier', pattern: /[A-Za-z_][\w\-]*/ });
+export const Identifier = createToken({ name: 'Identifier', pattern: /[A-Za-z_][\w-]*/ });
 
 // Also recognize numeric literals to avoid lexer errors in expressions
 export const NumberLiteral = createToken({ name: 'NumberLiteral', pattern: /\d+(?:_\d+)*(?:\.\d+(?:_\d+)*)?/ });

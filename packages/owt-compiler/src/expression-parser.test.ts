@@ -7,7 +7,6 @@ import {
   isAssignmentExpression,
   isLambdaAssignmentExpression,
   isLambdaExpressionOnly,
-  isFunctionCallExpression,
   isSimpleVariableExpression
 } from './expression-parser.js';
 

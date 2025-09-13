@@ -2,10 +2,10 @@ import type { Position } from '@owt/ast';
 import { SourceMapBuilder } from './sourcemap.js';
 
 export class CodeBuilder {
-  private parts: string[] = [];
+  private readonly parts: string[] = [];
   private line = 1; // 1-based for humans; map uses 0-based
   private column = 0;
-  constructor(private filename: string, private source: string, public map = new SourceMapBuilder(filename, source)) {}
+  constructor(private readonly filename: string, private readonly source: string, public map = new SourceMapBuilder(filename, source)) {}
 
   add(str: string, original?: Position) {
     if (original) {

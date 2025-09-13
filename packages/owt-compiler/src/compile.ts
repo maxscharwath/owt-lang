@@ -4,8 +4,7 @@ import { CodeBuilder } from './codebuilder';
 import { 
   isAssignmentExpression,
   isLambdaAssignmentExpression, 
-  isLambdaExpressionOnly,
-  isSimpleVariableExpression
+  isLambdaExpressionOnly
 } from './expression-parser.js';
 import { BOOLEAN_ATTRIBUTES, REACTIVE_INPUT_ATTRIBUTES } from './constants.js';
 
@@ -26,7 +25,7 @@ function escapeText(text: string): string {
 function isEventAttribute(name: string): { is: boolean; event?: string } {
   if (name.startsWith('on') && name.length > 2) {
     const ev = name.slice(2);
-    const lower = ev.charAt(0).toLowerCase() + ev.slice(1);
+    const lower = ev.toLowerCase();
     return { is: true, event: lower };
   }
   return { is: false };
@@ -98,16 +97,9 @@ function generateEventHandler(a: Attribute, ctxVar: string): string {
       assignmentCode = assignmentCode.replace(new RegExp(`\\b${v}\\b`, 'g'), `${ctxVar}.${v}`);
     }
     return `($event) => { ${__gets} ${__prevs} ${assignmentCode}; ${__changes} if (__changed.length) ${ctxVar}.__notify(__changed); }`;
-  } else if (isLambdaAssignment) {
+  } else if (isLambdaAssignment || isLambdaExpression) {
     // For lambda assignments like (e) => newTodoText = e.target.value
-    let lambdaCode = exprCode;
-    for (const v of __currentVarNames) {
-      lambdaCode = lambdaCode.replace(new RegExp(`\\b${v}\\b`, 'g'), `${ctxVar}.${v}`);
-    }
-    // Execute the lambda with the event parameter
-    return `($event) => { ${__gets} ${__prevs} (${lambdaCode})($event); ${__changes} if (__changed.length) ${ctxVar}.__notify(__changed); }`;
-  } else if (isLambdaExpression) {
-    // For lambda expressions like (e) => e.key === 'Enter' && addTodo()
+    // or lambda expressions like (e) => e.key === 'Enter' && addTodo()
     let lambdaCode = exprCode;
     for (const v of __currentVarNames) {
       lambdaCode = lambdaCode.replace(new RegExp(`\\b${v}\\b`, 'g'), `${ctxVar}.${v}`);
@@ -186,6 +178,19 @@ function processRegularAttribute(a: Attribute, ref: string, ctxVar: string): str
     if (BOOLEAN_ATTRIBUTES.has(a.name)) {
       return `${ref}.${a.name} = ${genExpr(a.value)};\n`;
     }
+    // Handle reactive input attributes (value, textContent) as properties
+    if (REACTIVE_INPUT_ATTRIBUTES.has(a.name)) {
+      const simple = simpleVarFromExpr(a.value);
+      if (simple && __currentVarNames.includes(simple)) {
+        // Generate reactive binding for input elements
+        const updater = uid('u');
+        let code = `${ref}.${a.name} = String(${genExpr(a.value)});\n`;
+        code += `const ${updater} = () => { ${ref}.${a.name} = String(${ctxVar}.${simple}); };\n`;
+        code += `${ctxVar}.__subs[${JSON.stringify(simple)}] ||= []; ${ctxVar}.__subs[${JSON.stringify(simple)}].push(${updater});\n`;
+        return code;
+      }
+      return `${ref}.${a.name} = String(${genExpr(a.value)});\n`;
+    }
     return `${ref}.setAttribute(${JSON.stringify(a.name)}, String(${genExpr(a.value)}));\n`;
   }
   return '';
@@ -200,6 +205,10 @@ function processShorthandAttribute(a: ShorthandAttribute, ref: string, ctxVar: s
     // Handle boolean attributes specially
     if (BOOLEAN_ATTRIBUTES.has(a.name)) {
       return `${ref}.${a.name} = ${a.name};\n`;
+    }
+    // Handle reactive input attributes (value, textContent) as properties
+    if (REACTIVE_INPUT_ATTRIBUTES.has(a.name)) {
+      return `${ref}.${a.name} = String(${a.name});\n`;
     }
     return `${ref}.setAttribute(${JSON.stringify(a.name)}, String(${a.name}));\n`;
   }

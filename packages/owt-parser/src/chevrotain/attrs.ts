@@ -17,8 +17,17 @@ export function parseAttribute(r: Reader): Attribute | ShorthandAttribute | Spre
         const t = r.next();
         end = t as any;
         const name = t.tokenType?.name ?? '';
-        if (name === 'LBrace') { code += emitBetween(code, t as any); depth++; continue; }
-        if (name === 'RBrace') { depth--; if (depth === 0) break; code += '}'; continue; }
+        if (name === 'LBrace') { 
+          code += emitBetween(code, t as any); 
+          depth++; 
+          continue; 
+        }
+        if (name === 'RBrace') { 
+          depth--; 
+          if (depth === 0) break; 
+          code += '}'; 
+          continue; 
+        }
         code += emitBetween(code, t as any);
       }
       const expr = { type: 'Expr', code: code.trim(), loc: locFrom(lb as any, end as any) } as any;

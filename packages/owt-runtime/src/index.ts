@@ -20,7 +20,9 @@ export function* range(a: number, b: number): Iterable<number> {
   for (let i = start; i <= end; i++) yield i;
 }
 
-export function toArray<T>(x: Iterable<T> | ArrayLike<T> | null | undefined): T[] {
+type ArrayLikeOrIterable<T> = Iterable<T> | ArrayLike<T> | null | undefined;
+
+export function toArray<T>(x: ArrayLikeOrIterable<T>): T[] {
   if (!x) return [] as T[];
   return Array.isArray(x) ? (x as T[]).slice() : Array.from(x as Iterable<T>);
 }

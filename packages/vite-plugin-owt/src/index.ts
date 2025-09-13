@@ -26,7 +26,7 @@ export function owt(opts: OwtPluginOptions = {}): Plugin {
       root = config.root;
       if (debug) log(`configResolved root=${JSON.stringify(root)}`);
       // Consider dev if running the dev server or non-production mode
-      isDev = ((config as any).command === 'serve') || config.mode !== 'production';
+      isDev = (config.command === 'serve') || config.mode !== 'production';
     },
     async load(id) {
       if (cssCache.has(id)) {
@@ -62,7 +62,7 @@ export function owt(opts: OwtPluginOptions = {}): Plugin {
           devLoggerInjected = true;
           if (debug) log('injected dev logger preamble');
         }
-        if (css && css.length) {
+        if (css?.length) {
           const cssId = id + '?owt&type=style&lang.css';
           cssCache.set(cssId, css);
           final += `\nimport ${JSON.stringify(cssId)};\n`;

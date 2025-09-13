@@ -31,7 +31,7 @@ export function emitBetween(prev: string, tok: Tok): string {
   const isPropertyAccess = prevWasDot || currentIsDot;
   
   // Only add space if it's a word token after another word token, and it's not property access
-  if (isWord(tok) && /[A-Za-z0-9_\]\)\}]/.test(a) && !isPropertyAccess) {
+  if (isWord(tok) && /[A-Za-z0-9_\])}]/.test(a) && !isPropertyAccess) {
     return ' ' + s;
   }
   
@@ -46,8 +46,17 @@ export function readBalanced(r: Reader, openName: string, closeName: string): { 
   while (!r.eof()) {
     const t = r.next();
     last = t;
-    if (r.is(t, openName)) { depth++; code += t.image; continue; }
-    if (r.is(t, closeName)) { depth--; if (depth === 0) break; code += t.image; continue; }
+    if (r.is(t, openName)) { 
+      depth++; 
+      code += t.image; 
+      continue; 
+    }
+    if (r.is(t, closeName)) { 
+      depth--; 
+      if (depth === 0) break; 
+      code += t.image; 
+      continue; 
+    }
     code += emitBetween(code, t);
   }
   return { code, start: open, end: last };

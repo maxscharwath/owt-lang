@@ -41,7 +41,6 @@ export function generateVariableDeclarations(context: CompilerContext, ctxVar: s
  * Generate change detection code
  */
 export function generateChangeDetection(context: CompilerContext, ctxVar: string): string {
-  const prevVars = context.varNames.map(vn => `const __prev_${vn} = ${ctxVar}.${vn};`).join(' ');
   const changeChecks = context.varNames.map(vn => 
     `if (${ctxVar}.${vn} !== __prev_${vn}) __changed.push(${JSON.stringify(vn)});`
   ).join(' ');

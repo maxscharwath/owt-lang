@@ -26,9 +26,9 @@ export class SourceMapBuilder {
   private lastSource = 0;
   private lastOriginalLine = 0;
   private lastOriginalColumn = 0;
-  private lastName = 0;
+  private readonly lastName = 0;
 
-  constructor(private filename: string, private sourceContent: string) {}
+  constructor(private readonly filename: string, private readonly sourceContent: string) {}
 
   // Ensure mappings has lines up to genLine
   private ensureLine(genLine: number) {

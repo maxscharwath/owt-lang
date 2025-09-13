@@ -22,7 +22,7 @@ export function locFrom(start: IToken, end: IToken): Location {
 
 export function locFromWithComments(start: IToken, end: IToken, comments: IToken[] | undefined): Location {
   let endTok: IToken = end;
-  if (comments && comments.length) {
+  if (comments?.length) {
     const endLine = (end.endLine ?? end.startLine ?? 0);
     const endOff = (end.endOffset ?? end.startOffset ?? 0);
     const sameLineTrailing = comments.filter((c) => {

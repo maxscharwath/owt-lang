@@ -39,6 +39,6 @@ export function parseComponent(r: Reader, parseStatementOrNode: (r: Reader) => N
     style,
     loc: locFromWithComments((exportTok ?? compTok) as any, rb as any, (r as any).comments),
   };
-  if (propsType && propsType.length) baseComp.propsType = propsType;
+  if (propsType?.length) baseComp.propsType = propsType;
   return baseComp as Component;
 }

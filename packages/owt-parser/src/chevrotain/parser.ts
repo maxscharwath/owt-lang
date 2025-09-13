@@ -1,5 +1,5 @@
 // Chevrotain-based parser for OWT that directly builds the AST.
-import type { Program, Component, Node, Text, StyleBlock } from '@owt/ast';
+import type { Program, Node, Text } from '@owt/ast';
 import type { IToken } from 'chevrotain';
 import { OwtLexer } from './tokens.js';
 import { Reader } from './reader.js';
@@ -8,7 +8,6 @@ import { readBracesExpr } from './expr.js';
 import { parseIfBlock as parseIfBlk, parseForBlock as parseForBlk, parseVarVal, parseFunctionDecl } from './statements.js';
 import { readTextRun as readTextTuple } from './text.js';
 import { parseElement as parseEl } from './elements.js';
-import { parseComponent as parseComp } from './components.js';
 import { parseProgram } from './program.js';
 import type { ParseOptions } from '../types.js';
 

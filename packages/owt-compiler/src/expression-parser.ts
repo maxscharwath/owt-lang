@@ -2,7 +2,7 @@
  * Robust expression parsing utilities for OWT compiler
  */
 
-import { COMPARISON_OPERATORS, ASSIGNMENT_OPERATORS } from './constants.js';
+import { COMPARISON_OPERATORS } from './constants.js';
 
 export type ExpressionType = 
   | 'assignment'
@@ -99,7 +99,8 @@ export function analyzeExpression(code: string): ExpressionInfo {
  */
 function extractSimpleVariable(code: string): string | null {
   // Match simple variable: starts with letter/underscore, followed by word chars
-  const match = code.match(/^[A-Za-z_$][\w$]*$/);
+  const regex = /^[A-Za-z_$][\w$]*$/;
+  const match = regex.exec(code);
   return match ? match[0] : null;
 }
 

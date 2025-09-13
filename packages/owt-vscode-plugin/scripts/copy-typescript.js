@@ -23,7 +23,7 @@ function main() {
   try {
     pkgPath = require.resolve('typescript/package.json', { paths: [process.cwd()] });
   } catch (e) {
-    console.error('Could not resolve typescript/package.json from', process.cwd());
+    console.error('Could not resolve typescript/package.json from', process.cwd(), ':', e.message);
     process.exit(1);
   }
   const srcDir = path.dirname(pkgPath);

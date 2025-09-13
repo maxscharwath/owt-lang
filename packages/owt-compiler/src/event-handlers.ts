@@ -2,14 +2,13 @@
  * Event handling utilities for OWT compiler
  */
 
-import type { Attribute, ShorthandAttribute, Expr } from '@owt/ast';
+import type { Attribute, ShorthandAttribute } from '@owt/ast';
 import type { CompilerContext } from './context.js';
-import { generateEventHandler, generateId } from './codegen-utils.js';
+import { generateEventHandler } from './codegen-utils.js';
 import { 
   isAssignmentExpression, 
   isLambdaAssignmentExpression, 
-  isLambdaExpressionOnly,
-  isSimpleVariableExpression 
+  isLambdaExpressionOnly
 } from './expression-parser.js';
 
 export interface EventAttributeInfo {
