@@ -18,13 +18,13 @@ function parseElseIfBranch(r: Reader, parseStatementOrNode: (r: Reader) => Node 
   const test = readParensExpr(r);
   r.next(); // '{'
   const { consequent, end } = parseConsequent(r, parseStatementOrNode);
-  return { type: 'IfBranch', test, consequent, loc: locFrom(elseTok as any, end as any) } as IfBranch;
+  return { type: 'IfBranch', test, consequent, loc: locFrom(elseTok, end) } as IfBranch;
 }
 
 function parseElseBranch(r: Reader, parseStatementOrNode: (r: Reader) => Node | null, elseTok: any): ElseBranch {
   r.next(); // '{'
   const { consequent, end } = parseConsequent(r, parseStatementOrNode);
-  return { type: 'ElseBranch', consequent, loc: locFrom(elseTok as any, end as any) } as ElseBranch;
+  return { type: 'ElseBranch', consequent, loc: locFrom(elseTok, end) } as ElseBranch;
 }
 
 export function parseIfBlock(r: Reader, parseStatementOrNode: (r: Reader) => Node | null): IfBlock {
@@ -33,7 +33,7 @@ export function parseIfBlock(r: Reader, parseStatementOrNode: (r: Reader) => Nod
   r.next(); // '{'
   const { consequent, end: consequentEnd } = parseConsequent(r, parseStatementOrNode);
   
-  const branches: IfBranch[] = [{ type: 'IfBranch', test, consequent, loc: locFrom(ifTok as any, consequentEnd as any) } as IfBranch];
+  const branches: IfBranch[] = [{ type: 'IfBranch', test, consequent, loc: locFrom(ifTok, consequentEnd) } as IfBranch];
   let alternate: ElseBranch | null = null;
   
   while (r.match('ElseKw')) {
@@ -46,8 +46,8 @@ export function parseIfBlock(r: Reader, parseStatementOrNode: (r: Reader) => Nod
     }
   }
   
-  const end = (alternate ? (alternate as any).loc.end : branches[branches.length - 1]!.loc.end) as any;
-  return { type: 'IfBlock', branches, alternate, loc: { start: pos(ifTok as any), end } } as IfBlock;
+  const end = alternate ? alternate.loc.end : branches[branches.length - 1]!.loc.end;
+  return { type: 'IfBlock', branches, alternate, loc: { start: pos(ifTok), end } } as IfBlock;
 }
 
 export function parseForBlock(r: Reader, parseStatementOrNode: (r: Reader) => Node | null): ForBlock {
@@ -55,7 +55,7 @@ export function parseForBlock(r: Reader, parseStatementOrNode: (r: Reader) => No
   const par = readParensExpr(r); // contains item of iterable [, meta]
   // pattern: <item> of <expr> [ , <meta> ]
   const inside = par.code.trim();
-  const m = inside.match(/^([A-Za-z_$][\w$]*)\s+of\s+(.+?)(?:\s*,\s*([A-Za-z_$][\w$]*))?$/);
+  const m = RegExp(/^([A-Za-z_$][\w$]*)\s+of\s+(.+?)(?:\s*,\s*([A-Za-z_$][\w$]*))?$/).exec(inside);
   if (!m) throw new Error('Invalid for(...) header');
   const item = m[1]!;
   const iterable: Expr = { type: 'Expr', code: (m[2] || '').trim(), loc: par.loc } as any;
@@ -72,7 +72,7 @@ export function parseForBlock(r: Reader, parseStatementOrNode: (r: Reader) => No
     while (!r.match('RBrace')) { const n = parseStatementOrNode(r); if (n) empty.push(n); }
     r.next();
   }
-  return { type: 'ForBlock', item, iterable, metaIdent, body, empty, loc: locFrom(forTok as any, rb as any) } as ForBlock;
+  return { type: 'ForBlock', item, iterable, metaIdent, body, empty, loc: locFrom(forTok, rb) } as ForBlock;
 }
 
 function skipTypeAnnotation(r: Reader): void {
@@ -95,7 +95,7 @@ function parseInitializer(r: Reader, start: any): Expr | null {
     if (x.tokenType?.name === 'RParen' || x.tokenType?.name === 'RBrace' || x.tokenType?.name === 'RBracket') depth = Math.max(0, depth - 1);
     code += emitBetween(code, x);
   }
-  return { type: 'Expr', code: code.trim(), loc: locFrom(start as any, r.peek() as any) } as any;
+  return { type: 'Expr', code: code.trim(), loc: locFrom(start, r.peek()) } as any;
 }
 
 export function parseVarVal(r: Reader): VarDecl | ValDecl {
@@ -109,10 +109,10 @@ export function parseVarVal(r: Reader): VarDecl | ValDecl {
   if (r.match('Semicolon')) r.next();
   
   if (isVar) {
-    return { type: 'VarDecl', name: nameTok.image, init: init as any, loc: locFrom(start as any, (init ? (r.peek() as any) : (nameTok as any))) } as VarDecl;
+    return { type: 'VarDecl', name: nameTok.image, init: init as any, loc: locFrom(start, init ? r.peek() : nameTok) } as VarDecl;
   } else {
     if (!init) throw new Error('val requires initializer');
-    return { type: 'ValDecl', name: nameTok.image, init: init as any, loc: locFrom(start as any, r.peek() as any) } as ValDecl;
+    return { type: 'ValDecl', name: nameTok.image, init: init as any, loc: locFrom(start, r.peek()) } as ValDecl;
   }
 }
 
@@ -153,7 +153,6 @@ function parseFunctionBody(r: Reader): { bodyCode: string; end: any } {
   r.next(); // '{'
   let bodyDepth = 0;
   let bodyCode = '';
-  let end: any = null;
   while (!r.eof()) {
     const t = r.peek();
     if (bodyDepth === 0 && t.tokenType?.name === 'RBrace') break;
@@ -161,7 +160,6 @@ function parseFunctionBody(r: Reader): { bodyCode: string; end: any } {
     if (x.tokenType?.name === 'LParen' || x.tokenType?.name === 'LBrace' || x.tokenType?.name === 'LBracket') bodyDepth++;
     if (x.tokenType?.name === 'RParen' || x.tokenType?.name === 'RBrace' || x.tokenType?.name === 'RBracket') bodyDepth = Math.max(0, bodyDepth - 1);
     bodyCode += emitBetween(bodyCode, x);
-    end = x;
   }
   const closingBrace = r.next(); // '}'
   return { bodyCode: bodyCode.trim(), end: closingBrace };
@@ -176,7 +174,7 @@ export function parseFunctionDecl(r: Reader): FunctionDecl {
   const returnType = parseReturnType(r);
   const { bodyCode, end } = parseFunctionBody(r);
   
-  const body: Expr = { type: 'Expr', code: bodyCode, loc: locFrom(start as any, end as any) } as any;
+  const body: Expr = { type: 'Expr', code: bodyCode, loc: locFrom(start, end) } as any;
   
   return {
     type: 'FunctionDecl',
@@ -184,7 +182,7 @@ export function parseFunctionDecl(r: Reader): FunctionDecl {
     params,
     returnType,
     body,
-    loc: locFrom(start as any, end as any)
+    loc: locFrom(start, end)
   } as FunctionDecl;
 }
 

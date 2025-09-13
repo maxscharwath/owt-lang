@@ -324,12 +324,6 @@ export function activate(context: vscode.ExtensionContext) {
     };
 
     // Simplified regex patterns to reduce complexity
-    // Break down complex regex into simpler parts
-    // Break down complex regex into simpler parts to reduce complexity
-    // Simplified regex patterns to avoid complexity issues
-    // Simplified regex patterns to reduce complexity
-    // Break down complex regex into simpler parts to reduce complexity
-    // Use simpler regex patterns to avoid complexity issues
     const valPattern = /(\n|^)\s*val\s+([A-Za-z_][\w-]*)\s*(?::\s*([^=;\n]+))?\s*=\s*([^;\n]+);?/g;
     const varPattern = /(\n|^)\s*var\s+([A-Za-z_][\w-]*)\s*(?::\s*([^=;\n]+))?(?:\s*=\s*([^;\n]+))?;?/g;
     const declared = new Set<string>();
@@ -430,16 +424,7 @@ export function activate(context: vscode.ExtensionContext) {
         for (; j < n; j++) {
           const c = src[j];
           if (c === '"' || c === '\'') {
-            const q = c; 
-            for (; j < n; j++) { 
-              const d = src[j]; 
-              if (d === '\\') { 
-                continue; 
-              } 
-              if (d === q) { 
-                break; 
-              } 
-            }
+            j = handleQuotedString(j, c);
           } else if (c === '{' && j > i) {
             if (j - 1 >= 0 && src[j - 1] === '=') {
               pushExpr(j);
@@ -451,9 +436,21 @@ export function activate(context: vscode.ExtensionContext) {
             if (!selfClose) {
               tagStack.push(name);
             }
-            j++;
             break;
           }
+        }
+        return j;
+      }
+      
+      function handleQuotedString(j: number, quote: string): number {
+        for (; j < n; j++) { 
+          const d = src[j]; 
+          if (d === '\\') { 
+            continue; 
+          } 
+          if (d === quote) { 
+            break; 
+          } 
         }
         return j;
       }
@@ -473,6 +470,10 @@ export function activate(context: vscode.ExtensionContext) {
         return j;
       }
 
+      function isControlBlockContext(prev: string | null): boolean {
+        return prev !== null && /[_A-Za-z0-9)]|\]|\}/.test(prev);
+      }
+
       while (i < n) {
         const ch = src[i];
         if (ch === '<') {
@@ -486,7 +487,7 @@ export function activate(context: vscode.ExtensionContext) {
         if (!inTag && tagStack.length > 0 && ch === '{') {
           const prev = prevNonWs(i - 1);
           // Disallow after identifier or ')' ']' '}' to avoid control blocks
-          if (prev && (/[_A-Za-z0-9)]|\]|\}/.test(prev))) {
+          if (isControlBlockContext(prev)) {
             // skip: likely a control block or object literal in code region
             i++;
             continue;

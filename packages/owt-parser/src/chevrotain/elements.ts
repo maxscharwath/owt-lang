@@ -59,7 +59,7 @@ function parseStyleElement(r: Reader, lt: any): SlotPlaceholder {
     content += t2.image ?? '';
     endTok = t2 as any;
   }
-  const style: StyleBlock = { type: 'StyleBlock', content, loc: locFromWithComments(lt as any, endTok as any, (r as any).comments) };
+  const style: StyleBlock = { type: 'StyleBlock', content, loc: locFromWithComments(lt, endTok, r.comments) };
   return { type: 'SlotPlaceholder', name: '__style__', loc: style.loc };
 }
 
@@ -110,7 +110,7 @@ function parseElementChildren(r: Reader, element: Element, parseStatementOrNode:
 export function parseElement(r: Reader, parseStatementOrNode: (r: Reader) => Node | null): Element | SlotPlaceholder {
   const { name, attributes, selfClosing, lt, gt } = parseElementHeader(r);
   
-  const element: Element = { type: 'Element', name, attributes, children: [], selfClosing, loc: locFromWithComments(lt as any, gt as any, (r as any).comments) };
+  const element: Element = { type: 'Element', name, attributes, children: [], selfClosing, loc: locFromWithComments(lt, gt, r.comments) };
   
   // slot placeholder special-case
   if (name.toLowerCase() === 'slot') {
