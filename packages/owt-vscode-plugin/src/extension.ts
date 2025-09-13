@@ -324,8 +324,10 @@ export function activate(context: vscode.ExtensionContext) {
     };
 
     // Simplified regex patterns to reduce complexity
-    const valPattern = /(\n|^)\s*val\s+([A-Za-z_][\w-]*)\s*(?::\s*([^=;\n]+))?\s*=\s*([^;\n]+);?/g;
-    const varPattern = /(\n|^)\s*var\s+([A-Za-z_][\w-]*)\s*(?::\s*([^=;\n]+))?(?:\s*=\s*([^;\n]+))?;?/g;
+    const identifierPattern = '[A-Za-z_][\\w-]*';
+    const typeAnnotationPattern = '(?::\\s*([^=;\\n]+))?';
+    const valPattern = new RegExp(`(\\n|^)\\s*val\\s+(${identifierPattern})\\s*${typeAnnotationPattern}\\s*=\\s*([^;\\n]+);?`, 'g');
+    const varPattern = new RegExp(`(\\n|^)\\s*var\\s+(${identifierPattern})\\s*${typeAnnotationPattern}(?:\\s*=\\s*([^;\\n]+))?;?`, 'g');
     const declared = new Set<string>();
     let m: RegExpExecArray | null;
     while ((m = varPattern.exec(text))) {
@@ -424,22 +426,31 @@ export function activate(context: vscode.ExtensionContext) {
         for (; j < n; j++) {
           const c = src[j];
           if (c === '"' || c === '\'') {
-            j = handleQuotedString(j, c);
+            handleQuotedString(j, c);
           } else if (c === '{' && j > i) {
-            if (j - 1 >= 0 && src[j - 1] === '=') {
-              pushExpr(j);
-            }
+            handleAttributeExpression(j);
           } else if (c === '>') {
-            if (j > 0 && src[j - 1] === '/') {
-              selfClose = true;
-            }
-            if (!selfClose) {
-              tagStack.push(name);
-            }
+            handleTagEnd(j, name, selfClose);
             break;
           }
         }
         return j;
+      }
+      
+      function handleAttributeExpression(j: number): void {
+        if (j - 1 >= 0 && src[j - 1] === '=') {
+          pushExpr(j);
+        }
+      }
+      
+      function handleTagEnd(j: number, name: string, selfClose: boolean): boolean {
+        if (j > 0 && src[j - 1] === '/') {
+          selfClose = true;
+        }
+        if (!selfClose) {
+          tagStack.push(name);
+        }
+        return selfClose;
       }
       
       function handleQuotedString(j: number, quote: string): number {
