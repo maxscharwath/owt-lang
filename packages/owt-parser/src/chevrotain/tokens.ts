@@ -37,18 +37,19 @@ export const StringLiteral = createToken({
   pattern: /'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"/
 });
 
-export const ExportKw = createToken({ name: 'ExportKw', pattern: /export/ });
-export const ComponentKw = createToken({ name: 'ComponentKw', pattern: /component/ });
-export const VarKw = createToken({ name: 'VarKw', pattern: /var/ });
-export const ValKw = createToken({ name: 'ValKw', pattern: /val/ });
-export const IfKw = createToken({ name: 'IfKw', pattern: /if/ });
-export const ElseKw = createToken({ name: 'ElseKw', pattern: /else/ });
-export const ForKw = createToken({ name: 'ForKw', pattern: /for/ });
-export const EmptyKw = createToken({ name: 'EmptyKw', pattern: /empty/ });
-export const SwitchKw = createToken({ name: 'SwitchKw', pattern: /switch/ });
-export const CaseKw = createToken({ name: 'CaseKw', pattern: /case/ });
-export const DefaultKw = createToken({ name: 'DefaultKw', pattern: /default/ });
-export const SlotKw = createToken({ name: 'SlotKw', pattern: /slot/ });
+export const ExportKw = createToken({ name: 'ExportKw', pattern: /\bexport\b/ });
+export const ComponentKw = createToken({ name: 'ComponentKw', pattern: /\bcomponent\b/ });
+export const VarKw = createToken({ name: 'VarKw', pattern: /\bvar\b/ });
+export const ValKw = createToken({ name: 'ValKw', pattern: /\bval\b/ });
+export const FunctionKw = createToken({ name: 'FunctionKw', pattern: /\bfunction\b/ });
+export const IfKw = createToken({ name: 'IfKw', pattern: /\bif\b/ });
+export const ElseKw = createToken({ name: 'ElseKw', pattern: /\belse\b/ });
+export const ForKw = createToken({ name: 'ForKw', pattern: /\bfor\b/ });
+export const EmptyKw = createToken({ name: 'EmptyKw', pattern: /\bempty\b/ });
+export const SwitchKw = createToken({ name: 'SwitchKw', pattern: /\bswitch\b/ });
+export const CaseKw = createToken({ name: 'CaseKw', pattern: /\bcase\b/ });
+export const DefaultKw = createToken({ name: 'DefaultKw', pattern: /\bdefault\b/ });
+export const SlotKw = createToken({ name: 'SlotKw', pattern: /\bslot\b/ });
 
 export const Identifier = createToken({ name: 'Identifier', pattern: /[A-Za-z_][\w\-]*/ });
 
@@ -63,7 +64,8 @@ export const AllTokens = [
   LBrace, RBrace, LParen, RParen, LBracket, RBracket,
   Comma, Dot, Plus, Minus, Star, Percent, Bang, Amp, PipeTok, Question, Backtick,
   StringLiteral, NumberLiteral,
-  ExportKw, ComponentKw, VarKw, ValKw, IfKw, ElseKw, ForKw, EmptyKw, SwitchKw, CaseKw, DefaultKw, SlotKw,
+  // Keywords must come before Identifier to be matched
+  ExportKw, ComponentKw, VarKw, ValKw, FunctionKw, IfKw, ElseKw, ForKw, EmptyKw, SwitchKw, CaseKw, DefaultKw, SlotKw,
   Identifier
 ];
 

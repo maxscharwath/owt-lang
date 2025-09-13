@@ -1,4 +1,4 @@
-import type { ElseBranch, Expr, ForBlock, IfBlock, IfBranch, Node, ValDecl, VarDecl } from '@owt/ast';
+import type { ElseBranch, Expr, ForBlock, FunctionDecl, IfBlock, IfBranch, Node, ValDecl, VarDecl } from '@owt/ast';
 import { Reader, emitBetween } from './reader.js';
 import { locFrom, pos } from './loc.js';
 import { readParensExpr } from './expr.js';
@@ -94,6 +94,68 @@ export function parseVarVal(r: Reader): VarDecl | ValDecl {
     if (!init) throw new Error('val requires initializer');
     return { type: 'ValDecl', name: nameTok.image, init: init as any, loc: locFrom(start as any, r.peek() as any) } as ValDecl;
   }
+}
+
+export function parseFunctionDecl(r: Reader): FunctionDecl {
+  const start = r.next(); // 'function'
+  const nameTok = r.next();
+  if ((nameTok.tokenType?.name ?? '') !== 'Identifier') throw new Error('Expected function name');
+  
+  // Parse parameters with type annotations
+  r.next(); // '('
+  let depth = 0;
+  let paramsCode = '';
+  while (!r.eof()) {
+    const t = r.peek();
+    if (depth === 0 && t.tokenType?.name === 'RParen') break;
+    const x = r.next();
+    if (x.tokenType?.name === 'LParen' || x.tokenType?.name === 'LBrace' || x.tokenType?.name === 'LBracket') depth++;
+    if (x.tokenType?.name === 'RParen' || x.tokenType?.name === 'RBrace' || x.tokenType?.name === 'RBracket') depth = Math.max(0, depth - 1);
+    paramsCode += emitBetween(paramsCode, x);
+  }
+  r.next(); // ')'
+  
+  // Parse return type (optional)
+  let returnType: string | undefined = undefined;
+  if (r.match('Colon')) {
+    r.next(); // ':'
+    let returnDepth = 0;
+    let code = '';
+    while (!r.eof()) {
+      const t = r.peek();
+      if (returnDepth === 0 && (t.tokenType?.name === 'LBrace' || t.tokenType?.name === 'Semicolon')) break;
+      const x = r.next();
+      if (x.tokenType?.name === 'LParen' || x.tokenType?.name === 'LBrace' || x.tokenType?.name === 'LBracket') returnDepth++;
+      if (x.tokenType?.name === 'RParen' || x.tokenType?.name === 'RBrace' || x.tokenType?.name === 'RBracket') returnDepth = Math.max(0, returnDepth - 1);
+      code += emitBetween(code, x);
+    }
+    returnType = code.trim();
+  }
+  
+  // Parse function body
+  r.next(); // '{'
+  let bodyDepth = 0;
+  let bodyCode = '';
+  while (!r.eof()) {
+    const t = r.peek();
+    if (bodyDepth === 0 && t.tokenType?.name === 'RBrace') break;
+    const x = r.next();
+    if (x.tokenType?.name === 'LParen' || x.tokenType?.name === 'LBrace' || x.tokenType?.name === 'LBracket') bodyDepth++;
+    if (x.tokenType?.name === 'RParen' || x.tokenType?.name === 'RBrace' || x.tokenType?.name === 'RBracket') bodyDepth = Math.max(0, bodyDepth - 1);
+    bodyCode += emitBetween(bodyCode, x);
+  }
+  const end = r.next(); // '}'
+  
+  const body: Expr = { type: 'Expr', code: bodyCode.trim(), loc: locFrom(start as any, end as any) } as any;
+  
+  return {
+    type: 'FunctionDecl',
+    name: nameTok.image,
+    params: paramsCode.trim(),
+    returnType,
+    body,
+    loc: locFrom(start as any, end as any)
+  } as FunctionDecl;
 }
 
 // no stub needed; parser.ts provides the callback when invoking parseIfBlock/parseForBlock

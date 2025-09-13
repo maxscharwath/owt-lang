@@ -24,7 +24,17 @@ export function emitBetween(prev: string, tok: Tok): string {
   const s = tok.image ?? '';
   if (!prev) return s;
   const a = prev.charAt(prev.length - 1);
-  if (isWord(tok) && /[A-Za-z0-9_\]\)\}]/.test(a)) return ' ' + s;
+  
+  // Don't add space for property access chains (e.g., e.target.value)
+  const prevWasDot = a === '.';
+  const currentIsDot = tok.tokenType?.name === 'Dot';
+  const isPropertyAccess = prevWasDot || currentIsDot;
+  
+  // Only add space if it's a word token after another word token, and it's not property access
+  if (isWord(tok) && /[A-Za-z0-9_\]\)\}]/.test(a) && !isPropertyAccess) {
+    return ' ' + s;
+  }
+  
   return s;
 }
 

@@ -91,6 +91,14 @@ export type ValDecl = BaseNode & {
   init: Expr; // required
 };
 
+export type FunctionDecl = BaseNode & {
+  type: 'FunctionDecl';
+  name: string;
+  params: string; // serialized TS parameter list
+  returnType?: string; // serialized TS return type
+  body: Expr; // function body as expression
+};
+
 export type IfBranch = BaseNode & {
   type: 'IfBranch';
   test: Expr;
@@ -148,6 +156,7 @@ export type Node =
   | Element
   | VarDecl
   | ValDecl
+  | FunctionDecl
   | IfBlock
   | ForBlock
   | SlotPlaceholder

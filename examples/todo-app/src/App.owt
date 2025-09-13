@@ -1,0 +1,118 @@
+type Todo = {
+  id: string;
+  text: string;
+  completed: boolean;
+}
+
+export component App() {
+  var todos: Todo[] = [
+    { id: '1', text: 'Learn OWT language', completed: false },
+    { id: '2', text: 'Build a todo app', completed: false },
+    { id: '3', text: 'Style with Tailwind CSS', completed: true }
+  ];
+  var newTodoText: string = '';
+
+  val completedCount = todos.filter(todo => todo.completed).length;
+
+  function addTodo() {
+    console.log(newTodoText);
+    if (newTodoText.trim()) {
+      todos = [...todos, {
+        id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+        text: newTodoText.trim(),
+        completed: false
+      }];
+      console.log(todos);
+      newTodoText = '';
+    }
+  }
+
+  function toggleTodo(todoId) {
+    todos = todos.map(t => 
+      t.id === todoId ? { ...t, completed: !t.completed } : t
+    );
+  }
+
+  function deleteTodo(todoId) {
+    todos = todos.filter(t => t.id !== todoId);
+  }
+
+  function clearCompleted() {
+    todos = todos.filter(todo => !todo.completed);
+  }
+
+  <div class="min-h-screen bg-gray-100 py-8 px-4">
+    <div class="max-w-2xl mx-auto">
+      <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">OWT Todo App</h1>
+        <p class="text-gray-600">Built with OWT language and Tailwind CSS 4.1</p>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="mb-6">
+          <div class="flex gap-2">
+            <input
+              type="text"
+              placeholder="What needs to be done?"
+              class="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
+              value={newTodoText}
+              onInput={(e) => newTodoText = e.target.value}
+              onKeyDown={(e) => e.key === 'Enter' && addTodo()}
+            />
+            <button
+              onClick={addTodo}
+              class="px-6 py-2 bg-blue-600 text-white rounded-lg"
+            >
+              Add Todo
+            </button>
+          </div>
+        </div>
+        
+        <div class="space-y-2">
+          for (todo of todos) {
+            <div class="flex items-center gap-3 p-3 bg-white rounded border hover:shadow-md">
+              <input
+                type="checkbox"
+                checked={todo.completed}
+                onChange={() => toggleTodo(todo.id)}
+                class="w-4 h-4"
+              />
+              
+              <span class={todo.completed ? 'flex-1 line-through text-gray-500' : 'flex-1 text-gray-900'}>
+                {todo.text}
+              </span>
+              
+              <button
+                onClick={() => deleteTodo(todo.id)}
+                class="px-2 py-1 text-sm text-red-600 hover:bg-red-50 rounded"
+              >
+                Delete
+              </button>
+            </div>
+          } empty {
+            <div class="text-center py-8 text-gray-500">
+              <p>No todos yet! Add one above to get started!</p>
+            </div>
+          }
+        </div>
+
+        if (completedCount > 0) {
+          <div class="mt-6 pt-4 border-t">
+            <button
+              onClick={clearCompleted}
+              class="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded"
+            >
+              Clear Completed ({completedCount})
+            </button>
+          </div>
+        }
+      </div>
+
+      <div class="mt-8 text-center text-sm text-gray-500">
+        <p>Type in the input field and click Add Todo</p>
+        <p>Click checkbox to toggle completion</p>
+        <p>Click delete to remove todos</p>
+      </div>
+    </div>
+  </div>
+}

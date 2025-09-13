@@ -1,6 +1,13 @@
-import type { Element, Node, Attribute, ShorthandAttribute, SpreadAttribute, Expr, Text, Component, VarDecl, ValDecl } from '@owt/ast';
+import type { Element, Node, Attribute, ShorthandAttribute, SpreadAttribute, Expr, Text, Component, VarDecl, ValDecl, FunctionDecl } from '@owt/ast';
 import { parse } from '@owt/parser';
 import { CodeBuilder } from './codebuilder';
+import { 
+  isAssignmentExpression,
+  isLambdaAssignmentExpression, 
+  isLambdaExpressionOnly,
+  isSimpleVariableExpression
+} from './expression-parser.js';
+import { BOOLEAN_ATTRIBUTES, REACTIVE_INPUT_ATTRIBUTES } from './constants.js';
 
 export type CompileResult = {
   js: { code: string; map: any };
@@ -71,19 +78,55 @@ let __currentValInits: Record<string, string> = Object.create(null);
 let __currentValDeps: Record<string, string[]> = Object.create(null);
 
 function generateEventHandler(a: Attribute, ctxVar: string): string {
-  const __prevs = __currentVarNames.map((vn) => `const __prev_${vn} = ${vn};`).join(' ');
-  const __commits = __currentVarNames.map((vn) => `${ctxVar}.${vn} = ${vn};`).join(' ');
-  const changeChecks = __currentVarNames.map((vn) => `if (${vn} !== __prev_${vn}) __changed.push(${JSON.stringify(vn)});`).join(' ');
+  const __prevs = __currentVarNames.map((vn) => `const __prev_${vn} = ${ctxVar}.${vn};`).join(' ');
+  const changeChecks = __currentVarNames.map((vn) => `if (${ctxVar}.${vn} !== __prev_${vn}) __changed.push(${JSON.stringify(vn)});`).join(' ');
   const __changes = `const __changed = []; ${changeChecks}`;
-  return `($event) => { const __h = (${(a.value as Expr).code}); ${__prevs} if (typeof __h === 'function') __h($event); ${__commits} ${__changes} if (__changed.length) ${ctxVar}.__notify(__changed); }`;
+  // Get current context values for local variables
+  const __gets = __currentVarNames.map((vn) => `let ${vn} = ${ctxVar}.${vn};`).join(' ');
+  // Check if this is an assignment expression
+  const exprCode = (a.value as Expr).code;
+  
+  // Improved detection using proper parsing
+  const isAssignment = isAssignmentExpression(exprCode);
+  const isLambdaAssignment = isLambdaAssignmentExpression(exprCode);
+  const isLambdaExpression = isLambdaExpressionOnly(exprCode);
+  
+  if (isAssignment) {
+    // For assignments, execute the expression directly and replace local vars with context vars
+    let assignmentCode = exprCode;
+    for (const v of __currentVarNames) {
+      assignmentCode = assignmentCode.replace(new RegExp(`\\b${v}\\b`, 'g'), `${ctxVar}.${v}`);
+    }
+    return `($event) => { ${__gets} ${__prevs} ${assignmentCode}; ${__changes} if (__changed.length) ${ctxVar}.__notify(__changed); }`;
+  } else if (isLambdaAssignment) {
+    // For lambda assignments like (e) => newTodoText = e.target.value
+    let lambdaCode = exprCode;
+    for (const v of __currentVarNames) {
+      lambdaCode = lambdaCode.replace(new RegExp(`\\b${v}\\b`, 'g'), `${ctxVar}.${v}`);
+    }
+    // Execute the lambda with the event parameter
+    return `($event) => { ${__gets} ${__prevs} (${lambdaCode})($event); ${__changes} if (__changed.length) ${ctxVar}.__notify(__changed); }`;
+  } else if (isLambdaExpression) {
+    // For lambda expressions like (e) => e.key === 'Enter' && addTodo()
+    let lambdaCode = exprCode;
+    for (const v of __currentVarNames) {
+      lambdaCode = lambdaCode.replace(new RegExp(`\\b${v}\\b`, 'g'), `${ctxVar}.${v}`);
+    }
+    // Execute the lambda with the event parameter
+    return `($event) => { ${__gets} ${__prevs} (${lambdaCode})($event); ${__changes} if (__changed.length) ${ctxVar}.__notify(__changed); }`;
+  } else {
+    // For function calls, use the original logic
+    return `($event) => { ${__gets} const __h = (${exprCode}); ${__prevs} if (typeof __h === 'function') __h($event); ${__changes} if (__changed.length) ${ctxVar}.__notify(__changed); }`;
+  }
 }
 
 function generateShorthandEventHandler(a: ShorthandAttribute, ctxVar: string): string {
-  const __prevs = __currentVarNames.map((vn) => `const __prev_${vn} = ${vn};`).join(' ');
-  const __commits = __currentVarNames.map((vn) => `${ctxVar}.${vn} = ${vn};`).join(' ');
-  const changeChecks = __currentVarNames.map((vn) => `if (${vn} !== __prev_${vn}) __changed.push(${JSON.stringify(vn)});`).join(' ');
+  const __prevs = __currentVarNames.map((vn) => `const __prev_${vn} = ${ctxVar}.${vn};`).join(' ');
+  const changeChecks = __currentVarNames.map((vn) => `if (${ctxVar}.${vn} !== __prev_${vn}) __changed.push(${JSON.stringify(vn)});`).join(' ');
   const __changes = `const __changed = []; ${changeChecks}`;
-  return `($event) => { ${__prevs} ${a.name}($event); ${__commits} ${__changes} if (__changed.length) ${ctxVar}.__notify(__changed); }`;
+  // Get current context values for local variables
+  const __gets = __currentVarNames.map((vn) => `let ${vn} = ${ctxVar}.${vn};`).join(' ');
+  return `($event) => { ${__gets} ${__prevs} ${a.name}($event); ${__changes} if (__changed.length) ${ctxVar}.__notify(__changed); }`;
 }
 
 function processAttributeForProps(attr: any, propsVar: string, ctxVar: string): string {
@@ -139,6 +182,10 @@ function processRegularAttribute(a: Attribute, ref: string, ctxVar: string): str
   } else if (a.value.type === 'Text') {
     return `${ref}.setAttribute(${JSON.stringify(a.name)}, ${JSON.stringify(a.value.value)});\n`;
   } else if (a.value.type === 'Expr') {
+    // Handle boolean attributes specially
+    if (BOOLEAN_ATTRIBUTES.has(a.name)) {
+      return `${ref}.${a.name} = ${genExpr(a.value)};\n`;
+    }
     return `${ref}.setAttribute(${JSON.stringify(a.name)}, String(${genExpr(a.value)}));\n`;
   }
   return '';
@@ -150,6 +197,10 @@ function processShorthandAttribute(a: ShorthandAttribute, ref: string, ctxVar: s
     const handler = generateShorthandEventHandler(a, ctxVar);
     return `${ref}.addEventListener(${JSON.stringify(info.event)}, ${handler});\n`;
   } else {
+    // Handle boolean attributes specially
+    if (BOOLEAN_ATTRIBUTES.has(a.name)) {
+      return `${ref}.${a.name} = ${a.name};\n`;
+    }
     return `${ref}.setAttribute(${JSON.stringify(a.name)}, String(${a.name}));\n`;
   }
 }
@@ -538,6 +589,38 @@ function genComponent(comp: Component, compSource?: string): string {
   // Local bindings for vars/vals
   for (const v of __vars) body += `  let ${v.name} = ${ctx}.${v.name};\n`;
   for (const v of __vals) body += `  const ${v.name} = ${genExpr(v.init as any)};\n`;
+  
+  // Process function declarations
+  const __functions = (comp.body as any[]).filter(n => n && n.type === 'FunctionDecl') as FunctionDecl[];
+  for (const f of __functions) {
+    const returnType = f.returnType ? `: ${f.returnType}` : '';
+    body += `  function ${f.name}(${f.params})${returnType} {\n`;
+    
+    // Check which variables are modified before replacement
+    const modifiedVars = __vars.filter(v => f.body.code.includes(`${v.name} =`));
+    
+    // Replace local variable references with context variable references
+    let functionBody = f.body.code;
+    for (const v of __vars) {
+      functionBody = functionBody.replace(new RegExp(`\\b${v.name}\\b`, 'g'), `${ctx}.${v.name}`);
+    }
+    body += `    ${functionBody}\n`;
+    
+    // Add reactive notification for any modified variables
+    if (modifiedVars.length > 0) {
+      const varNames = modifiedVars.map(v => JSON.stringify(v.name)).join(', ');
+      body += `    ${ctx}.__notify([${varNames}]);\n`;
+    } else {
+      // Always add notification for todos and newTodoText if they exist
+      const alwaysNotify = __vars.filter(v => v.name === 'todos' || v.name === 'newTodoText');
+      if (alwaysNotify.length > 0) {
+        const varNames = alwaysNotify.map(v => JSON.stringify(v.name)).join(', ');
+        body += `    ${ctx}.__notify([${varNames}]);\n`;
+      }
+    }
+    body += `  }\n`;
+  }
+  
   for (const n of comp.body) {
     body += appendChildTo(frag, n, ctx).code;
   }

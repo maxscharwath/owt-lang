@@ -5,7 +5,7 @@ import { OwtLexer } from './tokens.js';
 import { Reader } from './reader.js';
 import { locFrom } from './loc.js';
 import { readBracesExpr } from './expr.js';
-import { parseIfBlock as parseIfBlk, parseForBlock as parseForBlk, parseVarVal } from './statements.js';
+import { parseIfBlock as parseIfBlk, parseForBlock as parseForBlk, parseVarVal, parseFunctionDecl } from './statements.js';
 import { readTextRun as readTextTuple } from './text.js';
 import { parseElement as parseEl } from './elements.js';
 import { parseComponent as parseComp } from './components.js';
@@ -27,6 +27,7 @@ function parseStatementOrNode(r: Reader): Node | null {
   const t = r.peek();
   const nm = t.tokenType?.name ?? '';
   if (nm === 'VarKw' || nm === 'ValKw') return parseVarVal(r);
+  if (nm === 'FunctionKw') return parseFunctionDecl(r);
   if (nm === 'Lt') return parseEl(r, parseStatementOrNode);
   if (nm === 'LBrace') return readBracesExpr(r);
   if (nm === 'IfKw') return parseIfBlk(r, parseStatementOrNode);
