@@ -96,84 +96,94 @@ export function activate(context: vscode.ExtensionContext) {
   const diag = vscode.languages.createDiagnosticCollection('owt');
   context.subscriptions.push(diag);
 
+  function maskBlockComment(s: string, out: string[], i: number, n: number): number {
+    const start = i;
+    i += 2;
+    while (i < n && !(s[i] === '*' && i + 1 < n && s[i + 1] === '/')) i++;
+    i = Math.min(n, i + 2);
+    for (let k = start; k < i; k++) out[k] = " ";
+    return i;
+  }
+
+  function maskLineComment(s: string, out: string[], i: number, n: number): number {
+    const start = i;
+    i += 2;
+    while (i < n && s[i] !== '\n') i++;
+    for (let k = start; k < i; k++) out[k] = " ";
+    return i;
+  }
+
+  function maskString(s: string, out: string[], i: number, n: number): number {
+    const quote = s[i];
+    const start = i;
+    i++;
+    let esc = false;
+    while (i < n) {
+      const c = s[i];
+      if (esc) { esc = false; i++; continue; }
+      if (c === '\\') { esc = true; i++; continue; }
+      if (c === quote) { i++; break; }
+      i++;
+    }
+    for (let k = start; k < i; k++) out[k] = " ";
+    return i;
+  }
+
+  function maskBraces(s: string, out: string[], i: number, n: number): number {
+    const start = i;
+    let depth = 1;
+    i++;
+    while (i < n && depth > 0) {
+      const c = s[i];
+      const c2 = i + 1 < n ? s[i + 1] : '';
+      if (c === '"' || c === "'" || c === '`') {
+        // skip string inside
+        i = maskString(s, out, i, n);
+        continue;
+      }
+      if (c === '/' && c2 === '*') {
+        // skip block comment inside
+        i = maskBlockComment(s, out, i, n);
+        continue;
+      }
+      if (c === '{') { depth++; i++; continue; }
+      if (c === '}') { depth--; i++; continue; }
+      i++;
+    }
+    for (let k = start; k < i; k++) out[k] = " ";
+    return i;
+  }
+
   function maskStringsAndCommentsAndBraces(input: string): string {
     const s = input;
     const out: string[] = s.split("");
     let i = 0;
     const n = s.length;
-    function maskRange(a: number, b: number) {
-      for (let k = a; k < b; k++) out[k] = " ";
-    }
+    
     while (i < n) {
       const ch = s[i];
       const next = i + 1 < n ? s[i + 1] : '';
+      
       // Block comment /* ... */
       if (ch === '/' && next === '*') {
-        const start = i;
-        i += 2;
-        while (i < n && !(s[i] === '*' && i + 1 < n && s[i + 1] === '/')) i++;
-        i = Math.min(n, i + 2);
-        maskRange(start, i);
+        i = maskBlockComment(s, out, i, n);
         continue;
       }
+      
       // Line comment // ... (not in spec, but safe to mask)
       if (ch === '/' && next === '/') {
-        const start = i;
-        i += 2;
-        while (i < n && s[i] !== '\n') i++;
-        maskRange(start, i);
+        i = maskLineComment(s, out, i, n);
         continue;
       }
+      
       // Strings
       if (ch === '"' || ch === "'" || ch === '`') {
-        const quote = ch;
-        const start = i;
-        i++;
-        let esc = false;
-        while (i < n) {
-          const c = s[i];
-          if (esc) { esc = false; i++; continue; }
-          if (c === '\\') { esc = true; i++; continue; }
-          if (c === quote) { i++; break; }
-          i++;
-        }
-        maskRange(start, i);
+        i = maskString(s, out, i, n);
         continue;
       }
       // Balanced braces: mask contents including braces to avoid tag regex inside TS
       if (ch === '{') {
-        const start = i;
-        let depth = 1;
-        i++;
-        while (i < n && depth > 0) {
-          const c = s[i];
-          const c2 = i + 1 < n ? s[i + 1] : '';
-          if (c === '"' || c === "'" || c === '`') {
-            // skip string inside
-            const q = c;
-            i++;
-            let esc = false;
-            while (i < n) {
-              const d = s[i];
-              if (esc) { esc = false; i++; continue; }
-              if (d === '\\') { esc = true; i++; continue; }
-              if (d === q) { i++; break; }
-              i++;
-            }
-            continue;
-          }
-          if (c === '/' && c2 === '*') {
-            // skip block comment inside
-            i += 2;
-            while (i < n && !(s[i] === '*' && i + 1 < n && s[i + 1] === '/')) i++;
-            i = Math.min(n, i + 2);
-            continue;
-          }
-          if (c === '{') { depth++; i++; continue; }
-          if (c === '}') { depth--; i++; continue; }
-          i++;
-        }
-        maskRange(start, i);
+        i = maskBraces(s, out, i, n);
         continue;
       }
       i++;
@@ -422,11 +432,9 @@ export function activate(context: vscode.ExtensionContext) {
               const c = src[j];
               if (c === '"' || c === '\'') {
                 const q = c; 
-                j++;
                 for (; j < n; j++) { 
                   const d = src[j]; 
                   if (d === '\\') { 
-                    j++; 
                     continue; 
                   } 
                   if (d === q) { 
@@ -440,11 +448,9 @@ export function activate(context: vscode.ExtensionContext) {
                 }
               } else if (c === '>' ) {
                 selfClose = j - 1 >= 0 && src[j - 1] === '/';
-                j++;
                 break;
               }
             }
-            inTag = false;
             if (!selfClose && name) tagStack.push(name);
             i = j;
             continue;
@@ -561,7 +567,7 @@ export function activate(context: vscode.ExtensionContext) {
     const valNames = new Set<string>();
     let m: RegExpExecArray | null;
     while ((m = valDeclRe.exec(noComments))) {
-      valNames.add(m[1]);
+      valNames.add(m[1] || '');
     }
 
     // For each val, find illegal writes: name =, name +=, ++name, name++
@@ -663,7 +669,7 @@ export function activate(context: vscode.ExtensionContext) {
         for (; i < text.length; i++) {
           const ch = text[i];
           if (ch === '(') depth++;
-          else if (ch === ')') { depth--; if (depth === 0) { i++; break; } }
+          else if (ch === ')') { depth--; if (depth === 0) { break; } }
         }
         const lbraceIdx = text.indexOf('{', i);
         if (lbraceIdx < 0) continue;
@@ -672,7 +678,7 @@ export function activate(context: vscode.ExtensionContext) {
         for (; j < text.length; j++) {
           const ch = text[j];
           if (ch === '{') bdepth++;
-          else if (ch === '}') { bdepth--; if (bdepth === 0) { j++; break; } }
+          else if (ch === '}') { bdepth--; if (bdepth === 0) { break; } }
         }
         const startPos = doc.positionAt(m.index);
         const endPos = doc.positionAt(j);
