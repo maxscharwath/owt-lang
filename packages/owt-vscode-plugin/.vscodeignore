@@ -1,0 +1,22 @@
+# Exclude development-only files from the VSIX
+.git/**
+.github/**
+.vscode/**
+src/**
+tsconfig.json
+tsconfig.*.json
+**/*.ts
+**/*.map
+*.log
+**/__tests__/**
+**/tests/**
+
+# Keep built output and language assets
+!dist/extension.js
+!language-configuration.json
+!snippets/**
+!syntaxes/**
+!README.md
+!readme.md
+!LICENSE
+!package.json

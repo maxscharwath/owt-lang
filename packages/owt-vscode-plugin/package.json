@@ -1,0 +1,61 @@
+{
+  "name": "owt-vscode-plugin",
+  "displayName": "OWT Language Support",
+  "description": "Syntax highlighting, IntelliSense, and diagnostics for .owt files",
+  "version": "0.0.1",
+  "publisher": "owt",
+  "private": true,
+  "license": "UNLICENSED",
+  "engines": {
+    "vscode": "^1.89.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "main": "dist/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "owt",
+        "aliases": [
+          "OWT",
+          "owt"
+        ],
+        "extensions": [
+          ".owt"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "owt",
+        "scopeName": "source.owt",
+        "path": "./syntaxes/owt.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "owt",
+        "path": "./snippets/owt.code-snippets"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "rimraf dist && esbuild src/extension.ts --bundle --platform=node --format=cjs --external:vscode --external:typescript --sourcemap --outfile=dist/extension.js",
+    "watch": "esbuild src/extension.ts --bundle --platform=node --format=cjs --external:vscode --external:typescript --sourcemap --outfile=dist/extension.js --watch",
+    "package": "vsce package",
+    "vscode:prepublish": "node scripts/copy-typescript.js"
+  },
+  "dependencies": {
+    "typescript": "^5.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.3",
+    "@types/vscode": "^1.89.0",
+    "@vscode/vsce": "^3.6.0",
+    "esbuild": "^0.25.9",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.4.0"
+  }
+}

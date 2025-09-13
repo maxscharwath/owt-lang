@@ -1,1 +1,1 @@
-export * from './compile.ts';
+export * from './compile.js';

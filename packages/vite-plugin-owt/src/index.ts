@@ -36,8 +36,10 @@ export function owt(opts: OwtPluginOptions = {}): Plugin {
       return null;
     },
     async transform(code, id) {
-      if (!id.endsWith('.owt')) return null;
-      const filename = id.startsWith(root) ? id.slice(root.length) : id;
+      // Normalize Vite query suffixes like ?import, ?v=, etc.
+      const baseId = id.split('?')[0]!;
+      if (!baseId.endsWith('.owt')) return null;
+      const filename = baseId.startsWith(root) ? baseId.slice(root.length) : baseId;
       const start = Date.now();
       if (debug) log(`transform start ${filename}`);
       try {

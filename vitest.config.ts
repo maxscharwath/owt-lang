@@ -1,7 +1,8 @@
 import { defineConfig } from 'vitest/config';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 
-const r = (p: string) => fileURLToPath(new URL(p, import.meta.url));
+const __dirname = process.cwd();
+const r = (p: string) => resolve(__dirname, p);
 
 export default defineConfig({
   test: {

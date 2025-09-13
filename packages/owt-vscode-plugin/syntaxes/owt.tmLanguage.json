@@ -1,0 +1,148 @@
+{
+  "name": "OWT",
+  "scopeName": "source.owt",
+  "patterns": [
+    { "include": "#strings" },
+    { "include": "#keywords" },
+    { "include": "#tags" },
+    { "include": "#embedded-ts" }
+  ],
+  "repository": {
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [{ "match": "\\.", "name": "constant.character.escape" }]
+        },
+        {
+          "name": "string.quoted.single",
+          "begin": "'",
+          "end": "'",
+          "patterns": [{ "match": "\\.", "name": "constant.character.escape" }]
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control",
+          "match": "\\b(if|else|for|empty|switch|case|default|await|of|rev)\\b"
+        },
+        {
+          "name": "storage.type",
+          "match": "\\b(var|val)\\b"
+        },
+        {
+          "name": "keyword.declaration",
+          "match": "\\b(export|component|slot)\\b"
+        },
+        {
+          "name": "meta.type.annotation",
+          "begin": "\\b(var|val)\\s+([A-Za-z_][\\w-]*)\\s*:",
+          "beginCaptures": {
+            "1": { "name": "storage.type" },
+            "2": { "name": "variable.other" }
+          },
+          "end": "(?==|;|\\)|\\{|\\n)",
+          "patterns": [ { "include": "source.ts" } ]
+        },
+        {
+          "name": "meta.declaration.plain",
+          "match": "\\b(var|val)\\s+([A-Za-z_][\\w-]*)\\b(?=\\s*=)",
+          "captures": {
+            "1": { "name": "storage.type" },
+            "2": { "name": "variable.other" }
+          }
+        },
+        {
+          "name": "meta.component.signature",
+          "begin": "\\bcomponent\\b\\s+[A-Za-z_][\\w-]*\\s*\\(",
+          "beginCaptures": { "0": { "name": "storage.type" } },
+          "end": "\\)",
+          "patterns": [ { "include": "source.ts" } ]
+        }
+      ]
+    },
+    "tags": {
+      "patterns": [
+        {
+          "name": "meta.tag.style",
+          "begin": "<style(?:\\s[^>]*)?>",
+          "beginCaptures": { "0": { "name": "entity.name.tag" } },
+          "end": "</style>",
+          "endCaptures": { "0": { "name": "entity.name.tag" } },
+          "patterns": [ { "include": "source.css" } ]
+        },
+        {
+          "name": "meta.tag",
+          "begin": "<(/)?([A-Za-z][\\w-]*)",
+          "beginCaptures": {
+            "1": { "name": "punctuation.definition.tag.begin" },
+            "2": { "name": "entity.name.tag" }
+          },
+          "end": "/>|>",
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.tag.end" }
+          },
+          "patterns": [
+            { "include": "#attributes" },
+            { "include": "#embedded-ts-attr" }
+          ]
+        },
+        {
+          "name": "meta.tag",
+          "match": "(</)([A-Za-z][\\w-]*)(>)",
+          "captures": {
+            "1": { "name": "punctuation.definition.tag.begin" },
+            "2": { "name": "entity.name.tag" },
+            "3": { "name": "punctuation.definition.tag.end" }
+          }
+        }
+      ]
+    },
+    "attributes": {
+      "patterns": [
+        {
+          "name": "entity.other.attribute-name",
+          "match": "[A-Za-z_][\\w-]*"
+        },
+        {
+          "name": "keyword.operator.assignment",
+          "match": "="
+        },
+        { "include": "#strings" }
+      ]
+    },
+    "embedded-ts": {
+      "patterns": [
+        {
+          "name": "meta.embedded.block.ts",
+          "begin": "\\{",
+          "beginCaptures": { "0": { "name": "punctuation.section.embedded.begin" } },
+          "end": "\\}",
+          "endCaptures": { "0": { "name": "punctuation.section.embedded.end" } },
+          "patterns": [ { "include": "source.ts" } ]
+        }
+      ]
+    },
+    "embedded-ts-attr": {
+      "patterns": [
+        {
+          "name": "meta.embedded.block.ts",
+          "begin": "=\\{",
+          "beginCaptures": {
+            "0": { "name": "punctuation.section.embedded.begin" }
+          },
+          "end": "\\}",
+          "endCaptures": {
+            "0": { "name": "punctuation.section.embedded.end" }
+          },
+          "patterns": [ { "include": "source.ts" } ]
+        }
+      ]
+    }
+  },
+  "uuid": "b3b35094-2ab5-45f3-9b37-owt-00000001"
+}

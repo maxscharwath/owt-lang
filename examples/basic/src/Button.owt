@@ -1,0 +1,10 @@
+type Props = {
+  text: string;
+  onClick: () => void;
+}
+
+export component Button({onClick, text}: Props) {
+  <button {onClick}>
+    {text}
+  </button>
+}

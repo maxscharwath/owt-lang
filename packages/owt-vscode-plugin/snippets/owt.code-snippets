@@ -1,0 +1,63 @@
+{
+  "Component": {
+    "prefix": ["component", "owt-component"],
+    "body": [
+      "export component ${1:App}(${2:props}: ${3:{}}) {",
+      "  ${0}",
+      "}"
+    ],
+    "description": "Create an OWT component"
+  },
+  "var": {
+    "prefix": ["var"],
+    "body": ["var ${1:name}${2:: ${3:type}} = ${0:value};"],
+    "description": "Reactive var"
+  },
+  "val": {
+    "prefix": ["val"],
+    "body": ["val ${1:name}${2:: ${3:type}} = ${0:expr};"],
+    "description": "Derived val"
+  },
+  "if-else": {
+    "prefix": ["if"],
+    "body": [
+      "if (${1:condition}) {",
+      "  ${2}",
+      "} else {",
+      "  ${0}",
+      "}"
+    ],
+    "description": "If/else block"
+  },
+  "for-empty": {
+    "prefix": ["for"],
+    "body": [
+      "for (${1:item} of ${2:iterable}${3:, meta}) {",
+      "  ${4}",
+      "} empty {",
+      "  ${0}",
+      "}"
+    ],
+    "description": "for ... empty block"
+  },
+  "switch": {
+    "prefix": ["switch"],
+    "body": [
+      "switch (${1:expr}) {",
+      "  case ${2:pattern} {",
+      "    ${3}",
+      "  }",
+      "  default {",
+      "    ${0}",
+      "  }",
+      "}"
+    ],
+    "description": "switch with cases"
+  },
+  "slot-placeholder": {
+    "prefix": ["slot"],
+    "body": ["<slot name=\"${1:name}\" />"],
+    "description": "Slot placeholder"
+  }
+}
+

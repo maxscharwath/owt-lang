@@ -1,15 +1,23 @@
+import { Button } from './Button.owt';
 export component App(props: { title: string }) {
   var count: number = 5;
+  val x = 2;
+  val computed: number = count * x + 1;
 
   <div>
     <h1>{props.title}</h1>
 
     <div>
-      <button onClick={() => console.log(count++)}>test</button>
-      <button onClick={() => count++}>+</button>
-      <button onClick={() => count = Math.max(0, count - 1)}>-</button>
+      <Button onClick={() => count++} text="Increment" />
+      <Button onClick={() => count = Math.max(0, count - 1)} text="Decrement" />
       <p>Count: {count}</p>
     </div>
+
+    <p>{computed}</p>
+
+    if (count % 2 == 0) {
+      <Button onClick={() => count+=2} text="Increment by 2" />
+    }
 
     if (count > 0) {
       <p>There are items:</p>

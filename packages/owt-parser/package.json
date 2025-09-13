@@ -13,6 +13,7 @@
   },
   "scripts": {},
   "dependencies": {
-    "@owt/ast": "workspace:*"
+    "@owt/ast": "workspace:*",
+    "chevrotain": "^11.0.3"
   }
 }
