@@ -1,0 +1,20 @@
+{
+  "name": "owt-lang",
+  "private": true,
+  "version": "0.1.0",
+  "description": "OWT language compiler, runtime, and Vite plugin",
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "build": "pnpm --filter owt build && pnpm --filter @owt/vite build && pnpm --filter ./examples/* build",
+    "clean": "pnpm --filter owt clean && pnpm --filter @owt/vite clean && pnpm --filter ./examples/* clean",
+    "lint": "eslint . --ext .ts,.tsx,.js || true",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.3",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.4.0",
+    "vitest": "^3.2.4"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "owt-example-basic",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx node_modules/vite/bin/vite.js",
+    "build": "tsx node_modules/vite/bin/vite.js build",
+    "preview": "tsx node_modules/vite/bin/vite.js preview"
+  },
+  "devDependencies": {
+    "@owt/vite": "workspace:*",
+    "@tailwindcss/vite": "^4.0.0",
+    "tsx": "^4.16.2",
+    "typescript": "^5.4.0",
+    "vite": "^5.0.0"
+  },
+  "dependencies": {
+    "owt": "workspace:*"
+  }
+}

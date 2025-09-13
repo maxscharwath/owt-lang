@@ -1,0 +1,37 @@
+export component App(props: { title: string }) {
+  var count: number = 5;
+
+  <div>
+    <h1>{props.title}</h1>
+
+    <div>
+      <button onClick={() => count++}>+</button>
+      <button onClick={() => count = Math.max(0, count - 1)}>-</button>
+      <p>Count: {count}</p>
+    </div>
+
+    if (count > 0) {
+      <p>There are items:</p>
+    } else {
+      <p>No items</p>
+    }
+
+    <h3>loop</h3>
+    <ul>
+      for (i of 1..count) {
+        <li>Item {i}</li>
+      } empty {
+        <li>No items</li>
+      }
+    </ul>
+    
+    <h3>loop rev</h3>
+    <ul>
+      for (i of rev 1..count) {
+        <li>Item {i}</li>
+      } empty {
+        <li>No items</li>
+      }
+    </ul>
+  </div>
+}

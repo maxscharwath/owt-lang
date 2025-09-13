@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "preserve",
+    "allowJs": true,
+    "strict": true,
+    "baseUrl": "../../",
+    "paths": {
+      "owt": ["packages/owt/src/index.ts"],
+      "owt/*": ["packages/owt/src/*"]
+    }
+  },
+  "include": ["src"]
+}
