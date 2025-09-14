@@ -7,6 +7,7 @@ This repo contains an initial, typed implementation of the OWT toolchain:
 - Runtime: `packages/owt-runtime` (mounting + types)
 - Vite Plugin: `packages/vite-plugin-owt`
 - Feature Docs: `features/*`
+ - Language Spec: `spec.md`
 
 Usage (local dev)
 - Install deps: `pnpm i`
@@ -43,6 +44,5 @@ mount(App, { props: { title: 'Hello' }, target: document.getElementById('root')!
 ```
 
 Notes
-- Initial compiler does a full component re-render after event handlers. This keeps behavior correct while we build finer-grained reactive updates.
-- See `features/*` for status and design notes.
-
+- Fine-grained updates are implemented for common cases: text nodes bound to simple `var`/`val`, selected attributes (e.g. `value`, `textContent`, boolean attributes), and control blocks. Event handlers detect changed `var`s and notify only the affected bindings.
+- See `features/*` and `spec.md` for current behavior and plans.

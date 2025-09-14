@@ -98,12 +98,7 @@ function parseElementChild(r: Reader, element: Element, parseStatementOrNode: (r
   
   const textRun = readTextTuple(r);
   if (textRun) {
-    let value = textRun.value;
-    // If this text run follows a non-text sibling and begins with a word, prefix a space
-    const prev = element.children[element.children.length - 1] as any | undefined;
-    if (prev && prev.type !== 'Text' && /^[A-Za-z0-9]/.test(value)) {
-      value = ' ' + value;
-    }
+    const value = textRun.value;
     element.children.push({ type: 'Text', value, loc: locFrom(textRun.start as any, textRun.end as any) } as Text);
   }
   return false;

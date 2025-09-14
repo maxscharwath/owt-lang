@@ -3,7 +3,7 @@ import type { IToken } from 'chevrotain';
 export type Tok = IToken;
 
 export class Reader {
-  constructor(public tokens: Tok[], public comments: Tok[] = []) {}
+  constructor(public tokens: Tok[], public comments: Tok[] = [], public source?: string) {}
   i = 0;
   eof(): boolean { return this.i >= this.tokens.length; }
   peek(offset = 0): Tok {

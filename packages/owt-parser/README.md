@@ -8,9 +8,9 @@ Design goals:
   - export component declarations
   - HTML-like elements with attributes (static, `{expr}`, `{...spread}`, `{shorthand}`)
   - text and `{expr}` nodes
-  - `var` / `val` statements
-  - basic control flow: `if/else if/else`, `for (..., meta) ... empty {}`
-  - `<style>` extraction
+  - `var` / `val` statements and local `function` declarations
+  - control flow: `if/else if/else`, `for (item of expr, meta) ... empty {}`
+    - meta identifier or destructuring pattern
+  - `<style>` block recognition
 
 Out of scope (initial): pattern `switch`, async `for await`.
-

@@ -7,6 +7,9 @@ Pipeline (initial):
 - Generate TS code + optional CSS string
 
 Notes:
-- Initial implementation re-renders the component on any event handler execution. This keeps reactivity simple while maintaining correct behavior for `val` recomputation.
-- Future: finer-grained updates via dependency tracking for `var`/`val` and node-level updates.
-
+- Fine-grained updates:
+  - Text nodes bound to simple `var`/`val` update in place via subscriptions.
+  - Selected attributes (`value`, `textContent`, and boolean attrs) update as properties.
+  - `if` / `for` regions re-render when local `var`s change.
+- Event handlers: assignment/lambda/function handlers are supported; changed `var`s are detected and notified.
+- Future: expand reactive coverage (more attributes, diffing in lists, slot content), CSS emission/scope.

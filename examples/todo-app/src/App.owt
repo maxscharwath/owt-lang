@@ -18,14 +18,12 @@ export component App() {
   val completedCount = todos.filter(todo => todo.completed).length;
 
   function addTodo() {
-    console.log(newTodoText);
     if (newTodoText.trim()) {
       todos = [...todos, {
         id: Date.now().toString(36) + Math.random().toString(36).substr(2),
         text: newTodoText.trim(),
         completed: false
       }];
-      console.log(todos);
       newTodoText = '';
     }
   }

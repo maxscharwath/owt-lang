@@ -1,242 +1,152 @@
 # OWT Language Specification
 
-Version: Draft-0.4  
-Status: Work-in-progress  
+Version: Draft-0.6
+Status: Work-in-progress
 
----
+Overview
+- Goal: compact, typed, reactive UI language that compiles to TypeScript + tiny runtime helpers.
+- Files: `.owt` may include regular ES imports at top; they are passed through to output.
+- Core ideas: two state keywords (`var`, `val`), HTML-like markup, and plain TypeScript expressions.
 
-## Overview
+Components
+- Declare: `export component Name(<param>) { ... }`
+- Props typing: parameter may include full TypeScript type annotations. The compiler preserves the signature in the generated function type.
+- Destructuring: you can destructure the single `props` parameter in the signature for convenience.
+  - Examples:
+    - `export component Button(props: { text: string, onClick: () => void }) { ... }`
+    - `export component Button({ text, onClick }: { text: string; onClick: () => void }) { ... }`
+    - Reserved identifiers like `class` are supported; they are safely re-bound internally.
+- Component usage: capitalized tags are treated as component invocations: `<Button text="Ok" />`.
 
-OWT is a modern reactive UI language and compiler designed for simplicity, strong typing, and efficient rendering.  
-It compiles `.owt` files into highly optimized TypeScript + runtime calls.
+State: var / val
+- `var name [: Type]? = Expr?;`
+  - Writable reactive state that persists across renders.
+  - Restriction: a `var` initializer may not reference other `var`s; use `val` for derived state.
+- `val name [: Type]? = Expr;`
+  - Read-only binding. If its initializer reads `var`s, it becomes a reactive “computed” that updates when those `var`s change.
+- Semicolons are optional in practice; the parser accepts either style.
 
-**Design principles:**
-- Minimal keywords (`var`, `val`).
-- Full TypeScript type support in component signatures and variables.
-- Reactive-by-default: any `var` or `val` change re-renders only the affected component.
-- Clean, modern syntax with no JSX/React complexity.
-- Small compiled output optimized for fine-grained updates.
+Reactivity Model
+- Text nodes: `{x}` where `x` is a simple `var` or `val` becomes reactive and updates in place.
+- Attributes:
+  - Static: `href="/"` sets a literal attribute.
+  - Expression: `value={expr}` is evaluated; select attributes are bound reactively as properties:
+    - Inputs: `value`, `textContent` update when their source changes.
+    - Boolean attributes (e.g. `disabled`, `checked`) are set as properties.
+  - Shorthand: `{onClick}` or `{disabled}` means “use current binding by name”.
+  - Spread: `{...props}` merges an object of attributes/props.
+- Events: attributes beginning with `onX` attach listeners (`onClick`, `onInput`, ...). The compiler:
+  - Executes the handler (assignment, lambda, or function reference).
+  - Detects which `var`s changed and notifies subscribers, updating only affected DOM parts.
+  - For shorthand events, the variable is assumed to be a callable.
 
----
+Control Flow
+- If / else-if / else:
+  - `if (cond) { ... } else if (cond2) { ... } else { ... }`
+  - Re-evaluated when any local `var` changes.
+- For-of with optional empty:
+  - `for (item of Expr [, meta]) { ... } empty { ... }`
+  - `meta` is either an identifier (e.g., `meta`) or a destructuring pattern `{ index, first, last, even, odd }`.
+  - Ranges: `a..b` produces an inclusive sequence of integers from `a` to `b`.
+  - Reverse iteration: `for (i of rev 1..10) { ... }` or `for (x of rev items) { ... }`.
+  - The compiler computes `meta.index`, `meta.first`, `meta.last`, `meta.even`, `meta.odd` for each iteration.
 
-## 1. Components
+Elements and Components
+- Lowercase tag names produce DOM elements. Uppercase tag names invoke components.
+- Attributes support static, expression, shorthand, and spread forms.
+- Self-closing tags are supported: `<input />`.
+- Closing tags must match and are validated.
 
-Defined with `component` keyword.
+Slots
+- Placeholders: `<slot name="header" />` is parsed to mark slot positions inside a component.
+- Passing slot content from parents is not yet wired into codegen. Planned: `slot(name) { ... }` blocks.
 
+Styles
+- `<style> ... </style>` blocks inside components are recognized. Emission and scoping are not yet implemented.
+
+Functions
+- You may declare local functions in a component: `function add() { ... }`.
+- The compiler rewrites references so that reads/writes to local `var`s go through the component context and notify dependents when changed.
+
+Errors and Limitations
+- Mismatched closing tags throw a compile-time error.
+- `switch`/pattern matching and `for await` are not implemented yet (tokens exist but grammar/codegen are pending).
+- Default parameter values in component signatures are parsed but not applied to `props` yet.
+
+Grammar (EBNF)
+Note: `TsExpr`, `TsType`, and `Param` are delegated to TypeScript’s grammar; the parser captures them as raw strings.
+
+Program        ::= { ImportStmt | ComponentDecl | Comment }
+ImportStmt     ::= ES import line (passed through)
+Comment        ::= LineComment | BlockComment
+
+ComponentDecl  ::= ["export"] "component" Identifier "(" [ Param ] ")" Block
+Param          ::= Identifier
+                 | Pattern [":" TsType]
+                 | Identifier [":" TsType] ["=" TsExpr]
+
+Block          ::= "{" { Statement | Node } "}"
+
+Statement      ::= VarDecl | ValDecl | IfBlock | ForBlock | FunctionDecl
+
+VarDecl        ::= "var" Identifier [":" TsType] ["=" TsExpr] [";"]
+ValDecl        ::= "val" Identifier [":" TsType] "=" TsExpr [";"]
+
+FunctionDecl   ::= "function" Identifier "(" Params? ")" [":" TsType] "{" TsExpr "}"
+Params         ::= any Ts parameter list (raw)
+
+IfBlock        ::= "if" "(" TsExpr ")" Block { "else" "if" "(" TsExpr ")" Block } [ "else" Block ]
+
+ForBlock       ::= "for" "(" Identifier "of" TsExpr [ "," ( Identifier | "{" IdentList "}" ) ] ")" Block [ "empty" Block ]
+IdentList      ::= Identifier { "," Identifier }
+// Semantics: TsExpr may start with the modifier `rev` and may include range literals `a..b`.
+
+Node           ::= Element | Text | Expr
+Element        ::= "<" TagName { Attribute } [ "/" ] ">" { Node | IfBlock | ForBlock } "</" TagName ">"
+                 | "<" TagName { Attribute } "/>"
+TagName        ::= Identifier | "slot"
+Attribute      ::= Identifier ["=" ( StringLiteral | "{" TsExpr "}" )]
+                 | "{" Identifier "}"
+                 | "{" "..." TsExpr "}"
+
+Expr           ::= "{" TsExpr "}"
+Text           ::= any text until a markup or control token
+
+Tokens (lexical)
+- Keywords: `export`, `component`, `var`, `val`, `function`, `if`, `else`, `for`, `empty`.
+- Punctuators: `< > / = : ; { } ( ) [ ] , . + - * % ! & | ?` and string/number literals.
+- Additional tokens (not yet used): `switch`, `case`, `default`.
+
+Examples
+- Component with state and events:
 ```owt
-export component Button(props: { text: string, onClick: () => void }) {
-  <button onClick={props.onClick}>
-    {props.text}
-  </button>
+export component Counter() {
+  var count = 0;
+  val doubled = count * 2;
+
+  <div>
+    <p>Count: {count} (×2 = {doubled})</p>
+    <button onClick={() => count++}>+</button>
+    <button onClick={() => count = 0}>Reset</button>
+  </div>
 }
 ```
 
-Usage:
-
-```owt
-export component App() {
-  <Button text="Click me" onClick={() => console.log("Clicked!")} />
-}
-```
-
-- Props are fully typed.
-- Shorthand props supported:  
-  `<div {onClick}>{text}</div>`
-- Object spread supported:  
-  `<div {...props}>{text}</div>`
-
----
-
-## 2. Reactive State
-
-OWT uses **two keywords only**: `var` and `val`.
-
-### 2.1 `var`
-
-- Writable **reactive signal**.
-- Persists across renders.
-- Cannot depend on another `var` in its initializer.
-
-```owt
-var counter = 0
-var title: string = "Hello"
-```
-
-Mutations trigger re-render:
-
-```owt
-<button onClick={() => counter++}>+</button>
-<button onClick={() => counter = 0}>Reset</button>
-```
-
-### 2.2 `val`
-
-- Read-only binding: static constant or **reactive derived constant**.
-- If initializer does not read any `var`: static constant.
-- If initializer reads `var`s: computed value, auto-tracks dependencies.
-
-```owt
-var counter = 0
-var step = 2
-val doubled = counter * step   // recomputes when counter or step changes
-```
-
-**Note:** `val` is never writable.  
-If you need mutable state, use `var`.
-
----
-
-## 3. Expressions and Interpolation
-
-- Curly braces embed expressions inside HTML.
-- TypeScript expressions are valid.
-
-```owt
-<h1>{title}</h1>
-<p>Counter: {counter}</p>
-<p>Doubled: {doubled}</p>
-```
-
----
-
-## 4. Control Flow
-
-### 4.1 `if / else if / else`
-
-```owt
-if (count > 0) {
-  <p>Positive</p>
-} else if (count < 0) {
-  <p>Negative</p>
-} else {
-  <p>Zero</p>
-}
-```
-
-### 4.2 `for ... empty`
-
-- Iterates arrays, ranges, and generators.
-- Provides **meta** object for scoped loop variables:  
-  `{ index, first, last, even, odd }`.
-
+- For with meta destructuring and reverse range:
 ```owt
 <ul>
-  for (todo of todos, meta) {
-    <li>
-      {meta.index}: {todo.text}
-      {meta.first ? "(first)" : ""}
-      {meta.odd ? "odd" : "even"}
-    </li>
+  for (i of rev 1..10, { index, first, last }) {
+    <li>{index + 1}: {i} {first ? '(first)' : ''} {last ? '(last)' : ''}</li>
   } empty {
     <li>No items</li>
   }
 </ul>
 ```
 
-- OWT introduces a **range literal** using `start..end`.
-- Produces an inclusive range from `start` up to `end`.
-- If `start > end`, the range is considered empty.
-- The `rev` keyword modifier can be used directly in the `for (x of ...)` loop to iterate backwards over arrays or ranges.
+Tooling
+- Vite plugin: transforms `.owt` files and injects a lightweight dev logger in dev mode.
+- Runtime exports: `mount`, `range`, `rev`, `toArray`, and types like `LoopMeta`.
 
-```owt
-<ul>
-  for (i of 0..10, meta) {
-    <li>{meta.index + 1}. {i}</li>
-  }
-</ul>
-
-<ul>
-  for (i of rev 1..10, meta) {
-    <li>{meta.index + 1}. {i}</li>
-  }
-</ul>
-
-<ul>
-  for (item of rev todos, meta) {
-    <li>{meta.index}: {item.text}</li>
-  }
-</ul>
-```
-
-- The above produces numbers `0` through `10`.  
-- The `rev` modifier reverses the iteration order.  
-- Works seamlessly with `meta` properties like `first`, `last`, etc.
-
----
-
-### 4.3 `switch` with pattern matching
-
-- Type-safe.
-- Supports literal cases, conditions, and destructuring.
-
-```owt
-switch (status) {
-  case "loading" {
-    <p>Loading...</p>
-  }
-  case "error" if (err.code === 500) {
-    <p>Server error</p>
-  }
-  case { kind: "ok", value } {
-    <p>Value: {value}</p>
-  }
-  default {
-    <p>Unknown</p>
-  }
-}
-```
-
----
-
-## 5. Slots / Children
-
-- A component can define **slot placeholders**.
-- Parent passes children into slots.
-
-### Define slots
-
-```owt
-component Card() {
-  <div class="card">
-    <slot name="header" />
-    <div class="body">
-      <slot />
-    </div>
-    <slot name="footer" />
-  </div>
-}
-```
-
-### Use slots
-
-```owt
-<Card>
-  slot(header) { <h1>Title</h1> }
-  <p>Main content here</p>
-  slot(footer) { <button>OK</button> }
-</Card>
-```
-
-Rules:
-- Default slot: unnamed.
-- Named slots: `slot(name)`.
-
----
-
-## 6. Async Support
-
-- Async expressions supported.
-- `for await` for streaming.
-
-```owt
-val data = await fetchData()
-
-<ul>
-  for await (item of stream, meta) {
-    <li>{meta.index}: {item}</li>
-  }
-</ul>
-```
 
 ---
 

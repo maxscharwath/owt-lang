@@ -1,8 +1,9 @@
 Types
 
 Support
-- TypeScript in component prop signatures is preserved in the compiled output function signature, ensuring full type-checking.
+- Full TypeScript in component prop signatures is preserved in the generated output, enabling type-checking.
+- Type annotations on `var`/`val` and function return types are accepted and preserved where relevant.
+- Type-only imports are stripped from the output JavaScript by the Vite plugin.
 
 Planned
-- Static analysis of `var`/`val` and expression type info to optimize updates and enable editor tooling.
-
+- Deeper static analysis of `var`/`val` dependencies and expression types for improved editor tooling and optimizations.

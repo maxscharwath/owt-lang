@@ -1,9 +1,9 @@
 Styles
 
 Current
-- `<style>` blocks are recognized during parsing but not yet emitted. CSS scoping will be added in a follow-up.
+- `<style>` blocks inside components are recognized by the parser.
+- Emission and scoping are not yet implemented in codegen.
 
 Planned
-- Hash-based scoping per component: rewrite selectors to `[data-owt-<hash>] ...` and apply attribute to component root.
+- Hash-based scoping per component: rewrite selectors to `[data-owt-<hash>] ...` and apply attribute to the component root.
 - Virtual CSS module emission via the Vite plugin.
-

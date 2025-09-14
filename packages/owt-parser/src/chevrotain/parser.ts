@@ -51,7 +51,7 @@ export function parseChevrotain(source: string, opts: ParseOptions = {}): Progra
   }
   if (debug) log(`lex done (tokens=${lex.tokens.length})`);
   const comments = lex.groups?.comments ?? [];
-  const r = new Reader(lex.tokens, comments);
+  const r = new Reader(lex.tokens, comments, source);
   const program = parseProgram(r, parseStatementOrNode);
   if (debug) log(`parse done (components=${program.body.length})`);
   return program;

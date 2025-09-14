@@ -1,0 +1,40 @@
+; OWT Language Grammar (EBNF)
+; Note: TsExpr, TsType, and Params are captured as raw TypeScript text by the parser.
+
+Program        ::= { ImportStmt | ComponentDecl | Comment }
+ImportStmt     ::= ES import line (passed through)
+Comment        ::= LineComment | BlockComment
+
+ComponentDecl  ::= ["export"] "component" Identifier "(" [ Param ] ")" Block
+Param          ::= Identifier
+                 | Pattern [":" TsType]
+                 | Identifier [":" TsType] ["=" TsExpr]
+
+Block          ::= "{" { Statement | Node } "}"
+
+Statement      ::= VarDecl | ValDecl | IfBlock | ForBlock | FunctionDecl
+
+VarDecl        ::= "var" Identifier [":" TsType] ["=" TsExpr] [";"]
+ValDecl        ::= "val" Identifier [":" TsType] "=" TsExpr [";"]
+
+FunctionDecl   ::= "function" Identifier "(" Params? ")" [":" TsType] "{" TsExpr "}"
+
+IfBlock        ::= "if" "(" TsExpr ")" Block
+                   { "else" "if" "(" TsExpr ")" Block }
+                   [ "else" Block ]
+
+ForBlock       ::= "for" "(" Identifier "of" TsExpr [ "," ( Identifier | "{" IdentList "}" ) ] ")" Block
+                   [ "empty" Block ]
+IdentList      ::= Identifier { "," Identifier }
+
+Node           ::= Element | Text | Expr
+Element        ::= "<" TagName { Attribute } [ "/" ] ">" { Node | IfBlock | ForBlock } "</" TagName ">"
+                 | "<" TagName { Attribute } "/>"
+TagName        ::= Identifier | "slot"
+Attribute      ::= Identifier ["=" ( StringLiteral | "{" TsExpr "}" )]
+                 | "{" Identifier "}"
+                 | "{" "..." TsExpr "}"
+
+Expr           ::= "{" TsExpr "}"
+Text           ::= any text until a markup or control token
+
