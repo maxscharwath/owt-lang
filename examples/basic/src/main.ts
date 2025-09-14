@@ -1,4 +1,4 @@
-import { mount } from 'owt';
+import { mount } from 'owt/dom';
 import { App } from './App.owt';
 
 mount(App, {
