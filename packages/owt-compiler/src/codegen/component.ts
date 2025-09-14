@@ -112,7 +112,7 @@ export function extractComponentParams(comp: Component, compSource: string): { d
 
 export function generateComponentBody(comp: Component, compSource: string, ctx: string, frag: string): { body: string; paramMapping: Record<string, string> } {
   let body = `function render() {\n`;
-  body += `  const ${frag} = document.createDocumentFragment();\n`;
+  body += `  const ${frag} = __rt.df();\n`;
   body += `  const props = ${ctx}.props;\n`;
   const { destructuringPattern, paramMapping } = extractComponentParams(comp, compSource);
   
@@ -144,7 +144,8 @@ export function isReservedKeyword(name: string): boolean {
 }
 
 export function generateContextObject(ctx: string, compName: string): string {
-  return `const ${ctx} = { props, __root: null, __update: () => {}, __subs: Object.create(null), __notify: (names) => { try { devLog('notify', { component: ${JSON.stringify(compName)}, names }); } catch {} const __ran = new Set(); for (const n of names || []) { const arr = (${ctx}.__subs[n] || []); for (const fn of arr) { if (__ran.has(fn)) continue; __ran.add(fn); try { fn(); } catch {} } } } };\n`;
+  return `const ${ctx} = { props, __root: null, __update: () => {}, __subs: Object.create(null), __notify: (names) => { try { __rt.devLog('notify', { component: ${JSON.stringify(compName)}, names }); } catch {} const __ran = new Set(); for (const n of names || []) { const arr = (${ctx}.__subs[n] || []); for (const fn of arr) { if (__ran.has(fn)) continue; __ran.add(fn); try { fn(); } catch {} } } } };
+`;
 }
 
 export function processComponentDeclarations(comp: Component, compSource?: string) {
@@ -239,14 +240,14 @@ export function genComponent(comp: Component, compSource?: string): string {
     const __commits = __vars.map(v => `${ctx}.${v.name} = ${v.name};`).join(' ');
     body += `  ${__commits}\n`;
     const varMappings = __vars.map(v => `${v.name}: ${v.name}`).join(', ');
-    body += `  devLog('commit', { component: ${JSON.stringify(comp.name)}, vars: { ${varMappings} } });\n`;
+    body += `  __rt.devLog('commit', { component: ${JSON.stringify(comp.name)}, vars: { ${varMappings} } });\n`;
   }
   body += `  return ${frag};\n`;
   body += `}\n`;
   body += `return {\n`;
-  body += `  mount(target) { ${ctx}.__root = render(); target.appendChild(${ctx}.__root); devLog('mount', { component: ${JSON.stringify(comp.name)} }); },\n`;
-  body += `  update() { devLog('update:start', { component: ${JSON.stringify(comp.name)} }); ${ctx}.__update(); devLog('update:end', { component: ${JSON.stringify(comp.name)} }); },\n`;
-  body += `  destroy() { try { devLog('destroy', { component: ${JSON.stringify(comp.name)} }); } catch {} if (${ctx}.__root && ${ctx}.__root.parentNode) { ${ctx}.__root.parentNode.removeChild(${ctx}.__root); } }\n`;
+  body += `  mount(target) { ${ctx}.__root = render(); target.appendChild(${ctx}.__root); __rt.devLog('mount', { component: ${JSON.stringify(comp.name)} }); },\n`;
+  body += `  update() { __rt.devLog('update:start', { component: ${JSON.stringify(comp.name)} }); ${ctx}.__update(); __rt.devLog('update:end', { component: ${JSON.stringify(comp.name)} }); },\n`;
+  body += `  destroy() { try { __rt.devLog('destroy', { component: ${JSON.stringify(comp.name)} }); } catch {} if (${ctx}.__root && ${ctx}.__root.parentNode) { ${ctx}.__root.parentNode.removeChild(${ctx}.__root); } }\n`;
   body += `};\n`;
   const out = `${comp.export ? 'export ' : ''}function ${comp.name}(props) {\n${body}}\n`;
   return out;

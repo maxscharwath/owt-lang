@@ -64,8 +64,7 @@ function parseForHeader(input: string): { item: string; iterable: string; metaId
       return {
         item: itemPart,
         iterable: iterablePart,
-        metaIdent: metaPart,
-        metaDestructuring: undefined
+        metaIdent: metaPart
       };
     } else {
       return null;
@@ -75,8 +74,7 @@ function parseForHeader(input: string): { item: string; iterable: string; metaId
     return {
       item: itemPart,
       iterable: afterOf,
-      metaIdent: null,
-      metaDestructuring: undefined
+      metaIdent: null
     };
   }
 }

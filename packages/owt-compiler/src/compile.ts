@@ -34,9 +34,7 @@ export function compile(source: string, filename: string, opts: CompileOptions =
     for (const l of importLines) cb.addLine(l);
   }
   
-  cb.addLine(`import { range, toArray, rev, devLog } from 'owt';`);
-  cb.addLine(`function __applyProps(el, props) { if (!props) return; for (const k in props) { const v = props[k]; if (k.startsWith('on') && typeof v === 'function') { const evt = k.slice(2).toLowerCase(); el.addEventListener(evt, (e) => { v(e); }); } else if (v == null) { continue; } else if (k in el) { (el)[k] = v; } else { el.setAttribute(k, String(v)); } } }`);
-  cb.addLine(`function __owtBeforeRemove(n) { try { if (!n) return; const stack = [n]; while (stack.length) { const node = stack.pop(); if (!node) continue; if (node.nodeType === 8 && (node).data === 'comp') { const inst = (node).__owtInst; if (inst && typeof inst.destroy === 'function') inst.destroy(); } let c = (node).firstChild; while (c) { stack.push(c); c = c.nextSibling; } } } catch {} }`);
+  cb.addLine(`import * as __rt from 'owt';`);
   
   // Process component nodes
   processComponentNodes(ast, source, cb);

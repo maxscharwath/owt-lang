@@ -1,7 +1,8 @@
-import { mount } from 'owt';
+import { mount, initDomHost } from 'owt/dom';
 import { App } from './App.owt';
 import './styles.css';
 
-mount(App, {
-  target: document.getElementById('app')!,
-});
+// Initialize DOM host
+initDomHost();
+
+mount(App, { props: {}, target: document.getElementById('app')! });

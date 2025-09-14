@@ -131,7 +131,7 @@ function containsLambdaAssignment(code: string): boolean {
   // Extract lambda body after => and check for '=' that is not part of '=='/'>='/'<='/'===' etc.
   const m = code.match(/=>\s*([\s\S]+)/);
   if (!m) return false;
-  const body = m[1].trim();
+  const body = m[1]?.trim() || '';
   // Remove braces if present
   const inner = body.startsWith('{') && body.endsWith('}') ? body.slice(1, -1) : body;
   // Quick check: has single '=' not followed/preceded by '='

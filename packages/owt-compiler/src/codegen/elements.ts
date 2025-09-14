@@ -15,13 +15,13 @@ export function genElement(el: Element, ctxVar: string): { code: string; ref: st
     const end = uid('cEnd');
     const { code: propsCode, propsVar } = generateComponentProps(el, ctxVar);
     let code = propsCode;
-    code += `const ${cont} = document.createDocumentFragment();\n`;
-    code += `const ${start} = document.createComment('comp');\n`;
-    code += `const ${end} = document.createComment('/comp');\n`;
-    code += `${cont}.appendChild(${start});\n`;
+    code += `const ${cont} = __rt.df();\n`;
+    code += `const ${start} = __rt.cm('comp');\n`;
+    code += `const ${end} = __rt.cm('/comp');\n`;
+    code += `__rt.ap(${cont}, ${start});\n`;
     code += `const ${inst} = ${el.name}(${propsVar});\n`;
     code += `${inst}.mount(${cont});\n`;
-    code += `${cont}.appendChild(${end});\n`;
+    code += `__rt.ap(${cont}, ${end});\n`;
     // Link instance to the start anchor so we can call destroy on unmount
     code += `${start}.__owtInst = ${inst};\n`;
     code += `${start}.__owtEnd = ${end};\n`;
@@ -31,8 +31,8 @@ export function genElement(el: Element, ctxVar: string): { code: string; ref: st
   const ref = uid('el');
   const isSVGElement = el.name.toLowerCase() === 'svg' || el.name.toLowerCase() === 'path' || el.name.toLowerCase() === 'circle' || el.name.toLowerCase() === 'rect' || el.name.toLowerCase() === 'line' || el.name.toLowerCase() === 'polygon' || el.name.toLowerCase() === 'polyline' || el.name.toLowerCase() === 'ellipse' || el.name.toLowerCase() === 'g' || el.name.toLowerCase() === 'defs' || el.name.toLowerCase() === 'use' || el.name.toLowerCase() === 'text' || el.name.toLowerCase() === 'tspan' || el.name.toLowerCase() === 'textPath' || el.name.toLowerCase() === 'image' || el.name.toLowerCase() === 'foreignObject';
   let code = isSVGElement
-    ? `const ${ref} = document.createElementNS("http://www.w3.org/2000/svg", ${JSON.stringify(el.name)});\n`
-    : `const ${ref} = document.createElement(${JSON.stringify(el.name)});\n`;
+    ? `const ${ref} = __rt.ens("http://www.w3.org/2000/svg", ${JSON.stringify(el.name)});\n`
+    : `const ${ref} = __rt.e(${JSON.stringify(el.name)});\n`;
 
   code += generateElementAttributes(el, ref, ctxVar);
 
@@ -44,7 +44,7 @@ export function genElement(el: Element, ctxVar: string): { code: string; ref: st
 
 export function generateChildCode(child: Node, ref: string, ctxVar: string): string {
   if (child.type === 'Text') {
-    return `${ref}.appendChild(document.createTextNode(${JSON.stringify(child.value)}));\n`;
+    return `__rt.ap(${ref}, __rt.t(${JSON.stringify(child.value)}));\n`;
   }
   if (child.type === 'Expr') {
     const code = child.code.trim();

@@ -63,26 +63,19 @@ export function generateNotificationCode(ctxVar: string): string {
 export function generateEventHandler(options: EventHandlerOptions): string {
   const { context, ctxVar, expression, isAssignment, isLambdaAssignment, isLambdaExpression } = options;
 
-  // Unified handler wrapper: copy ctx vars to locals, invoke user handler/expression,
-  // write back locals to ctx, notify changes. No regex parsing of assignment needed.
+  // Use runtime helpers to shrink output: capPrev() and writebackNotify()
+  const depsArr = `[${context.varNames.map(v => JSON.stringify(v)).join(', ')}]`;
   const localsDecl = context.varNames.map(vn => `let ${vn} = ${ctxVar}.${vn};`).join(' ');
-  const prevDecls = context.varNames.map(vn => `const __prev_${vn} = ${ctxVar}.${vn};`).join(' ');
-  // Only write back locals that actually changed versus current ctx, so we do not
-  // clobber direct ctx mutations performed by the user handler.
   const writesBack = context.varNames
-    .map(vn => `if (${vn} !== __prev_${vn} && ${ctxVar}.${vn} === __prev_${vn}) { ${ctxVar}.${vn} = ${vn}; }`)
+    .map(vn => `if (${vn} !== __prev.${vn} && ${ctxVar}.${vn} === __prev.${vn}) { ${ctxVar}.${vn} = ${vn}; }`)
     .join(' ');
-  const changeChecks = context.varNames.map(vn => `if (${ctxVar}.${vn} !== __prev_${vn}) __changed.push(${JSON.stringify(vn)});`).join(' ');
-  const notify = `if (__changed.length) ${ctxVar}.__notify(__changed);`;
 
-  // Build callable from expression. If expression is a lambda or function, call it.
-  // Otherwise, treat it as a statement by wrapping in a lambda.
   const isCallable = isLambdaExpression || /^\s*\(?[A-Za-z_$]/.test(expression);
   const invoke = isCallable
     ? `const __h = (${expression}); if (typeof __h === 'function') __h($event);`
     : `${expression};`;
 
-  return `($event) => { const __changed = []; ${localsDecl} ${prevDecls} ${invoke} ${writesBack} ${changeChecks} ${notify} }`;
+  return `($event) => { const __prev = __rt.capPrev(${ctxVar}, ${depsArr}); ${localsDecl} ${invoke} ${writesBack} __rt.writebackNotify(${ctxVar}, __prev, ${depsArr}); }`;
 }
 
 /**

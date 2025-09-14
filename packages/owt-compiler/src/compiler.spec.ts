@@ -8,7 +8,7 @@ describe('compiler', () => {
     const out = compile(src, 'App.owt');
 
     expect(out.js.code).toContain('export function App');
-    expect(out.js.code).toContain('document.createElement');
+    expect(out.js.code).toContain('__rt.e(');
     expect(out.js.code).toContain('addEventListener');
   });
 
@@ -17,9 +17,8 @@ describe('compiler', () => {
     const out = compile(src, 'App.owt');
     expect(out.js.code).toContain('addEventListener("input"');
     // Avoid regex: assert presence of writeback semantics
-    expect(out.js.code.includes('typeof __h === \'' + 'function' + '\') __h($event)')).toBe(true);
-    expect(out.js.code.includes('newTodoText !== __prev_newTodoText')).toBe(true);
-    expect(out.js.code.includes('_ctx_0.newTodoText = newTodoText')).toBe(true);
+    expect(out.js.code.includes('typeof __h === ' + '\'' + 'function' + '\'' + ') __h($event)')).toBe(true);
+    expect(out.js.code.includes('writebackNotify(')).toBe(true);
   });
 
   test('generates click handler calling function reference', () => {

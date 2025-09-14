@@ -2,5 +2,6 @@
     "sonarlint.connectedMode.project": {
         "connectionId": "maxscharwath",
         "projectKey": "maxscharwath_owt-lang"
-    }
+    },
+    "vitest.disableWorkspaceWarning": true
 }

@@ -12,13 +12,28 @@ interface TestState {
 
 interface InputEventLike { target: { value: string } }
 
+function makeRtStub() {
+  return {
+    capPrev: (ctx: any, arr: string[]) => {
+      const prev: Record<string, any> = Object.create(null);
+      for (const k of arr) prev[k] = (ctx as any)[k];
+      return prev;
+    },
+    writebackNotify: (ctx: any, prev: Record<string, any>, arr: string[]) => {
+      const changed: string[] = [];
+      for (const k of arr) if ((ctx as any)[k] !== prev[k]) changed.push(k);
+      if (changed.length) (ctx as any).__notify?.(changed);
+    },
+  };
+}
+
 function runHandler(code: string, state: TestState, event: InputEventLike) {
   // Attach runtime fields directly on the same object so writebacks hit it
   (state as any).__subs = Object.create(null);
   (state as any).__notify = () => {};
   (state as any).props = {};
   // eslint-disable-next-line no-new-func
-  const fn = new Function('_ctx', 'return ' + code)(state);
+  const fn = new Function('_ctx','__rt','return ' + code)(state, makeRtStub());
   fn(event);
   return state;
 }
@@ -58,7 +73,7 @@ describe('event handler writeback', () => {
     state.__notify = () => {};
     state.props = {};
     // eslint-disable-next-line no-new-func
-    const fn = new Function('_ctx', 'onInput', 'return ' + handler)(state, onInput);
+    const fn = new Function('_ctx', '__rt', 'onInput', 'return ' + handler)(state, makeRtStub(), onInput);
     fn({ target: { value: 'xyz' } });
     expect(state.newTodoText).toBe('xyz');
   });
@@ -93,7 +108,8 @@ describe('event-handlers', () => {
     const handler = generateRegularEventHandler(attr, context, ctxVar);
 
     expect(handler).toContain('($event) =>');
-    expect(handler).toContain(`${ctxVar}.__notify`);
+    // Now routed via writebackNotify helper
+    expect(handler).toContain('writebackNotify');
   });
 
   it('generates handler for lambda expression', () => {

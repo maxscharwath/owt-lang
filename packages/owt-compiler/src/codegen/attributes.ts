@@ -99,7 +99,7 @@ export function processAttributeForElement(attr: any, ref: string, ctxVar: strin
   if ((attr as ShorthandAttribute).type === 'ShorthandAttribute') return processShorthandAttribute(attr as ShorthandAttribute, ref, ctxVar);
   if ((attr as SpreadAttribute).type === 'SpreadAttribute') {
     const a = attr as SpreadAttribute;
-    return `__applyProps(${ref}, ${genExpr(a.argument)});\n`;
+    return `__rt.applyProps(${ref}, ${genExpr(a.argument)});\n`;
   }
   return '';
 }

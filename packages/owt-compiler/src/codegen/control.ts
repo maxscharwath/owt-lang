@@ -8,23 +8,23 @@ import { toIterable } from '../utils';
 export function generateIfBlockCode(child: any, ref: string, ctxVar: string): string {
   const anchor = uid('anchor');
   const end = uid('end');
-  let code = `const ${anchor} = document.createComment("if");\n`;
-  code += `const ${end} = document.createComment("/if");\n`;
-  code += `${ref}.appendChild(${anchor});\n`;
-  code += `${ref}.appendChild(${end});\n`;
+  let code = `const ${anchor} = __rt.cm("if");\n`;
+  code += `const ${end} = __rt.cm("/if");\n`;
+  code += `__rt.ap(${ref}, ${anchor});\n`;
+  code += `__rt.ap(${ref}, ${end});\n`;
   const updater = uid('u');
   const varBindings = currentVarNames.map(v => `let ${v} = ${ctxVar}.${v};`).join(' ');
-  code += `const ${updater} = () => { const p = ${anchor}.parentNode; if (!p) return; ${varBindings} for (let n = ${anchor}.nextSibling; n && n !== ${end}; ) { const next = n.nextSibling; __owtBeforeRemove(n); p.removeChild(n); n = next; }`;
+  code += `const ${updater} = () => { const p = ${anchor}.parentNode; if (!p) return; ${varBindings} for (let n = ${anchor}.nextSibling; n && n !== ${end}; ) { const next = n.nextSibling; __rt.beforeRemove(n); p.removeChild(n); n = next; }`;
   for (const [i, br] of child.branches.entries()) {
     const frag = uid('frag');
-    code += ` if (${genExpr(br.test)}) { const ${frag} = document.createDocumentFragment();`;
+    code += ` if (${genExpr(br.test)}) { const ${frag} = __rt.df();`;
     for (const n of br.consequent) code += appendChildTo(`${frag}`, n, ctxVar).code.replace(/\n$/,'');
     code += ` p.insertBefore(${frag}, ${end}); return; }`;
     if (i < child.branches.length - 1) code += ` else`;
   }
   if (child.alternate) {
     const frag = uid('frag');
-    code += ` { const ${frag} = document.createDocumentFragment();`;
+    code += ` { const ${frag} = __rt.df();`;
     for (const n of child.alternate.consequent) code += appendChildTo(`${frag}`, n, ctxVar).code.replace(/\n$/,'');
     code += ` p.insertBefore(${frag}, ${end}); }`;
   }
@@ -37,10 +37,10 @@ export function generateIfBlockCode(child: any, ref: string, ctxVar: string): st
 export function generateForBlockCode(child: any, ref: string, ctxVar: string): string {
   const anchor = uid('for');
   const end = uid('end');
-  let code = `const ${anchor} = document.createComment("for");\n`;
-  code += `const ${end} = document.createComment("/for");\n`;
-  code += `${ref}.appendChild(${anchor});\n`;
-  code += `${ref}.appendChild(${end});\n`;
+  let code = `const ${anchor} = __rt.cm("for");\n`;
+  code += `const ${end} = __rt.cm("/for");\n`;
+  code += `__rt.ap(${ref}, ${anchor});\n`;
+  code += `__rt.ap(${ref}, ${end});\n`;
   const updater = uid('u');
   const iter = toIterable(child.iterable);
   const src = uid('src');
@@ -50,7 +50,7 @@ export function generateForBlockCode(child: any, ref: string, ctxVar: string): s
   const metaDestructuring = child.metaDestructuring;
   const varBindings = currentVarNames.map(v => `let ${v} = ${ctxVar}.${v};`).join(' ');
   const metaObj = uid('meta');
-  code += `const ${updater} = () => { const p = ${anchor}.parentNode; if (!p) return; ${varBindings} for (let n = ${anchor}.nextSibling; n && n !== ${end}; ) { const next = n.nextSibling; __owtBeforeRemove(n); p.removeChild(n); n = next; } const ${src} = (${iter}); let ${seen} = false; let ${metaObj} = {}; for (const ${itemVar} of ${src}) { ${seen} = true; const __f = document.createDocumentFragment();`;
+  code += `const ${updater} = () => { const p = ${anchor}.parentNode; if (!p) return; ${varBindings} for (let n = ${anchor}.nextSibling; n && n !== ${end}; ) { const next = n.nextSibling; __rt.beforeRemove(n); p.removeChild(n); n = next; } const ${src} = (${iter}); let ${seen} = false; let ${metaObj} = {}; for (const ${itemVar} of ${src}) { ${seen} = true; const __f = __rt.df();`;
   const indexVar = uid('index');
   const lengthVar = uid('length');
   code += `const ${indexVar} = Array.from(${src}).indexOf(${itemVar}); const ${lengthVar} = Array.from(${src}).length; ${metaObj} = { index: ${indexVar}, first: ${indexVar} === 0, last: ${indexVar} === ${lengthVar} - 1, even: ${indexVar} % 2 === 0, odd: ${indexVar} % 2 === 1 };`;
@@ -63,7 +63,7 @@ export function generateForBlockCode(child: any, ref: string, ctxVar: string): s
   for (const n of child.body) code += appendChildTo(`__f`, n, ctxVar).code.replace(/\n$/,'');
   code += ` p.insertBefore(__f, ${end}); }`;
   if (child.empty?.length) {
-    code += ` if (!${seen}) { const __e = document.createDocumentFragment();`;
+    code += ` if (!${seen}) { const __e = __rt.df();`;
     for (const n of child.empty) code += appendChildTo(`__e`, n, ctxVar).code.replace(/\n$/,'');
     code += ` p.insertBefore(__e, ${end}); }`;
   }
@@ -75,14 +75,14 @@ export function generateForBlockCode(child: any, ref: string, ctxVar: string): s
 
 export function generateIfBlockForAppend(node: any, parentRef: string, ctxVar: string): string {
   const tmp = uid('tmp');
-  let code = `const ${tmp} = document.createDocumentFragment();\n`;
+  let code = `const ${tmp} = __rt.df();\n`;
   const anchor = uid('anchor');
-  code += `const ${anchor} = document.createComment("if");\n`;
-  code += `${tmp}.appendChild(${anchor});\n`;
+  code += `const ${anchor} = __rt.cm("if");\n`;
+  code += `__rt.ap(${tmp}, ${anchor});\n`;
   for (const [i, br] of node.branches.entries()) {
     const frag = uid('frag');
     code += `if (${genExpr(br.test)}) {\n`;
-    code += `  const ${frag} = document.createDocumentFragment();\n`;
+    code += `  const ${frag} = __rt.df();\n`;
     for (const n of br.consequent) code += appendChildTo(`${frag}`, n, ctxVar).code;
     code += `  ${anchor}.parentNode?.insertBefore(${frag}, ${anchor}.nextSibling);\n`;
     code += `}\n`;
@@ -91,22 +91,22 @@ export function generateIfBlockForAppend(node: any, parentRef: string, ctxVar: s
   if (node.alternate) {
     const frag = uid('frag');
     code += `else {\n`;
-    code += `  const ${frag} = document.createDocumentFragment();\n`;
+    code += `  const ${frag} = __rt.df();\n`;
     for (const n of node.alternate.consequent) code += appendChildTo(`${frag}`, n, ctxVar).code;
     code += `  ${anchor}.parentNode?.insertBefore(${frag}, ${anchor}.nextSibling);\n`;
     code += `}\n`;
   }
-  code += `${parentRef}.appendChild(${tmp});\n`;
+  code += `__rt.ap(${parentRef}, ${tmp});\n`;
   return code;
 }
 
 export function generateForBlockForAppend(node: any, parentRef: string, ctxVar: string): string {
   const anchor = uid('for');
   const end = uid('end');
-  let code = `const ${anchor} = document.createComment("for");\n`;
-  code += `const ${end} = document.createComment("/for");\n`;
-  code += `${parentRef}.appendChild(${anchor});\n`;
-  code += `${parentRef}.appendChild(${end});\n`;
+  let code = `const ${anchor} = __rt.cm("for");\n`;
+  code += `const ${end} = __rt.cm("/for");\n`;
+  code += `__rt.ap(${parentRef}, ${anchor});\n`;
+  code += `__rt.ap(${parentRef}, ${end});\n`;
   
   const updater = uid('u');
   const iter = toIterable(node.iterable);
@@ -117,7 +117,7 @@ export function generateForBlockForAppend(node: any, parentRef: string, ctxVar: 
   const metaDestructuring = node.metaDestructuring;
   
   const varBindings = currentVarNames.map(v => `let ${v} = ${ctxVar}.${v};`).join(' ');
-  code += `const ${updater} = () => { const p = ${anchor}.parentNode; if (!p) return; ${varBindings} for (let n = ${anchor}.nextSibling; n && n !== ${end}; ) { const next = n.nextSibling; __owtBeforeRemove(n); p.removeChild(n); n = next; } const ${src} = (${iter}); let ${seen} = false; for (const ${itemVar} of ${src}) { ${seen} = true;`;
+  code += `const ${updater} = () => { const p = ${anchor}.parentNode; if (!p) return; ${varBindings} for (let n = ${anchor}.nextSibling; n && n !== ${end}; ) { const next = n.nextSibling; __rt.beforeRemove(n); p.removeChild(n); n = next; } const ${src} = (${iter}); let ${seen} = false; for (const ${itemVar} of ${src}) { ${seen} = true;`;
   
   const metaObj = uid('meta');
   const indexVar = uid('index');
@@ -132,12 +132,12 @@ export function generateForBlockForAppend(node: any, parentRef: string, ctxVar: 
   }
   
   const frag = uid('frag');
-  code += ` const ${frag} = document.createDocumentFragment();`;
+  code += ` const ${frag} = __rt.df();`;
   for (const n of node.body) code += appendChildTo(`${frag}`, n, ctxVar).code.replace(/\n$/, '');
   code += ` p.insertBefore(${frag}, ${end}); }`;
   
   if (node.empty?.length) {
-    code += ` if (!${seen}) { const ${frag} = document.createDocumentFragment();`;
+    code += ` if (!${seen}) { const ${frag} = __rt.df();`;
     for (const n of node.empty) code += appendChildTo(`${frag}`, n, ctxVar).code.replace(/\n$/, '');
     code += ` p.insertBefore(${frag}, ${end}); }`;
   }
@@ -149,12 +149,12 @@ export function generateForBlockForAppend(node: any, parentRef: string, ctxVar: 
 }
 
 export function appendChildTo(parentRef: string, node: Node, ctxVar: string): { code: string } {
-  if (node.type === 'Text') return { code: `${parentRef}.appendChild(document.createTextNode(${JSON.stringify(node.value)}));\n` };
+  if (node.type === 'Text') return { code: `__rt.ap(${parentRef}, __rt.t(${JSON.stringify(node.value)}));\n` };
   if (node.type === 'Expr') return { code: `${parentRef}.appendChild(document.createTextNode(String(${genExpr(node)})));\n` };
   if (node.type === 'VarDecl' || node.type === 'ValDecl') return { code: '' };
   if (node.type === 'Element') {
     const g = genElement(node, ctxVar);
-    return { code: `${g.code}${parentRef}.appendChild(${g.ref});\n` };
+    return { code: `${g.code}__rt.ap(${parentRef}, ${g.ref});\n` };
   }
   if (node.type === 'IfBlock') return { code: generateIfBlockForAppend(node, parentRef, ctxVar) };
   if (node.type === 'ForBlock') return { code: generateForBlockForAppend(node, parentRef, ctxVar) };
