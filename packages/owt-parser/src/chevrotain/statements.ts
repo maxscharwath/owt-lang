@@ -3,6 +3,100 @@ import { Reader, emitBetween } from './reader.js';
 import { locFrom, pos } from './loc.js';
 import { readParensExpr } from './expr.js';
 
+// Simple, secure parsing that avoids ReDoS while being maintainable
+function parseForHeader(input: string): { item: string; iterable: string; metaIdent: string | null; metaDestructuring?: string[] } | null {
+  const trimmed = input.trim();
+  
+  // Find 'of' keyword using simple string search
+  const ofIndex = trimmed.indexOf(' of ');
+  if (ofIndex === -1) return null;
+  
+  // Extract and validate item name
+  const itemPart = trimmed.substring(0, ofIndex).trim();
+  if (!isValidIdentifier(itemPart)) return null;
+  
+  // Extract the rest after 'of'
+  const afterOf = trimmed.substring(ofIndex + 4).trim();
+  if (!afterOf) return null;
+  
+  // Check for meta parameter by looking for comma at the end
+  // We need to find the comma that separates the iterable from the meta parameter
+  // This is tricky because the meta parameter might contain commas (destructuring)
+  let commaIndex = -1;
+  let braceDepth = 0;
+  
+  for (let i = 0; i < afterOf.length; i++) {
+    const char = afterOf[i];
+    if (char === '{') braceDepth++;
+    else if (char === '}') braceDepth--;
+    else if (char === ',' && braceDepth === 0) {
+      commaIndex = i;
+      break;
+    }
+  }
+  
+  if (commaIndex !== -1) {
+    // Has potential meta parameter
+    const iterablePart = afterOf.substring(0, commaIndex).trim();
+    const metaPart = afterOf.substring(commaIndex + 1).trim();
+    
+    if (!iterablePart) return null;
+    
+    // Check if meta part is destructuring pattern
+    if (metaPart.startsWith('{') && metaPart.endsWith('}')) {
+      // Destructuring pattern: { index, first, last } or {index,first,last}
+      const destructuringContent = metaPart.slice(1, -1).trim();
+      const destructuredProps = destructuringContent.split(',').map(prop => prop.trim()).filter(prop => prop);
+      
+      // Validate that all properties are valid identifiers
+      for (const prop of destructuredProps) {
+        if (!isValidIdentifier(prop)) return null;
+      }
+      
+      return {
+        item: itemPart,
+        iterable: iterablePart,
+        metaIdent: null,
+        metaDestructuring: destructuredProps
+      };
+    } else if (isValidIdentifier(metaPart)) {
+      // Simple identifier: meta
+      return {
+        item: itemPart,
+        iterable: iterablePart,
+        metaIdent: metaPart,
+        metaDestructuring: undefined
+      };
+    } else {
+      return null;
+    }
+  } else {
+    // No meta parameter
+    return {
+      item: itemPart,
+      iterable: afterOf,
+      metaIdent: null,
+      metaDestructuring: undefined
+    };
+  }
+}
+
+function isValidIdentifier(str: string): boolean {
+  if (!str || str.length === 0) return false;
+  
+  // First character must be letter, underscore, or dollar sign
+  const firstChar = str[0];
+  if (!firstChar || !/[A-Za-z_$]/.test(firstChar)) return false;
+  
+  // Rest must be word characters
+  for (let i = 1; i < str.length; i++) {
+    const char = str[i];
+    if (!char || !/[\w$]/.test(char)) return false;
+  }
+  
+  return true;
+}
+
 function parseConsequent(r: Reader, parseStatementOrNode: (r: Reader) => Node | null): { consequent: Node[]; end: any } {
   const consequent: Node[] = [];
   while (!r.match('RBrace')) {
@@ -55,11 +149,10 @@ export function parseForBlock(r: Reader, parseStatementOrNode: (r: Reader) => No
   const par = readParensExpr(r); // contains item of iterable [, meta]
   // pattern: <item> of <expr> [ , <meta> ]
   const inside = par.code.trim();
-  const m = RegExp(/^([A-Za-z_$][\w$]*)\s+of\s+(.+?)(?:\s*,\s*([A-Za-z_$][\w$]*))?$/).exec(inside);
-  if (!m) throw new Error('Invalid for(...) header');
-  const item = m[1]!;
-  const iterable: Expr = { type: 'Expr', code: (m[2] || '').trim(), loc: par.loc } as any;
-  const metaIdent = m[3] ?? null;
+  const parseResult = parseForHeader(inside);
+  if (!parseResult) throw new Error('Invalid for(...) header');
+  const { item, iterable: iterableCode, metaIdent, metaDestructuring } = parseResult;
+  const iterable: Expr = { type: 'Expr', code: iterableCode, loc: par.loc } as any;
   r.next(); // '{'
   const body: Node[] = [];
   while (!r.match('RBrace')) { const n = parseStatementOrNode(r); if (n) body.push(n); }
@@ -72,7 +165,7 @@ export function parseForBlock(r: Reader, parseStatementOrNode: (r: Reader) => No
     while (!r.match('RBrace')) { const n = parseStatementOrNode(r); if (n) empty.push(n); }
     r.next();
   }
-  return { type: 'ForBlock', item, iterable, metaIdent, body, empty, loc: locFrom(forTok, rb) } as ForBlock;
+  return { type: 'ForBlock', item, iterable, metaIdent, metaDestructuring, body, empty, loc: locFrom(forTok, rb) } as ForBlock;
 }
 
 function skipTypeAnnotation(r: Reader): void {

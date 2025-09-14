@@ -194,6 +194,10 @@ function processRegularAttribute(a: Attribute, ref: string, ctxVar: string): str
   }
   
   if (a.value.type === 'Text') {
+    // SVG attributes should be set via setAttribute to ensure correct behaviour across browsers
+    if (isSVGReadOnlyAttribute(a.name) || isSVGAttribute(a.name)) {
+      return `${ref}.setAttribute(${JSON.stringify(a.name)}, ${JSON.stringify(a.value.value)});\n`;
+    }
     return `${ref}.setAttribute(${JSON.stringify(a.name)}, ${JSON.stringify(a.value.value)});\n`;
   }
   
@@ -205,6 +209,10 @@ function processRegularAttribute(a: Attribute, ref: string, ctxVar: string): str
     // Handle reactive input attributes (value, textContent) as properties
     if (REACTIVE_INPUT_ATTRIBUTES.has(a.name)) {
       return processReactiveAttribute(a, ref, ctxVar);
+    }
+    // SVG attributes should be set via setAttribute to ensure correct behaviour across browsers
+    if (isSVGReadOnlyAttribute(a.name) || isSVGAttribute(a.name)) {
+      return `${ref}.setAttribute(${JSON.stringify(a.name)}, String(${genExpr(a.value)}));\n`;
     }
     return `${ref}.setAttribute(${JSON.stringify(a.name)}, String(${genExpr(a.value)}));\n`;
   }
@@ -218,15 +226,24 @@ function processShorthandAttribute(a: ShorthandAttribute, ref: string, ctxVar: s
     const handler = generateShorthandEventHandler(a, ctxVar);
     return `${ref}.addEventListener(${JSON.stringify(info.event)}, ${handler});\n`;
   } else {
+    // For shorthand attributes, access the specific property from the current param object
+    // Handle reserved keywords by using the mapped variable name
+    const varName = isReservedKeyword(a.name) ? `_${a.name}` : a.name;
+    const propAccess = `${varName}.${a.name}`;
+
     // Handle boolean attributes specially
     if (BOOLEAN_ATTRIBUTES.has(a.name)) {
-      return `${ref}.${a.name} = ${a.name};\n`;
+      return `${ref}.${a.name} = ${propAccess};\n`;
     }
     // Handle reactive input attributes (value, textContent) as properties
     if (REACTIVE_INPUT_ATTRIBUTES.has(a.name)) {
-      return `${ref}.${a.name} = String(${a.name});\n`;
+      return `${ref}.${a.name} = String(${propAccess});\n`;
     }
-    return `${ref}.setAttribute(${JSON.stringify(a.name)}, String(${a.name}));\n`;
+    // SVG and other attributes: default to setAttribute for robustness
+    if (isSVGReadOnlyAttribute(a.name) || isSVGAttribute(a.name)) {
+      return `${ref}.setAttribute(${JSON.stringify(a.name)}, String(${propAccess}));\n`;
+    }
+    return `${ref}.setAttribute(${JSON.stringify(a.name)}, String(${propAccess}));\n`;
   }
 }
 
@@ -322,7 +339,10 @@ function generateIfBlockCode(child: any, ref: string, ctxVar: string): string {
   code += `${ref}.appendChild(${end});\n`;
   const updater = uid('u');
   const varBindings = __currentVarNames.map(v => `let ${v} = ${ctxVar}.${v};`).join(' ');
-  code += `const ${updater} = () => { const p = ${anchor}.parentNode; if (!p) return; ${varBindings} for (let n = ${anchor}.nextSibling; n && n !== ${end}; ) { const next = n.nextSibling; p.removeChild(n); n = next; }`;
+  code += `const ${updater} = () => { const p = ${anchor}.parentNode; if (!p) return; ${varBindings} for (let n = ${anchor}.nextSibling; n && n !== ${end}; ) { const next = n.nextSibling; __owtBeforeRemove(n); p.removeChild(n); n = next; }`;
+  // NOTE: ensure we call component destroy hooks when removing nodes
+  // (handled by injected __owtBeforeRemove helper in header)
+  // The removal loop above is adjusted below in header helper usage.
   for (const [i, br] of child.branches.entries()) {
     const frag = uid('frag');
     code += ` if (${genExpr(br.test)}) { const ${frag} = document.createDocumentFragment();`;
@@ -356,8 +376,29 @@ function generateForBlockCode(child: any, ref: string, ctxVar: string): string {
   const src = uid('src');
   const seen = uid('seen');
   const itemVar = child.item;
+  const metaVar = child.metaIdent || 'meta';
+  const metaDestructuring = child.metaDestructuring;
   const varBindings = __currentVarNames.map(v => `let ${v} = ${ctxVar}.${v};`).join(' ');
-  code += `const ${updater} = () => { const p = ${anchor}.parentNode; if (!p) return; ${varBindings} for (let n = ${anchor}.nextSibling; n && n !== ${end}; ) { const next = n.nextSibling; p.removeChild(n); n = next; } const ${src} = (${iter}); let ${seen} = false; for (const ${itemVar} of ${src}) { ${seen} = true; const __f = document.createDocumentFragment();`;
+  
+  // Generate meta object with index, first, last, even, odd properties
+  const metaObj = uid('meta');
+  code += `const ${updater} = () => { const p = ${anchor}.parentNode; if (!p) return; ${varBindings} for (let n = ${anchor}.nextSibling; n && n !== ${end}; ) { const next = n.nextSibling; __owtBeforeRemove(n); p.removeChild(n); n = next; } const ${src} = (${iter}); let ${seen} = false; let ${metaObj} = {}; for (const ${itemVar} of ${src}) { ${seen} = true; const __f = document.createDocumentFragment();`;
+  
+  // Generate meta object properties
+  const indexVar = uid('index');
+  const lengthVar = uid('length');
+  code += `const ${indexVar} = Array.from(${src}).indexOf(${itemVar}); const ${lengthVar} = Array.from(${src}).length; ${metaObj} = { index: ${indexVar}, first: ${indexVar} === 0, last: ${indexVar} === ${lengthVar} - 1, even: ${indexVar} % 2 === 0, odd: ${indexVar} % 2 === 1 };`;
+  
+  // Handle destructuring or simple meta variable
+  if (metaDestructuring && metaDestructuring.length > 0) {
+    // Destructuring: { index, first, last } -> const { index, first, last } = metaObj;
+    const destructuringPattern = `{ ${metaDestructuring.join(', ')} }`;
+    code += `const ${destructuringPattern} = ${metaObj};`;
+  } else {
+    // Simple meta variable: meta
+    code += `const ${metaVar} = ${metaObj};`;
+  }
+  
   for (const n of child.body) code += appendChildTo(`__f`, n, ctxVar).code.replace(/\n$/,'');
   code += ` p.insertBefore(__f, ${end}); }`;
       if (child.empty?.length) {
@@ -409,10 +450,29 @@ function generateForBlockForAppend(node: any, parentRef: string, ctxVar: string)
   const iter = toIterable(node.iterable);
   const src = uid('src');
   const seen = uid('seen');
+  const metaVar = node.metaIdent || 'meta';
+  const metaDestructuring = node.metaDestructuring;
   code += `const ${src} = (${iter});\n`;
   code += `let ${seen} = false;\n`;
   code += `for (const ${node.item} of ${src}) {\n`;
   code += `  ${seen} = true;\n`;
+  
+  // Generate meta object properties
+  const metaObj = uid('meta');
+  const indexVar = uid('index');
+  const lengthVar = uid('length');
+  code += `  const ${indexVar} = Array.from(${src}).indexOf(${node.item}); const ${lengthVar} = Array.from(${src}).length; const ${metaObj} = { index: ${indexVar}, first: ${indexVar} === 0, last: ${indexVar} === ${lengthVar} - 1, even: ${indexVar} % 2 === 0, odd: ${indexVar} % 2 === 1 };\n`;
+  
+  // Handle destructuring or simple meta variable
+  if (metaDestructuring && metaDestructuring.length > 0) {
+    // Destructuring: { index, first, last } -> const { index, first, last } = metaObj;
+    const destructuringPattern = `{ ${metaDestructuring.join(', ')} }`;
+    code += `  const ${destructuringPattern} = ${metaObj};\n`;
+  } else {
+    // Simple meta variable: meta
+    code += `  const ${metaVar} = ${metaObj};\n`;
+  }
+  
   const frag = uid('frag');
   code += `  const ${frag} = document.createDocumentFragment();\n`;
   for (const n of node.body) code += appendChildTo(`${frag}`, n, ctxVar).code;
@@ -435,16 +495,29 @@ function genElement(el: Element, ctxVar: string): { code: string; ref: string } 
   if (/^[A-Z]/.test(el.name)) {
     const cont = uid('cont');
     const inst = uid('inst');
+    const start = uid('cStart');
+    const end = uid('cEnd');
     const { code: propsCode, propsVar } = generateComponentProps(el, ctxVar);
     let code = propsCode;
-    code += `const ${cont} = document.createElement('span');\n`;
+    code += `const ${cont} = document.createDocumentFragment();\n`;
+    code += `const ${start} = document.createComment('comp');\n`;
+    code += `const ${end} = document.createComment('/comp');\n`;
+    code += `${cont}.appendChild(${start});\n`;
     code += `const ${inst} = ${el.name}(${propsVar});\n`;
     code += `${inst}.mount(${cont});\n`;
+    code += `${cont}.appendChild(${end});\n`;
+    // Link instance to the start anchor so we can call destroy on unmount
+    code += `${start}.__owtInst = ${inst};\n`;
+    code += `${start}.__owtEnd = ${end};\n`;
     return { code, ref: cont };
   }
   
   const ref = uid('el');
-  let code = `const ${ref} = document.createElement(${JSON.stringify(el.name)});\n`;
+  // Use createElementNS for SVG elements to ensure proper namespace
+  const isSVGElement = el.name.toLowerCase() === 'svg' || el.name.toLowerCase() === 'path' || el.name.toLowerCase() === 'circle' || el.name.toLowerCase() === 'rect' || el.name.toLowerCase() === 'line' || el.name.toLowerCase() === 'polygon' || el.name.toLowerCase() === 'polyline' || el.name.toLowerCase() === 'ellipse' || el.name.toLowerCase() === 'g' || el.name.toLowerCase() === 'defs' || el.name.toLowerCase() === 'use' || el.name.toLowerCase() === 'text' || el.name.toLowerCase() === 'tspan' || el.name.toLowerCase() === 'textPath' || el.name.toLowerCase() === 'image' || el.name.toLowerCase() === 'foreignObject';
+  let code = isSVGElement 
+    ? `const ${ref} = document.createElementNS("http://www.w3.org/2000/svg", ${JSON.stringify(el.name)});\n`
+    : `const ${ref} = document.createElement(${JSON.stringify(el.name)});\n`;
   code += generateElementAttributes(el, ref, ctxVar);
 
   for (const child of el.children) {
@@ -549,16 +622,30 @@ function extractComponentParams(comp: Component, compSource: string): string | n
   try {
     const re = new RegExp(`\\bcomponent\\s+${comp.name}\\s*\\(([^)]*)\\)`);
     const mm = re.exec(compSource);
-    if (mm) {
-      const param = (mm[1] || '').trim();
-      if (param) {
-        const colon = param.indexOf(':');
-        const lhs = (colon >= 0 ? param.slice(0, colon) : param).trim();
-        if (lhs && lhs !== 'props') {
-          return lhs;
+    if (!mm) return null;
+    const param = (mm[1] || '').trim();
+    if (!param) return null;
+    // Find the colon that separates the param pattern from its type annotation,
+    // ignoring colons that appear inside nested destructuring braces/brackets/parentheses.
+    let depthCurly = 0, depthSquare = 0, depthParen = 0;
+    let typeColon = -1;
+    for (let i = 0; i < param.length; i++) {
+      const ch = param.charCodeAt(i);
+      if (ch === 123 /* { */) depthCurly++;
+      else if (ch === 125 /* } */) depthCurly = Math.max(0, depthCurly - 1);
+      else if (ch === 91 /* [ */) depthSquare++;
+      else if (ch === 93 /* ] */) depthSquare = Math.max(0, depthSquare - 1);
+      else if (ch === 40 /* ( */) depthParen++;
+      else if (ch === 41 /* ) */) depthParen = Math.max(0, depthParen - 1);
+      else if (ch === 58 /* : */) {
+        if (depthCurly === 0 && depthSquare === 0 && depthParen === 0) {
+          typeColon = i;
+          break;
         }
       }
     }
+    const lhs = (typeColon >= 0 ? param.slice(0, typeColon) : param).trim();
+    if (lhs && lhs !== 'props') return lhs;
   } catch {}
   return null;
 }
@@ -571,9 +658,50 @@ function generateComponentBody(comp: Component, compSource: string, ctx: string,
   // Prefer extracting param pattern from raw component source to preserve braces
   const paramName = extractComponentParams(comp, compSource);
   if (paramName) {
-    body += `  const ${paramName} = props;\n`;
+    // Handle reserved keywords by prefixing with underscore
+    const jsParamName = isReservedKeyword(paramName) ? `_${paramName}` : paramName;
+    body += `  const ${jsParamName} = props;\n`;
+    // Don't create a mapping for reserved keywords - just use the safe name directly
   }
   return body;
+}
+
+function isReservedKeyword(name: string): boolean {
+  const reserved = ['class', 'function', 'var', 'let', 'const', 'if', 'else', 'for', 'while', 'do', 'switch', 'case', 'default', 'break', 'continue', 'return', 'try', 'catch', 'finally', 'throw', 'new', 'this', 'typeof', 'instanceof', 'in', 'of', 'with', 'delete', 'void', 'null', 'undefined', 'true', 'false', 'NaN', 'Infinity'];
+  return reserved.includes(name);
+}
+
+function isSVGAttribute(name: string): boolean {
+  const svgAttributes = [
+    'strokeLinecap', 'strokeLinejoin', 'strokeWidth', 'fillRule',
+    'clipPath', 'mask', 'markerStart', 'markerMid', 'markerEnd', 'markerUnits',
+    'markerWidth', 'markerHeight', 'orient', 'refX', 'refY', 'markerUnits',
+    'preserveAspectRatio', 'gradientUnits', 'gradientTransform', 'spreadMethod',
+    'xlinkHref', 'xlinkTitle', 'xlinkShow', 'xlinkActuate', 'xlinkType',
+    'xlinkRole', 'xlinkArcrole', 'xlinkTitle', 'xlinkShow', 'xlinkActuate',
+    // Path and other SVG element attributes (both camelCase and kebab-case)
+    'd', 'pathLength', 'pathOffset', 'strokeDasharray', 'strokeDashoffset',
+    'strokeLinecap', 'strokeLinejoin', 'strokeMiterlimit', 'strokeOpacity',
+    'strokeWidth', 'fillOpacity', 'fillRule', 'vectorEffect', 'clipRule',
+    // Kebab-case versions
+    'stroke-linecap', 'stroke-linejoin', 'stroke-width', 'stroke-dasharray',
+    'stroke-dashoffset', 'stroke-miterlimit', 'stroke-opacity', 'fill-opacity',
+    'fill-rule', 'vector-effect', 'clip-rule', 'path-length', 'path-offset'
+  ];
+  return svgAttributes.includes(name);
+}
+
+function isSVGReadOnlyAttribute(name: string): boolean {
+  const readOnlyAttributes = [
+    'viewBox', 'preserveAspectRatio', 'gradientUnits', 'gradientTransform',
+    'spreadMethod', 'xlinkHref', 'xlinkTitle', 'xlinkShow', 'xlinkActuate',
+    'xlinkType', 'xlinkRole', 'xlinkArcrole'
+  ];
+  return readOnlyAttributes.includes(name);
+}
+
+function kebabToCamelCase(str: string): string {
+  return str.replace(/-([a-z])/g, (match, letter) => letter.toUpperCase());
 }
 
 function generateContextObject(ctx: string, compName: string): string {
@@ -680,14 +808,16 @@ function genComponent(comp: Component, compSource?: string): string {
   body += `return {\n`;
   body += `  mount(target) { ${ctx}.__root = render(); target.appendChild(${ctx}.__root); devLog('mount', { component: ${JSON.stringify(comp.name)} }); },\n`;
   body += `  update() { devLog('update:start', { component: ${JSON.stringify(comp.name)} }); ${ctx}.__update(); devLog('update:end', { component: ${JSON.stringify(comp.name)} }); },\n`;
-  body += `  destroy() { if (${ctx}.__root && ${ctx}.__root.parentNode) { ${ctx}.__root.parentNode.removeChild(${ctx}.__root); devLog('destroy', { component: ${JSON.stringify(comp.name)} }); } }\n`;
+  body += `  destroy() { try { devLog('destroy', { component: ${JSON.stringify(comp.name)} }); } catch {} if (${ctx}.__root && ${ctx}.__root.parentNode) { ${ctx}.__root.parentNode.removeChild(${ctx}.__root); } }\n`;
   body += `};\n`;
   const out = `${comp.export ? 'export ' : ''}function ${comp.name}(props) {\n${body}}\n`;
   return out;
 }
 
 function processImportLines(source: string): string[] {
-  return (source.match(/^\s*import\s+[^;\n]+;?/gm) || []);
+  const lines = (source.match(/^\s*import\s+[^;\n]+;?/gm) || []);
+  // Drop type-only imports so output remains valid JS
+  return lines.filter(l => !/^\s*import\s+type\b/.test(l));
 }
 
 function processComponentNodes(ast: any, source: string, cb: CodeBuilder): void {
@@ -736,6 +866,7 @@ export function compile(source: string, filename: string, opts: CompileOptions =
   
   cb.addLine(`import { range, toArray, rev, devLog } from 'owt';`);
   cb.addLine(`function __applyProps(el, props) { if (!props) return; for (const k in props) { const v = props[k]; if (k.startsWith('on') && typeof v === 'function') { const evt = k.slice(2).toLowerCase(); el.addEventListener(evt, (e) => { v(e); }); } else if (v == null) { continue; } else if (k in el) { (el)[k] = v; } else { el.setAttribute(k, String(v)); } } }`);
+  cb.addLine(`function __owtBeforeRemove(n) { try { if (!n) return; const stack = [n]; while (stack.length) { const node = stack.pop(); if (!node) continue; if (node.nodeType === 8 && (node).data === 'comp') { const inst = (node).__owtInst; if (inst && typeof inst.destroy === 'function') inst.destroy(); } let c = (node).firstChild; while (c) { stack.push(c); c = c.nextSibling; } } } catch {} }`);
   
   // Process component nodes
   processComponentNodes(ast, source, cb);

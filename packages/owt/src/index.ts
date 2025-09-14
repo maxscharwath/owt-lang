@@ -2,6 +2,7 @@ export {
   mount,
   type ComponentFn,
   type ComponentInstance,
+  type LoopMeta,
   range,
   rev,
   toArray,

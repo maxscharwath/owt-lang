@@ -207,32 +207,51 @@ export function activate(context: vscode.ExtensionContext) {
         if (!isSelf) stack.push({ name, start: m.index, end: m.index + raw.length });
         continue;
       }
-      // closing tag
-      if (stack.length === 0) {
-        const r = new vscode.Range(doc.positionAt(m.index), doc.positionAt(m.index + raw.length));
-        diagnostics.push(new vscode.Diagnostic(r, `Unexpected closing tag </${name}>`, vscode.DiagnosticSeverity.Error));
-        continue;
-      }
-      const top = stack[stack.length - 1];
-      if (top.name.toLowerCase() !== name.toLowerCase()) {
-        const r = new vscode.Range(doc.positionAt(m.index), doc.positionAt(m.index + raw.length));
-        diagnostics.push(new vscode.Diagnostic(r, `Mismatched closing tag: expected </${top.name}> but got </${name}>`, vscode.DiagnosticSeverity.Error));
-        // Attempt recovery: pop until match or empty
-        let found = false;
-        for (let i = stack.length - 2; i >= 0; i--) {
-          if (stack[i]?.name.toLowerCase() === name.toLowerCase()) { stack.length = i; found = true; break; }
-        }
-        if (!found) { stack.length = 0; }
-      } else {
-        stack.pop();
+      handleClosingTag(doc, diagnostics, stack, m, name);
+    }
+    addUnclosedTagDiagnostics(doc, diagnostics, stack);
+    for (const d of diagnostics) d.source = 'owt';
+    return diagnostics;
+  }
+
+  type OpenTag = { name: string; start: number; end: number };
+
+  function handleClosingTag(doc: vscode.TextDocument, diagnostics: vscode.Diagnostic[], stack: OpenTag[], m: RegExpExecArray, name: string): void {
+    if (stack.length === 0) {
+      const r = new vscode.Range(doc.positionAt(m.index), doc.positionAt(m.index + m[0].length));
+      diagnostics.push(new vscode.Diagnostic(r, `Unexpected closing tag </${name}>`, vscode.DiagnosticSeverity.Error));
+      return;
+    }
+    const top = stack[stack.length - 1];
+    if (top.name.toLowerCase() !== name.toLowerCase()) {
+      handleMismatchedTag(doc, diagnostics, stack, m, name, top);
+    } else {
+      stack.pop();
+    }
+  }
+
+  function handleMismatchedTag(doc: vscode.TextDocument, diagnostics: vscode.Diagnostic[], stack: OpenTag[], m: RegExpExecArray, name: string, top: OpenTag): void {
+    const r = new vscode.Range(doc.positionAt(m.index), doc.positionAt(m.index + m[0].length));
+    diagnostics.push(new vscode.Diagnostic(r, `Mismatched closing tag: expected </${top.name}> but got </${name}>`, vscode.DiagnosticSeverity.Error));
+    // Attempt recovery: pop until match or empty
+    let found = false;
+    for (let i = stack.length - 2; i >= 0; i--) {
+      if (stack[i]?.name.toLowerCase() === name.toLowerCase()) { 
+        stack.length = i; 
+        found = true; 
+        break; 
       }
     }
+    if (!found) { 
+      stack.length = 0; 
+    }
+  }
+
+  function addUnclosedTagDiagnostics(doc: vscode.TextDocument, diagnostics: vscode.Diagnostic[], stack: OpenTag[]): void {
     for (const unclosed of stack) {
       const r = new vscode.Range(doc.positionAt(unclosed.start), doc.positionAt(unclosed.end));
       diagnostics.push(new vscode.Diagnostic(r, `Unclosed tag <${unclosed.name}>`, vscode.DiagnosticSeverity.Error));
     }
-    for (const d of diagnostics) d.source = 'owt';
-    return diagnostics;
   }
 
   function braceDiagnostics(doc: vscode.TextDocument, text: string): vscode.Diagnostic[] {
@@ -245,54 +264,111 @@ export function activate(context: vscode.ExtensionContext) {
     while (i < n) {
       const c = text[i];
       if (quote) {
-        if (esc) { esc = false; i++; continue; }
-        if (c === '\\') { esc = true; i++; continue; }
-        if (c === quote) { 
-          quote = null; 
-          i++; 
-          continue; 
-        }
+        i = handleQuotedCharacter(text, i, quote, esc);
+        continue;
+      }
+      if (c === '"' || c === "'" || c === '`') { 
+        quote = c; 
+        i++; 
+        continue; 
+      }
+      if (c === '/' && i + 1 < n && text[i + 1] === '*') {
+        i = skipComment(text, i, n);
+        continue;
+      }
+      if (c === '{') { 
+        stack.push(i); 
+        i++; 
+        continue; 
+      }
+      if (c === '}') {
+        handleClosingBrace(doc, diagnostics, stack, i);
         i++; 
         continue;
       }
-      if (c === '"' || c === "'" || c === '`') { quote = c; i++; continue; }
-      if (c === '/' && i + 1 < n && text[i + 1] === '*') {
-        i += 2; 
-        while (i < n && !(text[i] === '*' && i + 1 < n && text[i + 1] === '/')) i++; 
-        i = Math.min(n, i + 2); 
-        continue;
-      }
-      if (c === '{') { stack.push(i); i++; continue; }
-      if (c === '}') {
-        if (stack.length === 0) {
-          const r = new vscode.Range(doc.positionAt(i), doc.positionAt(i + 1));
-          diagnostics.push(new vscode.Diagnostic(r, "Unmatched '}'", vscode.DiagnosticSeverity.Error));
-        } else {
-          stack.pop();
-        }
-        i++; continue;
-      }
       i++;
     }
+    addUnclosedBraceDiagnostics(doc, diagnostics, stack);
+    for (const d of diagnostics) d.source = 'owt';
+    return diagnostics;
+  }
+
+  function handleQuotedCharacter(text: string, i: number, quote: '"' | "'" | '`', esc: boolean): number {
+    if (esc) { 
+      return i + 1; 
+    }
+    if (text[i] === '\\') { 
+      return i + 1; 
+    }
+    if (text[i] === quote) { 
+      return i + 1; 
+    }
+    return i + 1;
+  }
+
+  function skipComment(text: string, i: number, n: number): number {
+    i += 2; 
+    while (i < n && !(text[i] === '*' && i + 1 < n && text[i + 1] === '/')) i++; 
+    return Math.min(n, i + 2);
+  }
+
+  function handleClosingBrace(doc: vscode.TextDocument, diagnostics: vscode.Diagnostic[], stack: number[], i: number): void {
+    if (stack.length === 0) {
+      const r = new vscode.Range(doc.positionAt(i), doc.positionAt(i + 1));
+      diagnostics.push(new vscode.Diagnostic(r, "Unmatched '}'", vscode.DiagnosticSeverity.Error));
+    } else {
+      stack.pop();
+    }
+  }
+
+  function addUnclosedBraceDiagnostics(doc: vscode.TextDocument, diagnostics: vscode.Diagnostic[], stack: number[]): void {
     if (stack.length) {
       const off = stack[stack.length - 1];
       const r = new vscode.Range(doc.positionAt(off), doc.positionAt(off + 1));
       diagnostics.push(new vscode.Diagnostic(r, "Unclosed '{'", vscode.DiagnosticSeverity.Error));
     }
-    for (const d of diagnostics) d.source = 'owt';
-    return diagnostics;
   }
 
   function buildVirtualTS(text: string) {
-    // Try to extract component props type: component Name(props: Type)
-    let propsDecl = 'declare const props: any;';
-    const compSig = /(\n|^)\s*(?:export\s+)?component\s+[A-Za-z_][\w-]*\s*\(\s*([A-Za-z_][\w-]*)\s*:\s*([^)]*)\)/.exec(text);
-    if (compSig) {
-      const propName = compSig[2] || 'props';
-      const propType = (compSig[3] || 'any').trim();
-      propsDecl = `declare const ${propName}: ${propType};\n` + (propName !== 'props' ? `declare const props: ${propType};` : '');
+    const propsDecl = extractComponentProps(text);
+    const header = buildTypeScriptHeader(propsDecl);
+    const parts: string[] = [header];
+    type Chunk = { tsStart: number; tsEnd: number; docStart: number; docEnd: number };
+    const chunks: Chunk[] = [];
+    let pos = header.length + 1; // +1 for trailing newline join
+
+    const addChunk = (code: string, docStart: number, docEnd: number) => {
+      const tsStart = pos;
+      parts.push(code);
+      pos += code.length + 1; // assume newline after each part
+      const tsEnd = pos;
+      chunks.push({ tsStart, tsEnd, docStart, docEnd });
+    };
+
+    const declared = new Set<string>();
+    processVariableDeclarations(text, addChunk, declared);
+    processForLoops(text, addChunk, declared);
+
+    for (const e of collectExpressions(text)) {
+      const code = `void (${e.expr});`;
+      addChunk(code, e.start, e.end);
     }
-    const header = [
+
+    const full = parts.join('\n');
+    return { code: full, chunks };
+  }
+
+  function extractComponentProps(text: string): string {
+    const compSig = /(\n|^)\s*(?:export\s+)?component\s+[A-Za-z_][\w-]*\s*\(\s*([A-Za-z_][\w-]*)\s*:\s*([^)]*)\)/.exec(text);
+    if (!compSig) return 'declare const props: any;';
+    
+    const propName = compSig[2] || 'props';
+    const propType = (compSig[3] || 'any').trim();
+    return `declare const ${propName}: ${propType};\n` + (propName !== 'props' ? `declare const props: ${propType};` : '');
+  }
+
+  function buildTypeScriptHeader(propsDecl: string): string {
+    return [
       '/* virtual TS extracted from .owt */',
       '// minimal built-ins to avoid noisy lib errors',
       'interface Array<T> { length: number; [n: number]: T }',
@@ -310,52 +386,53 @@ export function activate(context: vscode.ExtensionContext) {
       'declare function toArray<T>(x: T): T;',
       ''
     ].join('\n');
-    const parts: string[] = [header];
-    type Chunk = { tsStart: number; tsEnd: number; docStart: number; docEnd: number };
-    const chunks: Chunk[] = [];
-    let pos = header.length + 1; // +1 for trailing newline join
+  }
 
-    const addChunk = (code: string, docStart: number, docEnd: number) => {
-      const tsStart = pos;
-      parts.push(code);
-      pos += code.length + 1; // assume newline after each part
-      const tsEnd = pos;
-      chunks.push({ tsStart, tsEnd, docStart, docEnd });
-    };
-
-    // Simplified regex patterns to reduce complexity
+  function processVariableDeclarations(text: string, addChunk: (code: string, docStart: number, docEnd: number) => void, declared: Set<string>): void {
     const identifierPattern = '[A-Za-z_][\\w-]*';
     const typeAnnotationPattern = '(?::\\s*([^=;\\n]+))?';
     const valPattern = new RegExp(`(\\n|^)\\s*val\\s+(${identifierPattern})\\s*${typeAnnotationPattern}\\s*=\\s*([^;\\n]+);?`, 'g');
     const varPattern = new RegExp(`(\\n|^)\\s*var\\s+(${identifierPattern})\\s*${typeAnnotationPattern}(?:\\s*=\\s*([^;\\n]+))?;?`, 'g');
-    const declared = new Set<string>();
+    
     let m: RegExpExecArray | null;
     while ((m = varPattern.exec(text))) {
-      const name = (m[2] || '').trim();
-      if (!name || declared.has(name)) continue;
-      declared.add(name);
-      const typeAnn = (m[3] || '').trim();
-      const init = (m[4] || '').trim();
-      const id = name.replace(/-/g, '_');
-      const typePart = typeAnn ? `: ${typeAnn}` : '';
-      const initPart = init ? ` = (${init})` : '';
-      const code = `let ${id}${typePart}${initPart};`;
-      addChunk(code, m.index, m.index + m[0].length);
+      processVariableMatch(m, addChunk, declared, 'let');
     }
     while ((m = valPattern.exec(text))) {
-      const name = (m[2] || '').trim();
-      if (!name || declared.has(name)) continue;
-      declared.add(name);
-      const typeAnn = (m[3] || '').trim();
-      const init = (m[4] || '').trim();
-      const id = name.replace(/-/g, '_');
-      const typePart = typeAnn ? `: ${typeAnn}` : '';
-      const code = `const ${id}${typePart} = (${init});`;
-      addChunk(code, m.index, m.index + m[0].length);
+      processValMatch(m, addChunk, declared);
     }
+  }
 
-    // Predeclare loop item identifiers from for (...) blocks
+  function processVariableMatch(m: RegExpExecArray, addChunk: (code: string, docStart: number, docEnd: number) => void, declared: Set<string>, keyword: string): void {
+    const name = (m[2] || '').trim();
+    if (!name || declared.has(name)) return;
+    
+    declared.add(name);
+    const typeAnn = (m[3] || '').trim();
+    const init = (m[4] || '').trim();
+    const id = name.replace(/-/g, '_');
+    const typePart = typeAnn ? `: ${typeAnn}` : '';
+    const initPart = init ? ` = (${init})` : '';
+    const code = `${keyword} ${id}${typePart}${initPart};`;
+    addChunk(code, m.index, m.index + m[0].length);
+  }
+
+  function processValMatch(m: RegExpExecArray, addChunk: (code: string, docStart: number, docEnd: number) => void, declared: Set<string>): void {
+    const name = (m[2] || '').trim();
+    if (!name || declared.has(name)) return;
+    
+    declared.add(name);
+    const typeAnn = (m[3] || '').trim();
+    const init = (m[4] || '').trim();
+    const id = name.replace(/-/g, '_');
+    const typePart = typeAnn ? `: ${typeAnn}` : '';
+    const code = `const ${id}${typePart} = (${init});`;
+    addChunk(code, m.index, m.index + m[0].length);
+  }
+
+  function processForLoops(text: string, addChunk: (code: string, docStart: number, docEnd: number) => void, declared: Set<string>): void {
     const reFor = /(\n|^)\s*for\s*\(\s*([A-Za-z_][\w-]*)\s+of[\s\S]*?\)/g;
+    let m: RegExpExecArray | null;
     while ((m = reFor.exec(text))) {
       const item = (m[2] || '').trim();
       if (!item || declared.has(item)) continue;
@@ -364,38 +441,62 @@ export function activate(context: vscode.ExtensionContext) {
       const code = `let ${id}: any;`;
       addChunk(code, m.index, m.index + m[0].length);
     }
+  }
 
-    // Inline expressions extraction: only inside tag text nodes and attribute expressions ={
-    function collectExpressions(src: string): Array<{ start: number; end: number; expr: string }> {
-      const out: Array<{ start: number; end: number; expr: string }> = [];
-      const n = src.length;
-      let i = 0;
-      let inTag = false;
-      let tagStack: string[] = [];
-      
-      const pushExpr = (startBrace: number) => {
-        let j = startBrace + 1;
-        let depth = 1;
-        let q: '"' | "'" | '`' | null = null;
-        let esc = false;
-        while (j < n && depth > 0) {
-          const ch = src[j];
-          if (q) {
-            if (esc) { esc = false; j++; continue; }
-            if (ch === '\\') { esc = true; j++; continue; }
-            if (ch === q) { q = null; j++; continue; }
-            j++; continue;
-          }
-          if (ch === '"' || ch === "'" || ch === '`') { q = ch; j++; continue; }
-          if (ch === '{') { depth++; j++; continue; }
-          if (ch === '}') { depth--; j++; continue; }
-          j++;
+  // Inline expressions extraction: only inside tag text nodes and attribute expressions ={
+  function collectExpressions(src: string): Array<{ start: number; end: number; expr: string }> {
+    const out: Array<{ start: number; end: number; expr: string }> = [];
+    const n = src.length;
+    let i = 0;
+    let inTag = false;
+    let tagStack: string[] = [];
+    
+    const pushExpr = (startBrace: number) => {
+      let j = startBrace + 1;
+      let depth = 1;
+      let q: '"' | "'" | '`' | null = null;
+      let esc = false;
+      while (j < n && depth > 0) {
+        const ch = src[j];
+        if (q) {
+          j = handleQuotedCharInExpr(src, j, q, esc);
+          continue;
         }
-        const end = Math.min(n, j);
-        const expr = src.slice(startBrace + 1, end - 1).trim();
-        if (expr) out.push({ start: startBrace, end, expr });
-        return end;
-      };
+        if (ch === '"' || ch === "'" || ch === '`') { 
+          q = ch; 
+          j++; 
+          continue; 
+        }
+        if (ch === '{') { 
+          depth++; 
+          j++; 
+          continue; 
+        }
+        if (ch === '}') { 
+          depth--; 
+          j++; 
+          continue; 
+        }
+        j++;
+      }
+      const end = Math.min(n, j);
+      const expr = src.slice(startBrace + 1, end - 1).trim();
+      if (expr) out.push({ start: startBrace, end, expr });
+      return end;
+    };
+
+    function handleQuotedCharInExpr(src: string, j: number, q: '"' | "'" | '`', esc: boolean): number {
+      if (esc) { 
+        return j + 1; 
+      }
+      if (src[j] === '\\') { 
+        return j + 1; 
+      }
+      if (src[j] === q) { 
+        return j + 1; 
+      }
+      return j + 1;
+    }
       
       function prevNonWs(pos: number): string | null {
         let k = pos;
@@ -510,15 +611,6 @@ export function activate(context: vscode.ExtensionContext) {
       }
       return out;
     }
-
-    for (const e of collectExpressions(text)) {
-      const code = `void (${e.expr});`;
-      addChunk(code, e.start, e.end);
-    }
-
-    const full = parts.join('\n');
-    return { code: full, chunks };
-  }
 
   function mapTsRangeToDoc(chunks: { tsStart: number; tsEnd: number; docStart: number; docEnd: number }[], start: number, length: number, doc: vscode.TextDocument): vscode.Range {
     const pos = start;
@@ -694,59 +786,89 @@ export function activate(context: vscode.ExtensionContext) {
     provideDocumentSymbols(doc: vscode.TextDocument): vscode.DocumentSymbol[] {
       const text = doc.getText();
       const symbols: vscode.DocumentSymbol[] = [];
-      // Find components: (export )?component Name( ... ) { ... }
       const compRe = /(export\s+)?component\s+([A-Za-z_][\w-]*)\s*\(/g;
       let m: RegExpExecArray | null;
       while ((m = compRe.exec(text))) {
-        const name = m[2];
-        // Find the opening brace after this match
-        const openParenIdx = text.indexOf('(', m.index);
-        if (openParenIdx < 0) continue;
-        // find matching ')' then '{'
-        let depth = 0, i = openParenIdx;
-        for (; i < text.length; i++) {
-          const ch = text[i];
-          if (ch === '(') depth++;
-          else if (ch === ')') { depth--; if (depth === 0) { break; } }
+        const componentSymbol = createComponentSymbol(doc, text, m);
+        if (componentSymbol) {
+          symbols.push(componentSymbol);
         }
-        const lbraceIdx = text.indexOf('{', i);
-        if (lbraceIdx < 0) continue;
-        // match component body braces
-        let bdepth = 0, j = lbraceIdx;
-        for (; j < text.length; j++) {
-          const ch = text[j];
-          if (ch === '{') bdepth++;
-          else if (ch === '}') { bdepth--; if (bdepth === 0) { break; } }
-        }
-        const startPos = doc.positionAt(m.index);
-        const endPos = doc.positionAt(j);
-        const fullRange = new vscode.Range(startPos, endPos);
-        const compSym = new vscode.DocumentSymbol(
-          name,
-          m[1] ? 'export' : '',
-          vscode.SymbolKind.Class,
-          fullRange,
-          new vscode.Range(doc.positionAt(lbraceIdx), doc.positionAt(lbraceIdx + 1))
-        );
-        // inner vars/vals
-        const body = text.slice(lbraceIdx, j);
-        const declRe = /\b(var|val)\s+([A-Za-z_][\w-]*)/g;
-        let dm: RegExpExecArray | null;
-        const children: vscode.DocumentSymbol[] = [];
-        while ((dm = declRe.exec(body))) {
-          const kind = dm[1] === 'var' ? vscode.SymbolKind.Variable : vscode.SymbolKind.Constant;
-          const name2 = dm[2];
-          const abs = lbraceIdx + dm.index;
-          const r = new vscode.Range(doc.positionAt(abs), doc.positionAt(abs + dm[0].length));
-          children.push(new vscode.DocumentSymbol(name2, dm[1], kind, r, r));
-        }
-        compSym.children = children;
-        symbols.push(compSym);
       }
       return symbols;
     }
   });
   context.subscriptions.push(symbolProvider);
+}
+
+function createComponentSymbol(doc: vscode.TextDocument, text: string, m: RegExpExecArray): vscode.DocumentSymbol | null {
+  const name = m[2];
+  const openParenIdx = text.indexOf('(', m.index);
+  if (openParenIdx < 0) return null;
+  
+  const rbraceIdx = findMatchingParen(text, openParenIdx);
+  if (rbraceIdx < 0) return null;
+  
+  const lbraceIdx = text.indexOf('{', rbraceIdx);
+  if (lbraceIdx < 0) return null;
+  
+  const rbraceIdx2 = findMatchingBrace(text, lbraceIdx);
+  if (rbraceIdx2 < 0) return null;
+  
+  const startPos = doc.positionAt(m.index);
+  const endPos = doc.positionAt(rbraceIdx2);
+  const fullRange = new vscode.Range(startPos, endPos);
+  
+  const compSym = new vscode.DocumentSymbol(
+    name,
+    m[1] ? 'export' : '',
+    vscode.SymbolKind.Class,
+    fullRange,
+    new vscode.Range(doc.positionAt(lbraceIdx), doc.positionAt(lbraceIdx + 1))
+  );
+  
+  const body = text.slice(lbraceIdx, rbraceIdx2);
+  compSym.children = createChildSymbols(doc, body, lbraceIdx);
+  return compSym;
+}
+
+function findMatchingParen(text: string, start: number): number {
+  let depth = 0;
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '(') depth++;
+    else if (ch === ')') { 
+      depth--; 
+      if (depth === 0) return i; 
+    }
+  }
+  return -1;
+}
+
+function findMatchingBrace(text: string, start: number): number {
+  let depth = 0;
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '{') depth++;
+    else if (ch === '}') { 
+      depth--; 
+      if (depth === 0) return i; 
+    }
+  }
+  return -1;
+}
+
+function createChildSymbols(doc: vscode.TextDocument, body: string, offset: number): vscode.DocumentSymbol[] {
+  const declRe = /\b(var|val)\s+([A-Za-z_][\w-]*)/g;
+  const children: vscode.DocumentSymbol[] = [];
+  let dm: RegExpExecArray | null;
+  while ((dm = declRe.exec(body))) {
+    const kind = dm[1] === 'var' ? vscode.SymbolKind.Variable : vscode.SymbolKind.Constant;
+    const name = dm[2];
+    const abs = offset + dm.index;
+    const r = new vscode.Range(doc.positionAt(abs), doc.positionAt(abs + dm[0].length));
+    children.push(new vscode.DocumentSymbol(name, dm[1], kind, r, r));
+  }
+  return children;
 }
 
 export function deactivate() {

@@ -1,3 +1,6 @@
+import { PlusIcon } from './Icon.owt';
+import { TodoItem } from './TodoItem.owt';
+
 type Todo = {
   id: string;
   text: string;
@@ -41,11 +44,34 @@ export component App() {
     todos = todos.filter(todo => !todo.completed);
   }
 
+  function moveTodoUp(index) {
+    if (index > 0) {
+      const newTodos = [...todos];
+      const temp = newTodos[index];
+      newTodos[index] = newTodos[index - 1];
+      newTodos[index - 1] = temp;
+      todos = newTodos;
+    }
+  }
+
+  function moveTodoDown(index) {
+    if (index < todos.length - 1) {
+      const newTodos = [...todos];
+      const temp = newTodos[index];
+      newTodos[index] = newTodos[index + 1];
+      newTodos[index + 1] = temp;
+      todos = newTodos;
+    }
+  }
+
   <div class="min-h-screen bg-gray-100 py-8 px-4">
     <div class="max-w-2xl mx-auto">
       <div class="text-center mb-8">
         <h1 class="text-4xl font-bold text-gray-900 mb-2">OWT Todo App</h1>
         <p class="text-gray-600">Built with OWT language and Tailwind CSS 4.1</p>
+        <p class="text-sm text-gray-500 mt-2">
+{todos.length} total todos - {completedCount} completed - {todos.length - completedCount} remaining
+        </p>
       </div>
 
       <div class="bg-white rounded-lg shadow-lg p-6">
@@ -61,34 +87,25 @@ export component App() {
             />
             <button
               onClick={addTodo}
-              class="px-6 py-2 bg-blue-600 text-white rounded-lg"
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors"
+              title="Add Todo"
             >
-              Add Todo
+              <PlusIcon class="w-4 h-4" />
+              <span class="text-sm">Add</span>
             </button>
           </div>
         </div>
         
         <div class="space-y-2">
-          for (todo of todos) {
-            <div class="flex items-center gap-3 p-3 bg-white rounded border hover:shadow-md">
-              <input
-                type="checkbox"
-                checked={todo.completed}
-                onChange={() => toggleTodo(todo.id)}
-                class="w-4 h-4"
-              />
-              
-              <span class={todo.completed ? 'flex-1 line-through text-gray-500' : 'flex-1 text-gray-900'}>
-                {todo.text}
-              </span>
-              
-              <button
-                onClick={() => deleteTodo(todo.id)}
-                class="px-2 py-1 text-sm text-red-600 hover:bg-red-50 rounded"
-              >
-                Delete
-              </button>
-            </div>
+          for (todo of todos, meta) {
+            <TodoItem
+              meta={meta}
+              todo={todo}
+              onToggle={() => toggleTodo(todo.id)}
+              onDelete={() => deleteTodo(todo.id)}
+              onMoveUp={() => moveTodoUp(meta.index)}
+              onMoveDown={() => moveTodoDown(meta.index)}
+            />
           } empty {
             <div class="text-center py-8 text-gray-500">
               <p>No todos yet! Add one above to get started!</p>
@@ -111,7 +128,9 @@ export component App() {
       <div class="mt-8 text-center text-sm text-gray-500">
         <p>Type in the input field and click Add Todo</p>
         <p>Click checkbox to toggle completion</p>
-        <p>Click delete to remove todos</p>
+        <p>Use Up/Dn buttons to reorder todos</p>
+        <p>Click X to delete todos</p>
+        <p class="mt-2 text-xs">Meta object provides 'index', 'first', 'last', 'even', 'odd' properties</p>
       </div>
     </div>
   </div>

@@ -121,6 +121,7 @@ export type ForBlock = BaseNode & {
   item: string; // simple identifier for now
   iterable: Expr; // of expression
   metaIdent?: string | null; // meta ident name
+  metaDestructuring?: string[]; // destructured properties from meta object
   body: Node[];
   empty?: Node[] | null;
 };

@@ -6,6 +6,15 @@ export type ComponentInstance = {
 
 export type ComponentFn<P = any> = (props: P) => ComponentInstance;
 
+// Iteration meta passed to `for (..., meta)` blocks
+export type LoopMeta = {
+  index: number;
+  first: boolean;
+  last: boolean;
+  even: boolean;
+  odd: boolean;
+};
+
 export function mount<P>(Component: ComponentFn<P>, options: { props: P; target: HTMLElement }) {
   const instance = Component(options.props);
   instance.mount(options.target);

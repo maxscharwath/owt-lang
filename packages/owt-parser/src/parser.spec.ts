@@ -36,6 +36,33 @@ describe('parser', () => {
     expect(fors.length).toBe(2);
   });
 
+  it('parses for loop with meta variable', () => {
+    const src = `export component List() {\n  var items = ['a', 'b', 'c'];\n  <ul>\n    for (item of items, meta) {\n      <li>{meta.index}: {item} {meta.first ? '(first)' : ''} {meta.last ? '(last)' : ''}</li>\n    } empty {\n      <li>No items</li>\n    }\n  </ul>\n}`;
+    const ast: any = parse(src);
+    const comp = ast.body[0];
+    const ul = comp.body.find((n: any) => n.type === 'Element' && n.name === 'ul');
+    expect(ul).toBeTruthy();
+    const forBlock = ul.children.find((n: any) => n.type === 'ForBlock');
+    expect(forBlock?.type).toBe('ForBlock');
+    expect(forBlock?.metaIdent).toBe('meta');
+    expect(forBlock?.item).toBe('item');
+    expect(forBlock?.iterable?.code).toBe('items');
+  });
+
+  it('parses for loop with destructured meta variable', () => {
+    const src = `export component List() {\n  var items = ['a', 'b', 'c'];\n  <ul>\n    for (item of items, {index, first, last}) {\n      <li>{index}: {item} {first ? '(first)' : ''} {last ? '(last)' : ''}</li>\n    } empty {\n      <li>No items</li>\n    }\n  </ul>\n}`;
+    const ast: any = parse(src);
+    const comp = ast.body[0];
+    const ul = comp.body.find((n: any) => n.type === 'Element' && n.name === 'ul');
+    expect(ul).toBeTruthy();
+    const forBlock = ul.children.find((n: any) => n.type === 'ForBlock');
+    expect(forBlock?.type).toBe('ForBlock');
+    expect(forBlock?.metaIdent).toBeNull();
+    expect(forBlock?.metaDestructuring).toEqual(['index', 'first', 'last']);
+    expect(forBlock?.item).toBe('item');
+    expect(forBlock?.iterable?.code).toBe('items');
+  });
+
   it('parses slot placeholder and style block', () => {
     const src = `export component Card() {\n  <slot name="header" />\n  <style>.card{color:red}</style>\n}`;
     const ast: any = parse(src);
