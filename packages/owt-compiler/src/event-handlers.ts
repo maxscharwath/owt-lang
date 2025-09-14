@@ -3,17 +3,17 @@
  */
 
 import type { Attribute, ShorthandAttribute } from '@owt/ast';
-import type { CompilerContext } from './context.js';
-import { generateEventHandler } from './codegen-utils.js';
+import type { CompilerContext } from './context';
+import { generateEventHandler } from './codegen-utils';
 import { 
   isAssignmentExpression, 
   isLambdaAssignmentExpression, 
   isLambdaExpressionOnly
-} from './expression-parser.js';
+} from './expression-parser';
 
 export interface EventAttributeInfo {
-  isEvent: boolean;
-  eventName?: string;
+  is: boolean;
+  event?: string;
 }
 
 /**
@@ -21,10 +21,10 @@ export interface EventAttributeInfo {
  */
 export function isEventAttribute(name: string): EventAttributeInfo {
   if (name.startsWith('on') && name.length > 2) {
-    const eventName = name.slice(2).toLowerCase();
-    return { isEvent: true, eventName };
+    const event = name.slice(2).toLowerCase();
+    return { is: true, event };
   }
-  return { isEvent: false };
+  return { is: false };
 }
 
 /**
@@ -43,6 +43,9 @@ export function generateRegularEventHandler(
   const isAssignment = isAssignmentExpression(expression);
   const isLambdaAssignment = isLambdaAssignmentExpression(expression);
   const isLambdaExpression = isLambdaExpressionOnly(expression);
+
+  // Enforce guideline: event handlers must be function ref or lambda expression
+  // If it's not an assignment nor a lambda, treat as function reference; otherwise allowed.
   
   return generateEventHandler({
     context,
@@ -62,15 +65,21 @@ export function generateShorthandEventHandler(
   context: CompilerContext,
   ctxVar: string
 ): string {
-  const varDecls = context.varNames.map(vn => `let ${vn} = ${ctxVar}.${vn};`).join(' ');
-  const changeDetection = context.varNames.map(vn => 
-    `const __prev_${vn} = ${ctxVar}.${vn};`
-  ).join(' ') + ' ' + context.varNames.map(vn => 
-    `if (${ctxVar}.${vn} !== __prev_${vn}) __changed.push(${JSON.stringify(vn)});`
-  ).join(' ');
-  const notification = `if (__changed.length) ${ctxVar}.__notify(__changed);`;
-  
-  return `($event) => { const __changed = []; ${varDecls} ${changeDetection} ${attr.name}($event); ${notification} }`;
+  // Wrap shorthand name call using the same unified handler generator
+  // by synthesizing an expression that represents calling the function
+  // Users pass {onClick} etc.; we generate handler that resolves from scope
+  const expression = `${attr.name}`;
+  const isAssignment = false;
+  const isLambdaAssignment = false;
+  const isLambdaExpression = false;
+  return generateEventHandler({
+    context,
+    ctxVar,
+    expression,
+    isAssignment,
+    isLambdaAssignment,
+    isLambdaExpression
+  });
 }
 
 /**

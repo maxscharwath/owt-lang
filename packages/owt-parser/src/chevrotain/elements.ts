@@ -1,10 +1,10 @@
 import type { Attribute, Element, Node, SlotPlaceholder, SpreadAttribute, ShorthandAttribute, StyleBlock, Text } from '@owt/ast';
 import type { IToken } from 'chevrotain';
-import { Reader } from './reader.js';
-import { locFrom, locFromWithComments } from './loc.js';
-import { readBracesExpr } from './expr.js';
-import { readTextRun as readTextTuple } from './text.js';
-import { parseAttribute as parseAttr } from './attrs.js';
+import { Reader } from './reader';
+import { locFrom, locFromWithComments } from './loc';
+import { readBracesExpr } from './expr';
+import { readTextRun as readTextTuple } from './text';
+import { parseAttribute as parseAttr } from './attrs';
 
 type Tok = IToken;
 type AttributeTypes = Attribute | ShorthandAttribute | SpreadAttribute;

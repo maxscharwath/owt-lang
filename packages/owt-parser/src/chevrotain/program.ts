@@ -1,7 +1,7 @@
 import type { Program, Component, StyleBlock } from '@owt/ast';
 import type { IToken } from 'chevrotain';
-import { Reader } from './reader.js';
-import { parseComponent as parseComp } from './components.js';
+import { Reader } from './reader';
+import { parseComponent as parseComp } from './components';
 
 export function parseProgram(r: Reader, parseStatementOrNode: (r: Reader) => any): Program {
   const body: (Component | StyleBlock)[] = [];
@@ -34,4 +34,3 @@ export function parseProgram(r: Reader, parseStatementOrNode: (r: Reader) => any
   } as Program;
   return program;
 }
-

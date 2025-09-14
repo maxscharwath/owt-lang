@@ -1,1 +1,1 @@
-export * from './compile.js';
+export * from './compile';

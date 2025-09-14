@@ -1,5 +1,5 @@
 import type { Position } from '@owt/ast';
-import { SourceMapBuilder } from './sourcemap.js';
+import { SourceMapBuilder } from './sourcemap';
 
 export class CodeBuilder {
   private readonly parts: string[] = [];

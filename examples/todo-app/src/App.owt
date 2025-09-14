@@ -18,6 +18,7 @@ export component App() {
   val completedCount = todos.filter(todo => todo.completed).length;
 
   function addTodo() {
+    console.log('addTodo', newTodoText);
     if (newTodoText.trim()) {
       todos = [...todos, {
         id: Date.now().toString(36) + Math.random().toString(36).substr(2),
@@ -80,7 +81,7 @@ export component App() {
               placeholder="What needs to be done?"
               class="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
               value={newTodoText}
-              onInput={(e) => newTodoText = e.target.value}
+              onInput={(e) => { newTodoText = e.target.value }}
               onKeyDown={(e) => e.key === 'Enter' && addTodo()}
             />
             <button

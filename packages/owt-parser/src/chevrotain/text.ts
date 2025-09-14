@@ -1,5 +1,5 @@
 import type { IToken } from 'chevrotain';
-import { Reader } from './reader.js';
+import { Reader } from './reader';
 
 function gapTextExcludingComments(r: Reader, startOff: number, endOff: number): string {
   if (!r.source || !r.comments?.length || endOff <= startOff) return r.source?.slice(startOff, endOff) ?? '';

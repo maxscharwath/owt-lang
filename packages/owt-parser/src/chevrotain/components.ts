@@ -1,8 +1,8 @@
 import type { Component, Node, StyleBlock, Element } from '@owt/ast';
-import { Reader } from './reader.js';
-import { locFromWithComments } from './loc.js';
-import { readParensExpr } from './expr.js';
-import { parseElement as parseEl } from './elements.js';
+import { Reader } from './reader';
+import { locFromWithComments } from './loc';
+import { readParensExpr } from './expr';
+import { parseElement as parseEl } from './elements';
 
 export function parseComponent(r: Reader, parseStatementOrNode: (r: Reader) => Node | null): Component {
   const exportTok = r.match('ExportKw') ? r.next() : null;

@@ -168,3 +168,24 @@ export type Node =
 
 export type AnyNode = Node | Component | Program;
 
+// Re-export guard helpers
+export {
+  isProgram,
+  isComponent,
+  isStyleBlock,
+  isText,
+  isExpr,
+  isElement,
+  isVarDecl,
+  isValDecl,
+  isFunctionDecl,
+  isIfBlock,
+  isForBlock,
+  isSlotPlaceholder,
+  isSlotContent,
+  isSwitchBlock,
+  isCaseBlock,
+  isAttribute,
+  isShorthandAttribute,
+  isSpreadAttribute,
+} from './guards';

@@ -2,7 +2,7 @@
  * Robust expression parsing utilities for OWT compiler
  */
 
-import { COMPARISON_OPERATORS } from './constants.js';
+import { COMPARISON_OPERATORS } from './constants';
 
 export type ExpressionType = 
   | 'assignment'
@@ -42,8 +42,12 @@ export function analyzeExpression(code: string): ExpressionInfo {
   
   // Check for lambda expressions
   const hasLambda = containsLambda(trimmed);
-  const hasAssignment = containsAssignment(trimmed);
+  // Comparison must be detected before assignment to avoid '===' being
+  // misclassified as assignment due to '=' presence.
   const hasComparison = containsComparison(trimmed);
+  const hasAssignment = hasLambda
+    ? containsLambdaAssignment(trimmed)
+    : (!hasComparison && containsAssignment(trimmed));
   
   if (hasLambda && hasAssignment) {
     return {
@@ -117,7 +121,21 @@ function containsLambda(code: string): boolean {
  */
 function containsAssignment(code: string): boolean {
   // Check for assignment with proper spacing to avoid false positives
-  return /\s=\s/.test(code) || /^[A-Za-z_$][\w$]*\s*=$/.test(code);
+  return /\s=\s/.test(code) || /\s=/.test(code) || /^[A-Za-z_$][\w$]*\s*=$/.test(code);
+}
+
+/**
+ * Detect assignment inside a lambda body
+ */
+function containsLambdaAssignment(code: string): boolean {
+  // Extract lambda body after => and check for '=' that is not part of '=='/'>='/'<='/'===' etc.
+  const m = code.match(/=>\s*([\s\S]+)/);
+  if (!m) return false;
+  const body = m[1].trim();
+  // Remove braces if present
+  const inner = body.startsWith('{') && body.endsWith('}') ? body.slice(1, -1) : body;
+  // Quick check: has single '=' not followed/preceded by '='
+  return /(\b|\s)=[^=]/.test(inner);
 }
 
 /**

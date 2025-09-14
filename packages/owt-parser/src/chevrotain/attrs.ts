@@ -1,6 +1,6 @@
 import type { Attribute, ShorthandAttribute, SpreadAttribute } from '@owt/ast';
-import { Reader, readBalanced, emitBetween } from './reader.js';
-import { locFrom } from './loc.js';
+import { Reader, readBalanced, emitBetween } from './reader';
+import { locFrom } from './loc';
 
 function parseSpreadAttribute(r: Reader, lb: any): SpreadAttribute {
   let depth = 1;

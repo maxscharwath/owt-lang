@@ -1,7 +1,7 @@
 import type { ElseBranch, Expr, ForBlock, FunctionDecl, IfBlock, IfBranch, Node, ValDecl, VarDecl } from '@owt/ast';
-import { Reader, emitBetween } from './reader.js';
-import { locFrom, pos } from './loc.js';
-import { readParensExpr } from './expr.js';
+import { Reader, emitBetween } from './reader';
+import { locFrom, pos } from './loc';
+import { readParensExpr } from './expr';
 
 // Simple, secure parsing that avoids ReDoS while being maintainable
 function parseForHeader(input: string): { item: string; iterable: string; metaIdent: string | null; metaDestructuring?: string[] } | null {
