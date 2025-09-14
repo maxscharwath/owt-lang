@@ -87,6 +87,9 @@ importers:
       '@owt/shared':
         specifier: workspace:*
         version: link:../owt-shared
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.2
 
   packages/owt-parser:
     dependencies:

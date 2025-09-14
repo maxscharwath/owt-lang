@@ -116,35 +116,35 @@ export function generateForBlockForAppend(node: any, parentRef: string, ctxVar: 
   const metaVar = node.metaIdent || 'meta';
   const metaDestructuring = node.metaDestructuring;
   
-  const varBindings = currentVarNames.map(v => `let ${v} = ${ctxVar}.${v};`).join(' ');
-  code += `const ${updater} = () => { const p = ${anchor}.parentNode; if (!p) return; ${varBindings} for (let n = ${anchor}.nextSibling; n && n !== ${end}; ) { const next = n.nextSibling; __rt.beforeRemove(n); p.removeChild(n); n = next; } const ${src} = (${iter}); let ${seen} = false; for (const ${itemVar} of ${src}) { ${seen} = true;`;
+  const varBindings = currentVarNames.map(v => `let ${v}=${ctxVar}.${v}`).join(';');
+  code += `const ${updater}=()=>{const p=${anchor}.parentNode;if(!p)return;${varBindings};for(let n=${anchor}.nextSibling;n&&n!==${end};){const next=n.nextSibling;__rt.beforeRemove(n);p.removeChild(n);n=next}const ${src}=(${iter});let ${seen}=false;for(const ${itemVar} of ${src}){${seen}=true;`;
   
   const metaObj = uid('meta');
   const indexVar = uid('index');
   const lengthVar = uid('length');
-  code += ` const ${indexVar} = Array.from(${src}).indexOf(${itemVar}); const ${lengthVar} = Array.from(${src}).length; const ${metaObj} = { index: ${indexVar}, first: ${indexVar} === 0, last: ${indexVar} === ${lengthVar} - 1, even: ${indexVar} % 2 === 0, odd: ${indexVar} % 2 === 1 };`;
+  code += `const ${indexVar}=Array.from(${src}).indexOf(${itemVar});const ${lengthVar}=Array.from(${src}).length;const ${metaObj}={index:${indexVar},first:${indexVar}===0,last:${indexVar}===${lengthVar}-1,even:${indexVar}%2===0,odd:${indexVar}%2===1};`;
   
   if (metaDestructuring && metaDestructuring.length > 0) {
-    const destructuringPattern = `{ ${metaDestructuring.join(', ')} }`;
-    code += ` const ${destructuringPattern} = ${metaObj};`;
+    const destructuringPattern = `{${metaDestructuring.join(',')}}`;
+    code += `const ${destructuringPattern}=${metaObj};`;
   } else {
-    code += ` const ${metaVar} = ${metaObj};`;
+    code += `const ${metaVar}=${metaObj};`;
   }
   
   const frag = uid('frag');
-  code += ` const ${frag} = __rt.df();`;
+  code += `const ${frag}=__rt.df();`;
   for (const n of node.body) code += appendChildTo(`${frag}`, n, ctxVar).code.replace(/\n$/, '');
-  code += ` p.insertBefore(${frag}, ${end}); }`;
+  code += `p.insertBefore(${frag},${end})}`;
   
   if (node.empty?.length) {
-    code += ` if (!${seen}) { const ${frag} = __rt.df();`;
+    code += `if(!${seen}){const ${frag}=__rt.df();`;
     for (const n of node.empty) code += appendChildTo(`${frag}`, n, ctxVar).code.replace(/\n$/, '');
-    code += ` p.insertBefore(${frag}, ${end}); }`;
+    code += `p.insertBefore(${frag},${end})}`;
   }
   
-  code += ` };\n`;
-  code += `${updater}();\n`;
-  for (const vn of currentVarNames) code += `${ctxVar}.__subs[${JSON.stringify(vn)}] ||= []; ${ctxVar}.__subs[${JSON.stringify(vn)}].push(${updater});\n`;
+  code += `};`;
+  code += `${updater}();`;
+  for (const vn of currentVarNames) code += `${ctxVar}.__subs[${JSON.stringify(vn)}]||=[];${ctxVar}.__subs[${JSON.stringify(vn)}].push(${updater});`;
   return code;
 }
 

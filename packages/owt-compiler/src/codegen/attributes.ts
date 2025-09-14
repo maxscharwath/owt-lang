@@ -36,8 +36,25 @@ export function processAttributeForProps(attr: any, propsVar: string, ctxVar: st
 
 export function generateComponentProps(el: Element, ctxVar: string): { code: string; propsVar: string } {
   const propsVar = uid('props');
+  
+  if (el.attributes.length === 0) {
+    return { code: `const ${propsVar} = {};\n`, propsVar };
+  }
+  
+  // Always declare the props object first
   let code = `const ${propsVar} = {};\n`;
-  for (const attr of el.attributes) code += processAttributeForProps(attr, propsVar, ctxVar);
+  
+  // Process all attributes and generate assignments
+  for (const attr of el.attributes) {
+    if (attr.type === 'Attribute' && attr.value?.type === 'Text') {
+      code += `${propsVar}[${JSON.stringify(attr.name)}] = ${JSON.stringify(attr.value.value)};\n`;
+    } else if (attr.type === 'ShorthandAttribute') {
+      code += `${propsVar}[${JSON.stringify(attr.name)}] = ${attr.name};\n`;
+    } else {
+      code += processAttributeForProps(attr, propsVar, ctxVar);
+    }
+  }
+  
   return { code, propsVar };
 }
 
@@ -105,8 +122,39 @@ export function processAttributeForElement(attr: any, ref: string, ctxVar: strin
 }
 
 export function generateElementAttributes(el: Element, ref: string, ctxVar: string): string {
+  if (el.attributes.length === 0) return '';
+  
+  // Check if this is an SVG element
+  const isSVGElement = el.name.toLowerCase() === 'svg' || el.name.toLowerCase() === 'path' || el.name.toLowerCase() === 'circle' || el.name.toLowerCase() === 'rect' || el.name.toLowerCase() === 'line' || el.name.toLowerCase() === 'polygon' || el.name.toLowerCase() === 'polyline' || el.name.toLowerCase() === 'ellipse' || el.name.toLowerCase() === 'g' || el.name.toLowerCase() === 'defs' || el.name.toLowerCase() === 'use' || el.name.toLowerCase() === 'text' || el.name.toLowerCase() === 'tspan' || el.name.toLowerCase() === 'textPath' || el.name.toLowerCase() === 'image' || el.name.toLowerCase() === 'foreignObject';
+  
+  // Batch static attributes together
+  const staticAttrs: Array<{name: string, value: string}> = [];
   let code = '';
-  for (const attr of el.attributes) code += processAttributeForElement(attr, ref, ctxVar);
+  
+  for (const attr of el.attributes) {
+    if (attr.type === 'Attribute' && attr.value?.type === 'Text') {
+      staticAttrs.push({ name: attr.name, value: attr.value.value });
+    } else {
+      code += processAttributeForElement(attr, ref, ctxVar);
+    }
+  }
+  
+  // For SVG elements, use individual setAttribute calls to avoid property conflicts
+  if (staticAttrs.length > 0) {
+    if (isSVGElement) {
+      for (const {name, value} of staticAttrs) {
+        code += `${ref}.setAttribute(${JSON.stringify(name)}, ${JSON.stringify(value)});\n`;
+      }
+    } else {
+      // For regular HTML elements, batch attributes using applyProps
+      const attrsObj = staticAttrs.reduce((acc, {name, value}) => {
+        acc[name] = value;
+        return acc;
+      }, {} as Record<string, string>);
+      code += `__rt.applyProps(${ref}, ${JSON.stringify(attrsObj)});\n`;
+    }
+  }
+  
   return code;
 }
 

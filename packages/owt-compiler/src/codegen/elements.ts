@@ -14,37 +14,59 @@ export function genElement(el: Element, ctxVar: string): { code: string; ref: st
     const start = uid('cStart');
     const end = uid('cEnd');
     const { code: propsCode, propsVar } = generateComponentProps(el, ctxVar);
-    let code = propsCode;
-    code += `const ${cont} = __rt.df();\n`;
-    code += `const ${start} = __rt.cm('comp');\n`;
-    code += `const ${end} = __rt.cm('/comp');\n`;
-    code += `__rt.ap(${cont}, ${start});\n`;
-    code += `const ${inst} = ${el.name}(${propsVar});\n`;
-    code += `${inst}.mount(${cont});\n`;
-    code += `__rt.ap(${cont}, ${end});\n`;
+    let code = propsCode; // This includes the props declaration and all assignments
+    code += `const ${cont}=__rt.df(),${start}=__rt.cm('comp'),${end}=__rt.cm('/comp');`;
+    code += `__rt.ap(${cont},${start});`;
+    code += `const ${inst}=${el.name}(${propsVar});`;
+    code += `${inst}.mount(${cont});`;
+    code += `__rt.ap(${cont},${end});`;
     // Link instance to the start anchor so we can call destroy on unmount
-    code += `${start}.__owtInst = ${inst};\n`;
-    code += `${start}.__owtEnd = ${end};\n`;
+    code += `${start}.__owtInst=${inst};${start}.__owtEnd=${end};`;
     return { code, ref: cont };
   }
 
   const ref = uid('el');
   const isSVGElement = el.name.toLowerCase() === 'svg' || el.name.toLowerCase() === 'path' || el.name.toLowerCase() === 'circle' || el.name.toLowerCase() === 'rect' || el.name.toLowerCase() === 'line' || el.name.toLowerCase() === 'polygon' || el.name.toLowerCase() === 'polyline' || el.name.toLowerCase() === 'ellipse' || el.name.toLowerCase() === 'g' || el.name.toLowerCase() === 'defs' || el.name.toLowerCase() === 'use' || el.name.toLowerCase() === 'text' || el.name.toLowerCase() === 'tspan' || el.name.toLowerCase() === 'textPath' || el.name.toLowerCase() === 'image' || el.name.toLowerCase() === 'foreignObject';
   let code = isSVGElement
-    ? `const ${ref} = __rt.ens("http://www.w3.org/2000/svg", ${JSON.stringify(el.name)});\n`
-    : `const ${ref} = __rt.e(${JSON.stringify(el.name)});\n`;
+    ? `const ${ref}=__rt.ens("http://www.w3.org/2000/svg",${JSON.stringify(el.name)});`
+    : `const ${ref}=__rt.e(${JSON.stringify(el.name)});`;
 
   code += generateElementAttributes(el, ref, ctxVar);
 
-  for (const child of el.children) {
-    code += generateChildCode(child, ref, ctxVar);
+  // Batch consecutive text nodes for better performance
+  let i = 0;
+  while (i < el.children.length) {
+    const child = el.children[i];
+    if (!child) {
+      i++;
+      continue;
+    }
+    
+    // If this is a text node, check for consecutive text nodes to batch
+    if (child.type === 'Text') {
+      let textContent = (child as any).value;
+      let j = i + 1;
+      
+      // Collect consecutive text nodes
+      while (j < el.children.length && el.children[j]?.type === 'Text') {
+        textContent += (el.children[j] as any).value;
+        j++;
+      }
+      
+      // Generate single text node for all consecutive text content
+      code += `__rt.ap(${ref},__rt.t(${JSON.stringify(textContent)}));`;
+      i = j;
+    } else {
+      code += generateChildCode(child, ref, ctxVar);
+      i++;
+    }
   }
   return { code, ref };
 }
 
 export function generateChildCode(child: Node, ref: string, ctxVar: string): string {
   if (child.type === 'Text') {
-    return `__rt.ap(${ref}, __rt.t(${JSON.stringify(child.value)}));\n`;
+    return `__rt.ap(${ref},__rt.t(${JSON.stringify(child.value)}));`;
   }
   if (child.type === 'Expr') {
     const code = child.code.trim();
@@ -60,7 +82,7 @@ export function generateChildCode(child: Node, ref: string, ctxVar: string): str
   }
   if (child.type === 'Element') {
     const gen = genElement(child, ctxVar);
-    return `${gen.code}${ref}.appendChild(${gen.ref});\n`;
+    return `${gen.code}${ref}.appendChild(${gen.ref});`;
   }
   if (child.type === 'ForBlock') {
     return generateForBlockForAppend(child, ref, ctxVar);

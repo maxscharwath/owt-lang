@@ -5,7 +5,7 @@ export class CodeBuilder {
   private readonly parts: string[] = [];
   private line = 1; // 1-based for humans; map uses 0-based
   private column = 0;
-  constructor(private readonly filename: string, private readonly source: string, public map = new SourceMapBuilder(filename, source)) {}
+  constructor(private readonly filename: string, private readonly source: string, public readonly minify = false, public map = new SourceMapBuilder(filename, source)) {}
 
   add(str: string, original?: Position) {
     if (original) {
@@ -21,7 +21,9 @@ export class CodeBuilder {
 
   addLine(line: string, original?: Position) {
     this.add(line, original);
-    this.add('\n');
+    if (!this.minify) {
+      this.add('\n');
+    }
   }
 
   toString(): string { return this.parts.join(''); }

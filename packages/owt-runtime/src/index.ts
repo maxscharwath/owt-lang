@@ -67,6 +67,10 @@ export function devLog(event: string, payload?: any) {
 // Small helpers that generated code can import to reduce output size
 export function applyProps(el: HTMLElement, props: Record<string, unknown> | null | undefined) {
   if (!props) return;
+  
+  // Check if this is an SVG element
+  const isSVG = el.namespaceURI === 'http://www.w3.org/2000/svg';
+  
   for (const k in props) {
     const v = (props as any)[k];
     if (k.startsWith('on') && typeof v === 'function') {
@@ -74,12 +78,23 @@ export function applyProps(el: HTMLElement, props: Record<string, unknown> | nul
       el.addEventListener(evt, (e) => { (v as Function)(e); });
     } else if (v == null) {
       continue;
-    } else if (k in el) {
+    } else if (isSVG) {
+      // For SVG elements, always use setAttribute to avoid read-only property issues
+      el.setAttribute(k, String(v));
+    } else if (k in el && !isReadOnlyProperty(el, k)) {
       (el as any)[k] = v;
     } else {
       el.setAttribute(k, String(v));
     }
   }
+}
+
+// Helper function to check if a property is read-only
+function isReadOnlyProperty(el: HTMLElement, prop: string): boolean {
+  const readOnlyProps = new Set([
+    'viewBox', 'className', 'id', 'innerHTML', 'outerHTML', 'textContent'
+  ]);
+  return readOnlyProps.has(prop);
 }
 
 export function beforeRemove(n: Node | null | undefined) {

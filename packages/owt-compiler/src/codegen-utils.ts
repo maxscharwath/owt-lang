@@ -64,18 +64,18 @@ export function generateEventHandler(options: EventHandlerOptions): string {
   const { context, ctxVar, expression, isAssignment, isLambdaAssignment, isLambdaExpression } = options;
 
   // Use runtime helpers to shrink output: capPrev() and writebackNotify()
-  const depsArr = `[${context.varNames.map(v => JSON.stringify(v)).join(', ')}]`;
-  const localsDecl = context.varNames.map(vn => `let ${vn} = ${ctxVar}.${vn};`).join(' ');
+  const depsArr = `[${context.varNames.map(v => JSON.stringify(v)).join(',')}]`;
+  const localsDecl = context.varNames.map(vn => `let ${vn}=${ctxVar}.${vn}`).join(';');
   const writesBack = context.varNames
-    .map(vn => `if (${vn} !== __prev.${vn} && ${ctxVar}.${vn} === __prev.${vn}) { ${ctxVar}.${vn} = ${vn}; }`)
-    .join(' ');
+    .map(vn => `${vn}!==__prev.${vn}&&${ctxVar}.${vn}===__prev.${vn}&&(${ctxVar}.${vn}=${vn})`)
+    .join(';');
 
   const isCallable = isLambdaExpression || /^\s*\(?[A-Za-z_$]/.test(expression);
   const invoke = isCallable
-    ? `const __h = (${expression}); if (typeof __h === 'function') __h($event);`
-    : `${expression};`;
+    ? `const __h=(${expression});typeof __h==='function'&&__h($event)`
+    : `${expression}`;
 
-  return `($event) => { const __prev = __rt.capPrev(${ctxVar}, ${depsArr}); ${localsDecl} ${invoke} ${writesBack} __rt.writebackNotify(${ctxVar}, __prev, ${depsArr}); }`;
+  return `($event)=>{const __prev=__rt.capPrev(${ctxVar},${depsArr});${localsDecl};${invoke};${writesBack};__rt.writebackNotify(${ctxVar},__prev,${depsArr})}`;
 }
 
 /**
@@ -87,9 +87,9 @@ export function generateReactiveBinding(options: ReactiveBindingOptions): string
   const updaterId = generateId(context, 'u');
   const propertyName = attributeName === 'value' ? 'value' : 'textContent';
   
-  let code = `${elementRef}.setAttribute(${JSON.stringify(attributeName)}, String(${ctxVar}.${variableName}));\n`;
-  code += `const ${updaterId} = () => { ${elementRef}.${propertyName} = String(${ctxVar}.${variableName}); };\n`;
-  code += `${ctxVar}.__subs[${JSON.stringify(variableName)}] ||= []; ${ctxVar}.__subs[${JSON.stringify(variableName)}].push(${updaterId});\n`;
+  let code = `${elementRef}.setAttribute(${JSON.stringify(attributeName)},String(${ctxVar}.${variableName}));`;
+  code += `const ${updaterId}=()=>{${elementRef}.${propertyName}=String(${ctxVar}.${variableName})};`;
+  code += `${ctxVar}.__subs[${JSON.stringify(variableName)}]||=[];${ctxVar}.__subs[${JSON.stringify(variableName)}].push(${updaterId})`;
   
   return code;
 }

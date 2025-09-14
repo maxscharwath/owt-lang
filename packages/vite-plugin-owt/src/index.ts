@@ -4,6 +4,8 @@ import { compile } from '@owt/compiler';
 export type OwtPluginOptions = {
   debug?: boolean;
   logger?: (msg: string) => void;
+  typeCheck?: boolean;
+  emitTypeScript?: boolean;
 };
 
 function envDebug(): boolean {
@@ -15,6 +17,8 @@ export function owt(opts: OwtPluginOptions = {}): Plugin {
   const cssCache = new Map<string, string>();
   let root = '';
   const debug = opts.debug ?? envDebug();
+  const typeCheck = opts.typeCheck ?? false;
+  const emitTypeScript = opts.emitTypeScript ?? false;
   const log = opts.logger ?? ((msg: string) => console.log(`[owt:vite] ${msg}`));
   let isDev = false;
   let devLoggerInjected = false;
@@ -43,7 +47,13 @@ export function owt(opts: OwtPluginOptions = {}): Plugin {
       const start = Date.now();
       if (debug) log(`transform start ${filename}`);
       try {
-        const { js, css } = compile(code, filename, { debug, logger: (m) => debug && log(m) });
+        const { js, css } = compile(code, filename, { 
+          debug, 
+          logger: (m) => debug && log(m),
+          typeCheck,
+          emitTypeScript,
+          projectRoot: root
+        });
         let final = js.code;
         // Inject dev logger once in dev mode
         if (isDev && !devLoggerInjected) {

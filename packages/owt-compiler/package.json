@@ -15,6 +15,7 @@
   "dependencies": {
     "@owt/ast": "workspace:*",
     "@owt/parser": "workspace:*",
-    "@owt/shared": "workspace:*"
+    "@owt/shared": "workspace:*",
+    "typescript": "^5.0.0"
   }
 }
