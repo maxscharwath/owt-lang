@@ -104,7 +104,7 @@ export function visitComponent(component: ComponentDecl, v: JsVisitor): void {
     if (item.type === 'VarDecl' || item.type === 'ValDecl') {
       for (const d of item.declarations) if (d.init !== null) v.node(d.init, 'expression');
     } else if (item.type === 'Statement') {
-      v.node(item.node, 'statement');
+      if (item.node !== null) v.node(item.node, 'statement');
     } else {
       markup.push(item);
     }

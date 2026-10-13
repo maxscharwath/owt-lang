@@ -1,0 +1,22 @@
+{
+  "name": "@owt/typescript-plugin",
+  "version": "1.0.0-beta.1",
+  "description": "TypeScript server plugin: type .owt imports in .ts files",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "@owt/language-core": "workspace:*",
+    "@volar/typescript": "~2.4.28"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "typescript": "~6.0.3"
+  },
+  "type": "commonjs"
+}

@@ -1,0 +1,37 @@
+{
+  "name": "@owt/language-server",
+  "version": "1.0.0-beta.1",
+  "description": "OWT language server (LSP) for VS Code, JetBrains IDEs and other editors",
+  "license": "MIT",
+  "type": "commonjs",
+  "bin": {
+    "owt-language-server": "./bin/owt-language-server.cjs"
+  },
+  "main": "./dist/index.js",
+  "files": [
+    "dist",
+    "bin"
+  ],
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "@owt/compiler": "workspace:*",
+    "@owt/language-core": "workspace:*",
+    "@owt/parser": "workspace:*",
+    "@owt/ast": "workspace:*",
+    "@volar/language-server": "~2.4.28",
+    "@volar/language-service": "~2.4.28",
+    "volar-service-css": "~0.0.71",
+    "volar-service-emmet": "~0.0.71",
+    "volar-service-typescript": "~0.0.71",
+    "vscode-languageserver-textdocument": "^1.0.12",
+    "vscode-uri": "^3.2.0",
+    "typescript": "~6.0.3"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "@volar/test-utils": "~2.4.28",
+    "owt": "workspace:*"
+  }
+}

@@ -1,0 +1,11 @@
+import { Button } from './Button.owt'
+
+export component App() {
+  var count = 0
+  val doubled = count * 2
+  const user = { name: 'Ada', age: 36 }
+  <div>
+    <Button label="Add" onPress={() => count++} />
+    <p>{doubled} {user.name}</p>
+  </div>
+}

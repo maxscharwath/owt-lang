@@ -134,7 +134,7 @@ describe('component body', () => {
   it('parses functions and statements', () => {
     const comp = component('component A() {\n  function inc() { count++ }\n  const x = 1\n  console.log(x)\n}');
 
-    expect(comp.body.filter(isStatement).map((s) => s.node.type)).toEqual(['FunctionDeclaration', 'VariableDeclaration', 'ExpressionStatement']);
+    expect(comp.body.filter(isStatement).map((s) => s.node?.type)).toEqual(['FunctionDeclaration', 'VariableDeclaration', 'ExpressionStatement']);
   });
 
   it('collects styles', () => {

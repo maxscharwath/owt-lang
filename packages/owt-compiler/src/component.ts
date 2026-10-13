@@ -140,7 +140,7 @@ export function compileComponent(component: ComponentDecl, file: FileContext): C
           scope.add({ name: d.name, kind: 'derived', read: `${rt}.get(${d.name})`, source: d.name, write: false, reactive: true, stable: false, description: 'val', start: d.start });
         }
       }
-    } else if (item.type === 'Statement') {
+    } else if (item.type === 'Statement' && item.node !== null) {
       registerStatement(item.node, scope, c);
     }
   }
@@ -163,6 +163,7 @@ export function compileComponent(component: ComponentDecl, file: FileContext): C
         else lines.push([origin(`const ${d.name} = `, d.start), init, ';']);
       }
     } else if (item.type === 'Statement') {
+      if (item.node === null) continue;
       checkStatement(item.node, c);
       lines.push(transformStatement(item.node, c.js(scope)));
     } else {
@@ -184,7 +185,7 @@ export function compileComponent(component: ComponentDecl, file: FileContext): C
 function declaresName(component: ComponentDecl, name: string): boolean {
   for (const item of component.body) {
     if ((item.type === 'VarDecl' || item.type === 'ValDecl') && item.declarations.some((d) => d.name === name)) return true;
-    if (item.type === 'Statement') {
+    if (item.type === 'Statement' && item.node !== null) {
       const n = item.node;
       if ((n.type === 'FunctionDeclaration' || n.type === 'ClassDeclaration') && n.id?.name === name) return true;
       if (n.type === 'VariableDeclaration' && n.declarations.some((d) => patternNames(d.id).some((id) => id.name === name))) return true;

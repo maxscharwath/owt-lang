@@ -1,0 +1,30 @@
+{
+  "name": "@owt/language-core",
+  "version": "1.0.0-beta.1",
+  "description": "OWT language plugin for Volar: .owt files as virtual TypeScript",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsdown"
+  },
+  "dependencies": {
+    "@owt/ast": "workspace:*",
+    "@owt/parser": "workspace:*",
+    "@volar/language-core": "~2.4.28"
+  },
+  "devDependencies": {
+    "@volar/typescript": "~2.4.28",
+    "typescript": "~6.0.3"
+  }
+}

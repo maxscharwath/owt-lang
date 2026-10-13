@@ -520,7 +520,9 @@ class Parser {
         pos++;
         continue;
       }
-      for (const node of this.statements(pos, end)) {
+      const nodes = this.statements(pos, end);
+      if (nodes.length === 0 && this.src.slice(pos, end).trim() !== ';') items.push({ type: 'Statement', node: null, start: pos, end });
+      for (const node of nodes) {
         items.push({ type: 'Statement', node, start: node.start ?? pos, end: node.end ?? end });
       }
       pos = end;

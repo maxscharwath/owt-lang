@@ -1,0 +1,7 @@
+import { Button } from './Button.owt'
+
+export component Errors() {
+  val fixed = 1
+  <Button label={42} onPress={() => fixed = 2} />
+  <div><span></div>
+}

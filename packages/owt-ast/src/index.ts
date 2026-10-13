@@ -109,7 +109,8 @@ export type Declarator = Span & {
 /** Plain TypeScript statement inside a component body (runs once per instance). */
 export type Statement = Span & {
   type: 'Statement';
-  node: t.Statement;
+  /** null when the code could not be parsed (editors still get the span) */
+  node: t.Statement | null;
 };
 
 // ---------------------------------------------------------------------------

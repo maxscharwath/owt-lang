@@ -1,0 +1,25 @@
+{
+  "name": "owt-tsc",
+  "version": "1.0.0-beta.1",
+  "description": "Type-check OWT projects (.owt and .ts files) from the command line",
+  "license": "MIT",
+  "bin": {
+    "owt-tsc": "./bin/owt-tsc.cjs"
+  },
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "@owt/language-core": "workspace:*",
+    "@volar/typescript": "~2.4.28",
+    "typescript": "~6.0.3"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  },
+  "type": "commonjs"
+}

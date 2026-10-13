@@ -15,7 +15,10 @@
     "./client": {
       "types": "./client.d.ts"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./language": {
+      "types": "./src/language.ts"
+    }
   },
   "publishConfig": {
     "main": "./dist/index.js",
@@ -28,7 +31,10 @@
       "./client": {
         "types": "./client.d.ts"
       },
-      "./package.json": "./package.json"
+      "./package.json": "./package.json",
+      "./language": {
+        "types": "./dist/language.d.ts"
+      }
     }
   },
   "files": [
