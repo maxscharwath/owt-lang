@@ -236,3 +236,12 @@ export function Portal(props: PortalProps): Node {
   });
   return placeholder;
 }
+
+/** Keep one wrapper per component across hot updates (state lives in `import.meta.hot.data`). */
+export function hmrAccept<P>(store: Record<string, Component<P>>, name: string, next: Component<P>): Component<P> {
+  const existing = store[name];
+  if (existing !== undefined && hmrUpdate(existing, next)) return existing;
+  const wrapper = hmr(next);
+  store[name] = wrapper;
+  return wrapper;
+}

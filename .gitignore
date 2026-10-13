@@ -75,3 +75,6 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# compiler test output
+packages/owt-compiler/test/.tmp/

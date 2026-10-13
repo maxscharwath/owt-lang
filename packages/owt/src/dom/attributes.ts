@@ -95,7 +95,6 @@ export function style(el: Element, value: unknown): void {
     return;
   }
   const prev = store.$$style;
-  if (prev === undefined) el.removeAttribute('style');
   const next = value as Dict;
   if (prev !== undefined) {
     for (const key in prev) if (!(key in next)) styleProp(el, hyphenate(key), null);

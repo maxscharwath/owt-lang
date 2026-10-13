@@ -1128,7 +1128,9 @@ class Parser {
       this.error('invalid-shorthand', 'Shorthand attributes must be a name ({value}) or a spread ({...props})', pos, end);
     }
     const nameSpan = { start: innerStart, end: innerStart + name.length };
-    const expression = name === '' ? null : this.expression(nameSpan.start, nameSpan.end);
+    // shorthand names may be reserved words (`{class}`), so no Babel parse here
+    const expression: t.Identifier | null =
+      name === '' ? null : ({ type: 'Identifier', name, start: nameSpan.start, end: nameSpan.end } as t.Identifier);
     const attr: Attribute = {
       type: 'Attribute',
       name,

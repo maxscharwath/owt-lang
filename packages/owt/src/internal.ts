@@ -36,7 +36,8 @@ export {
   EACH_ONLY_CHILD,
   EACH_KEY_INDEX,
 } from './dom/blocks';
-export { scope, propDefault, setProp, restProps, spreadProps, hmr, hmrUpdate } from './dom/component';
+export { scope, propDefault, setProp, restProps, spreadProps, hmr, hmrUpdate, hmrAccept } from './dom/component';
+export { head, title, injectCss } from './dom/document';
 export { bindValue, bindChecked, bindGroup, bindThis, bindProperty, bindSize, action, optionValueProp } from './dom/bindings';
 
 /** `var x = v` */

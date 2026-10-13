@@ -156,7 +156,7 @@ export class JsScanner {
       while (end < this.end && isIdentPart(src.charCodeAt(end))) end++;
       return this.emit('ident', start, end, nl);
     }
-    if (isDigit(c) || (c === 46 && isDigit(src.charCodeAt(start + 1)))) {
+    if (isDigit(c) || (c === 46 && isDigit(src.charCodeAt(start + 1)) && src.charCodeAt(start - 1) !== 46)) {
       return this.emit('number', start, this.scanNumber(start), nl);
     }
     if (c === 34 || c === 39) return this.emit('string', start, this.scanString(start), nl);
@@ -343,7 +343,6 @@ const CONTINUE_AFTER = new Set([
   '<<',
   '>>',
   '>>>',
-  '!',
   '~',
   ',',
   '.',
@@ -353,6 +352,7 @@ const CONTINUE_AFTER = new Set([
   '...',
   '@',
 ]);
+// note: `!` is not listed: a line ending with TypeScript's non-null `x!` ends the statement
 
 const CONTINUE_AFTER_WORDS = new Set([
   'new',
