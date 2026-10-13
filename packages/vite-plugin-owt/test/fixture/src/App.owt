@@ -1,0 +1,5 @@
+export component App() {
+  var n = 0
+  <button class="btn" onClick={() => n++}>{n}</button>
+  <style>.btn { color: red }</style>
+}

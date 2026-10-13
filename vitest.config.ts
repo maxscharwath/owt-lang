@@ -7,7 +7,7 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['packages/**/src/**/*.spec.ts', 'packages/**/test/**/*.spec.ts'],
-    exclude: ['**/node_modules/**', '**/dist/**'],
+    exclude: ['**/node_modules/**', '**/dist/**', '**/fixture/**'],
   },
   resolve: {
     alias: [

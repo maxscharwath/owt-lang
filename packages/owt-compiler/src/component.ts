@@ -116,6 +116,10 @@ export function compileComponent(component: ComponentDecl, file: FileContext): C
 
   // --- parameters -----------------------------------------------------------
   lines.push(...params(component, c, scope));
+  // `props` always names the whole props object unless the component declares its own
+  if (scope.lookup('props') === undefined && !declaresName(component, 'props')) {
+    scope.add({ ...plain('props', component.start, { write: false, description: 'props object', read: props }), reactive: true });
+  }
 
   // --- body bindings (registered first: functions may use later declarations) --
   const written = writtenNames(component);
@@ -175,6 +179,18 @@ export function compileComponent(component: ComponentDecl, file: FileContext): C
     '\n});\n}\n',
   ];
   return { name: component.name, code, css: componentCss(component.styles, cssScope), cssScope };
+}
+
+function declaresName(component: ComponentDecl, name: string): boolean {
+  for (const item of component.body) {
+    if ((item.type === 'VarDecl' || item.type === 'ValDecl') && item.declarations.some((d) => d.name === name)) return true;
+    if (item.type === 'Statement') {
+      const n = item.node;
+      if ((n.type === 'FunctionDeclaration' || n.type === 'ClassDeclaration') && n.id?.name === name) return true;
+      if (n.type === 'VariableDeclaration' && n.declarations.some((d) => patternNames(d.id).some((id) => id.name === name))) return true;
+    }
+  }
+  return false;
 }
 
 function componentCss(styles: readonly StyleBlock[], cssScope: string | null): string {
