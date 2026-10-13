@@ -1,5 +1,4 @@
 packages:
   - packages/*
-  - packages/owt-*
   - examples/*
-  - examples
+  - benchmark

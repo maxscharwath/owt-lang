@@ -1,20 +1,41 @@
 {
   "name": "owt-lang",
   "private": true,
-  "version": "0.1.0",
-  "description": "OWT language compiler, runtime, and Vite plugin",
-  "license": "UNLICENSED",
-  "packageManager": "pnpm@9.0.0",
+  "version": "1.0.0-beta.1",
+  "description": "OWT language: compiler, signals runtime, Vite plugin and editor tooling",
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "pnpm@10.34.6",
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "scripts": {
-    "build": "pnpm --filter owt build && pnpm --filter @owt/vite build && pnpm --filter ./examples/* build",
-    "clean": "pnpm --filter owt clean && pnpm --filter @owt/vite clean && pnpm --filter ./examples/* clean",
-    "lint": "eslint . --ext .ts,.tsx,.js || true",
-    "test": "vitest run"
+    "build": "pnpm --filter \"./packages/**\" --filter \"!owt-vscode\" build",
+    "build:vscode": "pnpm --filter owt-vscode build",
+    "package:vscode": "pnpm --filter owt-vscode package",
+    "build:examples": "pnpm --filter \"./examples/**\" build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "node scripts/e2e.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "bench": "pnpm --filter owt-benchmark bench",
+    "clean": "rimraf --glob \"packages/*/dist\" \"examples/*/dist\""
   },
   "devDependencies": {
-    "@types/node": "^24.4.0",
+    "@types/node": "^24.12.0",
+    "eslint": "^10.12.0",
+    "happy-dom": "^21.0.1",
     "rimraf": "^6.0.1",
-    "typescript": "^5.4.0",
-    "vitest": "^3.2.4"
+    "tsdown": "^0.23.1",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.71.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.4"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }

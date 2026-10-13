@@ -1,22 +1,21 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES2022",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "strict": true,
     "declaration": true,
     "sourceMap": true,
-    "rootDir": ".",
-    "baseUrl": ".",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "verbatimModuleSyntax": true,
     "skipLibCheck": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
     "noImplicitOverride": true,
     "noFallthroughCasesInSwitch": true,
     "useDefineForClassFields": true,
-    "types": [],
-    "paths": {}
+    "types": ["node"]
   }
 }
