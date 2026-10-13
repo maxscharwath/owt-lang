@@ -82,7 +82,11 @@ importers:
 
   packages/owt: {}
 
-  packages/owt-ast: {}
+  packages/owt-ast:
+    dependencies:
+      '@babel/types':
+        specifier: ^7.29.8
+        version: 7.29.8
 
   packages/owt-compiler:
     dependencies:

@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2023",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "strict": true,
@@ -16,6 +20,34 @@
     "noImplicitOverride": true,
     "noFallthroughCasesInSwitch": true,
     "useDefineForClassFields": true,
-    "types": ["node"]
+    "types": [
+      "node"
+    ],
+    "paths": {
+      "owt": [
+        "./packages/owt/src/index.ts"
+      ],
+      "owt/internal": [
+        "./packages/owt/src/internal.ts"
+      ],
+      "owt/dom": [
+        "./packages/owt/src/dom.ts"
+      ],
+      "owt/elements": [
+        "./packages/owt/src/elements.ts"
+      ],
+      "@owt/ast": [
+        "./packages/owt-ast/src/index.ts"
+      ],
+      "@owt/parser": [
+        "./packages/owt-parser/src/index.ts"
+      ],
+      "@owt/compiler": [
+        "./packages/owt-compiler/src/index.ts"
+      ],
+      "@owt/language-core": [
+        "./packages/owt-language-core/src/index.ts"
+      ]
+    }
   }
 }

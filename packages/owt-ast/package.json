@@ -19,5 +19,7 @@
   "scripts": {
     "build": "tsdown"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@babel/types": "^7.29.8"
+  }
 }
