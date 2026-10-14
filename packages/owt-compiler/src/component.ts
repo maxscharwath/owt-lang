@@ -6,7 +6,7 @@ import { BindingScope, plain } from './bindings';
 import { ComponentContext, type FileContext } from './context';
 import { hash, scopeCss } from './css';
 import { compoundCanMatch, elementShapes, type ElementShape } from './css-usage';
-import { transformStatement } from './js';
+import { destructure, transformStatement } from './js';
 import { TemplateCompiler } from './template';
 import { visitComponent } from './traverse';
 import { Walker, patternNames } from './walk';
@@ -124,6 +124,13 @@ export function compileComponent(component: ComponentDecl, file: FileContext): C
 
   // --- body bindings (registered first: functions may use later declarations) --
   const written = writtenNames(component);
+  /** generated variable holding the destructured values of each `val {...} = x` / `var [...] = x` */
+  const destructured = new Map<t.Node, string>();
+  const holder = (pattern: t.Node): string => {
+    let name = destructured.get(pattern);
+    if (name === undefined) destructured.set(pattern, (name = c.file.name('d')));
+    return name;
+  };
   for (const item of component.body) {
     if (item.type === 'VarDecl') {
       for (const d of item.declarations) {
@@ -135,7 +142,10 @@ export function compileComponent(component: ComponentDecl, file: FileContext): C
       }
     } else if (item.type === 'ValDecl') {
       for (const d of item.declarations) {
-        if (d.init !== null && isLiteralInit(d.init)) {
+        if (d.pattern !== null) {
+          const read = `${rt}.get(${holder(d.pattern)}).${d.name}`;
+          scope.add({ name: d.name, kind: 'path', read, write: false, reactive: true, stable: false, description: 'val', start: d.id.start ?? d.start });
+        } else if (d.init !== null && isLiteralInit(d.init)) {
           scope.add(plain(d.name, d.start, { write: false, description: 'val' }));
         } else {
           scope.add({ name: d.name, kind: 'derived', read: `${rt}.get(${d.name})`, source: d.name, write: false, reactive: true, stable: false, description: 'val', start: d.start });
@@ -151,13 +161,26 @@ export function compileComponent(component: ComponentDecl, file: FileContext): C
   for (const item of component.body) {
     if (item.type === 'VarDecl') {
       for (const d of item.declarations) {
-        const init: Chunk = d.init === null ? 'undefined' : c.expr(d.init, scope);
         const binding = scope.lookup(d.name)!;
         const fn = binding.kind === 'state' ? 'state' : 'reactive';
+        if (d.pattern !== null && item.statement !== null) {
+          // evaluated once; every name is its own state
+          const values = holder(d.pattern);
+          if (d === item.declarations[0]) lines.push(destructure(`const ${values} = (() => {`, item.statement, item.declarations, '})();', c.js(scope)));
+          lines.push(origin(`const ${d.name} = ${rt}.${fn}(${values}.${d.name});`, d.id.start ?? d.start));
+          continue;
+        }
+        const init: Chunk = d.init === null ? 'undefined' : c.expr(d.init, scope);
         lines.push([origin(`const ${d.name} = ${rt}.${fn}(`, d.start), init, ');']);
       }
     } else if (item.type === 'ValDecl') {
       for (const d of item.declarations) {
+        if (d.pattern !== null && item.statement !== null) {
+          if (d === item.declarations[0]) {
+            lines.push(destructure(`const ${holder(d.pattern)} = ${rt}.derived(() => {`, item.statement, item.declarations, '});', c.js(scope)));
+          }
+          continue;
+        }
         const init: Chunk = d.init === null ? 'undefined' : c.expr(d.init, scope);
         const binding = scope.lookup(d.name)!;
         if (binding.kind === 'derived') lines.push([origin(`const ${d.name} = ${rt}.derived(() => `, d.start), init, ');']);

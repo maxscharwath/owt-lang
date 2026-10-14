@@ -536,7 +536,9 @@ class Parser {
   private isDeclarationStart(pos: number, word: string): boolean {
     const after = pos + word.length;
     if (!isSpace(this.src.charCodeAt(after))) return false;
-    return isIdentStart(this.src.charCodeAt(skipSpaces(this.src, after)));
+    const next = skipSpaces(this.src, after);
+    const c = this.src.charCodeAt(next);
+    return isIdentStart(c) || c === 123 /* { */ || c === 91 /* [ */;
   }
 
   private parseDeclaration(pos: number, word: 'var' | 'val'): VarDecl | ValDecl {
@@ -544,10 +546,26 @@ class Parser {
     const stmts = this.statements(pos, end, 'let');
     const declarations: Declarator[] = [];
     const stmt = stmts[0];
-    if (stmt !== undefined && stmt.type === 'VariableDeclaration') {
-      for (const d of stmt.declarations) {
+    const statement = stmt !== undefined && stmt.type === 'VariableDeclaration' ? stmt : null;
+    if (statement !== null) {
+      for (const d of statement.declarations) {
+        if (d.id.type === 'ObjectPattern' || d.id.type === 'ArrayPattern') {
+          // `val { width, height } = size`: one declarator per bound name
+          if (d.init == null) {
+            this.error('destructuring-without-init', `Destructuring needs a value: ${word} { ... } = value`, d.start ?? pos, d.end ?? end);
+            continue;
+          }
+          if (statement.declarations.length > 1) {
+            this.error('invalid-declaration', `Declare a destructuring ${word} on its own: ${word} { a, b } = value`, d.start ?? pos, d.end ?? end);
+            continue;
+          }
+          for (const id of boundIdentifiers(d.id)) {
+            declarations.push({ id, name: id.name, type: null, init: d.init, pattern: d.id, start: d.start ?? pos, end: d.end ?? end });
+          }
+          continue;
+        }
         if (d.id.type !== 'Identifier') {
-          this.error('invalid-declaration', `${word} declarations must declare a single name (destructuring is not supported)`, d.id.start ?? pos, d.id.end ?? end);
+          this.error('invalid-declaration', `${word} declarations must declare names or destructure an object / array`, d.id.start ?? pos, d.id.end ?? end);
           continue;
         }
         if (word === 'val' && d.init == null) {
@@ -558,12 +576,13 @@ class Parser {
           name: d.id.name,
           type: annotationSpan(d.id),
           init: d.init ?? null,
+          pattern: null,
           start: d.start ?? pos,
           end: d.end ?? end,
         });
       }
     }
-    return { type: word === 'var' ? 'VarDecl' : 'ValDecl', declarations, start: pos, end };
+    return { type: word === 'var' ? 'VarDecl' : 'ValDecl', declarations, statement, start: pos, end };
   }
 
   // -------------------------------------------------------------------------
@@ -1469,4 +1488,22 @@ function annotationSpan(node: t.Node): Span | null {
   if (ann == null || ann.type !== 'TSTypeAnnotation') return null;
   const inner = ann.typeAnnotation;
   return { start: inner.start ?? 0, end: inner.end ?? 0 };
+}
+
+/** Names bound by a destructuring pattern, in source order. */
+function boundIdentifiers(pattern: t.Node): t.Identifier[] {
+  switch (pattern.type) {
+    case 'Identifier':
+      return [pattern];
+    case 'ObjectPattern':
+      return pattern.properties.flatMap((p) => boundIdentifiers(p.type === 'RestElement' ? p.argument : p.value));
+    case 'ArrayPattern':
+      return pattern.elements.flatMap((e) => (e === null ? [] : boundIdentifiers(e)));
+    case 'AssignmentPattern':
+      return boundIdentifiers(pattern.left);
+    case 'RestElement':
+      return boundIdentifiers(pattern.argument);
+    default:
+      return [];
+  }
 }

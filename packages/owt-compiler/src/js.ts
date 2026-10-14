@@ -7,7 +7,7 @@
  */
 import MagicString from 'magic-string';
 import type * as t from '@babel/types';
-import type { Mapped, FragmentSegments } from './chunks';
+import { origin, type Chunk, type Mapped, type FragmentSegments } from './chunks';
 import type { Binding, BindingScope } from './bindings';
 import type { Reporter } from './errors';
 import { Walker, patternNames } from './walk';
@@ -548,6 +548,23 @@ export function transformModule(nodes: readonly t.Statement[], start: number, en
   tr.walker().statements(nodes);
   tr.flushPatternWrites();
   return tr.edits.result();
+}
+
+/**
+ * `val { a, b = 1 } = x` / `var [first, ...rest] = list`: the declaration as a
+ * `let` statement whose names are local (defaults and the value are rewritten
+ * like any expression), to be wrapped by the caller.
+ */
+export function transformDestructuring(statement: t.VariableDeclaration, ctx: JsContext): Mapped {
+  const mapped = transformModule([statement], statement.start ?? 0, statement.end ?? 0, ctx);
+  // the source says `var` / `val`: same length as `let`, so the mappings stay valid
+  return { ...mapped, code: `let${mapped.code.slice(3)}` };
+}
+
+/** `head { let <pattern> = <value>; return { a, b }; } tail` */
+export function destructure(head: string, statement: t.VariableDeclaration, declarations: readonly { name: string }[], tail: string, ctx: JsContext): Chunk {
+  const names = declarations.map((d) => d.name).join(', ');
+  return [origin(head, statement.start ?? 0), '\n', transformDestructuring(statement, ctx), `\nreturn { ${names} };\n`, tail];
 }
 
 /** Transform component-level statements (their declarations are component bindings). */

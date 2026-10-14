@@ -73,6 +73,38 @@ describe('state and events', () => {
     expect(text(m, 'ul')).toBe('a=1b=2');
   });
 
+  it('destructures vals reactively', async () => {
+    const m = await render(`export component App() {\n  var size = { width: 2, height: 3 }\n  val { width, height: h, depth = 1 } = size\n  <p onClick={() => size = { width: 4, height: 5 }}>{width}x{h}x{depth}</p>\n}`);
+    const before = text(m, 'p');
+
+    m.click('p');
+
+    expect(before).toBe('2x3x1');
+    expect(text(m, 'p')).toBe('4x5x1');
+  });
+
+  it('destructures arrays with rest elements in vals', async () => {
+    const m = await render(`export component App() {\n  var list = [1, 2, 3]\n  val [first, ...rest] = list\n  <p onClick={() => list.push(4)}>{first}:{rest.join(',')}</p>\n}`);
+
+    m.click('p');
+
+    expect(text(m, 'p')).toBe('1:2,3,4');
+  });
+
+  it('destructures vars into independent state', async () => {
+    const m = await render(`export component App() {\n  var [a, b] = ['x', 'y']\n  <p onClick={() => [a, b] = [b, a]}>{a}{b}</p>\n}`);
+
+    m.click('p');
+
+    expect(text(m, 'p')).toBe('yx');
+  });
+
+  it('destructures vals at the top of block bodies', async () => {
+    const m = await render(`export component App() {\n  var points = [{ x: 1, y: 2 }]\n  <ul>\n    for (p of points) {\n      val { x, y } = p\n      <li>{x},{y}</li>\n    }\n  </ul>\n}`);
+
+    expect(text(m, 'li')).toBe('1,2');
+  });
+
   it('supports compound assignments', async () => {
     const m = await render(`export component App() {\n  var s = 'a'\n  <button onClick={() => s += 'b'}>{s}</button>\n}`);
 

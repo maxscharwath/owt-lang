@@ -43,6 +43,7 @@ import {
   invalidNesting,
   templateLiteralText,
 } from './html';
+import { destructure } from './js';
 import { parseModifiers, splitModifiers } from './modifiers';
 import { patternNames } from './walk';
 
@@ -280,6 +281,15 @@ export class TemplateCompiler {
   /** `val` inside a block body: a derived value local to the branch / row. */
   valDecl(val: ValDecl, scope: BindingScope): Chunk {
     const out: Chunk[] = [];
+    const first = val.declarations[0];
+    if (first !== undefined && first.pattern !== null && val.statement !== null) {
+      const holder = this.c.file.name('d');
+      out.push(destructure(`const ${holder} = ${this.rt}.derived(() => {`, val.statement, val.declarations, '});', this.c.js(scope)));
+      for (const d of val.declarations) {
+        scope.add({ name: d.name, kind: 'path', read: `${this.rt}.get(${holder}).${d.name}`, write: false, reactive: true, stable: false, description: 'val', start: d.id.start ?? d.start });
+      }
+      return out;
+    }
     for (const d of val.declarations) {
       scope.add({
         name: d.name,

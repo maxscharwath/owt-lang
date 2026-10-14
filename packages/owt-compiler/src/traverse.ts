@@ -111,7 +111,11 @@ export function visitComponent(component: ComponentDecl, v: JsVisitor): void {
   const markup: TemplateNode[] = [];
   for (const item of component.body) {
     if (item.type === 'VarDecl' || item.type === 'ValDecl') {
-      for (const d of item.declarations) if (d.init !== null) v.node(d.init, 'expression');
+      for (const d of item.declarations) {
+        if (d.init !== null) v.node(d.init, 'expression');
+        // default values of a destructuring pattern
+        if (d.pattern !== null && d === item.declarations[0]) v.node(d.pattern, 'expression');
+      }
     } else if (item.type === 'Statement') {
       if (item.node !== null) v.node(item.node, 'statement');
     } else {

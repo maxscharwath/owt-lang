@@ -103,6 +103,16 @@ val remaining = todos.filter((t) => !t.done).length
 - Lazy and cached: computed on first read, recomputed only when a dependency changed and someone reads it.
 - A `val` initialized with a literal compiles to a constant.
 
+Both can destructure:
+
+```owt
+val { width, height: h, depth = 1 } = size   // derived: follows `size`
+val [first, ...others] = items
+var [a, b] = pair                            // evaluated once: a and b are independent state
+```
+
+A destructuring `val` recomputes all its names together when the value changes. A destructuring `var` takes the initial values once, and each name is then its own state (`[a, b] = [b, a]` swaps them). Declare a destructuring on its own (`val { a } = x, y = 1` is an error).
+
 `val` can also appear at the top of any block body (`if`, `for`, slot definitions...), where it can use the loop item:
 
 ```owt

@@ -90,20 +90,28 @@ export type ComponentItem = VarDecl | ValDecl | Statement | TemplateNode;
 export type VarDecl = Span & {
   type: 'VarDecl';
   declarations: Declarator[];
+  /** the declaration parsed as `let ...` (offsets of the source) */
+  statement: t.VariableDeclaration | null;
 };
 
 /** `val name[: T] = init` — derived (computed) value. */
 export type ValDecl = Span & {
   type: 'ValDecl';
   declarations: Declarator[];
+  statement: t.VariableDeclaration | null;
 };
 
+/**
+ * One declared name. A destructuring declaration (`val { a, b } = x`) has one
+ * declarator per bound name, all sharing the same `pattern` and `init`.
+ */
 export type Declarator = Span & {
   id: t.Identifier;
   name: string;
   /** span of the type annotation (without the colon) */
   type: Span | null;
   init: t.Expression | null;
+  pattern: t.ObjectPattern | t.ArrayPattern | null;
 };
 
 /** Plain TypeScript statement inside a component body (runs once per instance). */
