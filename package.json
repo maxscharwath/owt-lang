@@ -13,7 +13,7 @@
     "build": "pnpm --filter \"./packages/**\" --filter \"!owt-vscode\" build",
     "build:vscode": "pnpm --filter owt-vscode build",
     "package:vscode": "pnpm --filter owt-vscode package",
-    "build:examples": "pnpm --filter \"./examples/**\" build",
+    "build:examples": "pnpm --filter \"./examples/**\" --workspace-concurrency=1 build",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "node scripts/e2e.mjs",
@@ -37,6 +37,9 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "esbuild"
+    ],
+    "ignoredBuiltDependencies": [
+      "@vscode/vsce-sign"
     ]
   }
 }

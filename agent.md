@@ -66,4 +66,4 @@ Principles: single responsibility per module, explicit inputs (contexts are pass
 ## Build
 
 - `pnpm build` builds every package in dependency order (tsdown for libraries, esbuild bundles for the server/plugin/CLI).
-- Workspace packages consumed by Node (compiler, parser, plugin, tooling) must be built before running the examples or the benchmark; the runtime (`owt`) is consumed from source in the workspace.
+- Workspace packages consumed by Node (compiler, parser, plugin, tooling) must be built before running the examples or the benchmark; the runtime (`owt`) is consumed from source in the workspace. An example's own `pnpm run build` does it (`scripts/build-deps.mjs` builds the packages it depends on), so the examples deploy from a fresh clone (e.g. Vercel with the example as root directory).
