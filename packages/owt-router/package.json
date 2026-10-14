@@ -1,0 +1,47 @@
+{
+  "name": "@owt/router",
+  "version": "1.0.0-beta.1",
+  "description": "Typed client-side router for OWT: typed params and links, nested layouts, lazy routes, guards",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./package.json": "./package.json"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown"
+  },
+  "peerDependencies": {
+    "owt": "^1.0.0-beta.1"
+  },
+  "devDependencies": {
+    "@owt/compiler": "workspace:*",
+    "@owt/language-core": "workspace:*",
+    "@owt/parser": "workspace:*",
+    "owt": "workspace:*",
+    "typescript": "~6.0.3"
+  },
+  "keywords": [
+    "owt",
+    "router",
+    "routing",
+    "spa"
+  ]
+}

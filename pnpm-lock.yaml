@@ -245,6 +245,24 @@ importers:
         specifier: workspace:*
         version: link:../owt-ast
 
+  packages/owt-router:
+    devDependencies:
+      '@owt/compiler':
+        specifier: workspace:*
+        version: link:../owt-compiler
+      '@owt/language-core':
+        specifier: workspace:*
+        version: link:../owt-language-core
+      '@owt/parser':
+        specifier: workspace:*
+        version: link:../owt-parser
+      owt:
+        specifier: workspace:*
+        version: link:../owt
+      typescript:
+        specifier: ~6.0.3
+        version: 6.0.3
+
   packages/owt-tsc:
     dependencies:
       '@owt/language-core':
