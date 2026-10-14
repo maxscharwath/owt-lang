@@ -4,8 +4,18 @@
  * file (transformed user code); `Origin` chunks map their first character to
  * a source offset. `CodeWriter` flattens the tree and builds the source map.
  */
-import { GenMapping, addSegment, setSourceContent, toEncodedMap, type EncodedSourceMap } from '@jridgewell/gen-mapping';
+import { GenMapping, addSegment, setSourceContent, toEncodedMap } from '@jridgewell/gen-mapping';
 import { LineMap } from '@owt/ast';
+
+/** Source map v3, in the shape bundlers (Vite, Rollup, Rolldown, esbuild) accept. */
+export type SourceMap = {
+  version: 3;
+  file?: string;
+  names: string[];
+  sources: string[];
+  sourcesContent?: (string | null)[];
+  mappings: string;
+};
 
 /** Decoded mappings relative to the fragment: [genColumn, sourceLine, sourceColumn] per segment. */
 export type FragmentSegments = number[][][];
@@ -120,7 +130,11 @@ export class CodeWriter {
     return this.parts.join('');
   }
 
-  toMap(): EncodedSourceMap {
-    return toEncodedMap(this.map);
+  toMap(): SourceMap {
+    const map = toEncodedMap(this.map);
+    const out: SourceMap = { version: 3, names: [...map.names], sources: map.sources.map((s) => s ?? ''), mappings: map.mappings };
+    if (typeof map.file === 'string') out.file = map.file;
+    if (map.sourcesContent !== undefined) out.sourcesContent = [...map.sourcesContent];
+    return out;
   }
 }

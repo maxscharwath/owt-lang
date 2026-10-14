@@ -11,6 +11,7 @@
     ".": "./src/index.ts",
     "./internal": "./src/internal.ts",
     "./dom": "./src/dom.ts",
+    "./transition": "./src/transition.ts",
     "./elements": "./src/elements.ts",
     "./client": {
       "types": "./client.d.ts"
@@ -27,6 +28,7 @@
       ".": "./dist/index.js",
       "./internal": "./dist/internal.js",
       "./dom": "./dist/dom.js",
+      "./transition": "./dist/transition.js",
       "./elements": "./dist/elements.js",
       "./client": {
         "types": "./client.d.ts"

@@ -2,8 +2,7 @@
 import type * as t from '@babel/types';
 import type { Diagnostic, Program } from '@owt/ast';
 import { parse } from '@owt/parser';
-import type { EncodedSourceMap } from '@jridgewell/gen-mapping';
-import { CodeWriter, type Chunk } from './chunks';
+import { CodeWriter, type Chunk, type SourceMap } from './chunks';
 import { BindingScope } from './bindings';
 import { compileComponent } from './component';
 import { FileContext } from './context';
@@ -31,7 +30,7 @@ export type CompileOptions = {
 };
 
 export type CompileResult = {
-  js: { code: string; map: EncodedSourceMap | null };
+  js: { code: string; map: SourceMap | null };
   css: { code: string } | null;
   warnings: Diagnostic[];
   /** names of the components declared in the file */

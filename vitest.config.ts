@@ -13,6 +13,7 @@ export default defineConfig({
     alias: [
       { find: /^owt\/internal$/, replacement: r('./packages/owt/src/internal.ts') },
       { find: /^owt\/dom$/, replacement: r('./packages/owt/src/dom.ts') },
+      { find: /^owt\/transition$/, replacement: r('./packages/owt/src/transition.ts') },
       { find: /^owt$/, replacement: r('./packages/owt/src/index.ts') },
       { find: /^@owt\/ast$/, replacement: r('./packages/owt-ast/src/index.ts') },
       { find: /^@owt\/parser$/, replacement: r('./packages/owt-parser/src/index.ts') },

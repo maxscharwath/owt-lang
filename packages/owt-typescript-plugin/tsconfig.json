@@ -1,7 +1,9 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "noEmit": true
+    "noEmit": true,
+    // CommonJS plugin (`export =`), bundled by esbuild
+    "module": "preserve"
   },
   "include": ["src"]
 }

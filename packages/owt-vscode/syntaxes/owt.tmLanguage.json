@@ -498,7 +498,7 @@
       ]
     },
     "attribute-directive": {
-      "match": "(?<![^\\s\"\\'}])(bind|class|style|use|on)(:)([^\\s\"\\'<>/={}]*)",
+      "match": "(?<![^\\s\"\\'}])(bind|class|style|use|on|transition|in|out)(:)([^\\s\"\\'<>/={}]*)",
       "captures": {
         "1": {
           "name": "keyword.control.directive.owt"

@@ -2,82 +2,292 @@
 
 **Make it happen.**
 
-OWT is an experimental, typed UI language that keeps developer experience front and center. The goal is a smart, clean way to build reactive interfaces:
+OWT is a typed UI language that compiles to fast, direct DOM code. Logic is plain TypeScript, markup is HTML, and two keywords hold state: `var` for state and `val` for derived values. Control flow reads like code: `if`, `for`, `switch`, `await`, `try`.
 
-- No `useState` or hooks ceremony.
-- No `$` prefixes or template syntax quirks.
-- No magic list macros – just a readable `for` loop.
+```owt
+import type { Todo } from './types'
 
-Write components with plain TypeScript expressions and HTML-like markup. The compiler turns `.owt` files into TypeScript and a tiny runtime handles fine‑grained DOM updates.
+export component TodoList(title: string) {
+  var todos: Todo[] = []
+  var draft = ''
+  val remaining = todos.filter((t) => !t.done).length
 
-## Why OWT?
+  function add() {
+    if (!draft.trim()) return
+    todos.push({ id: crypto.randomUUID(), text: draft, done: false })
+    draft = ''
+  }
 
-Existing approaches either lean on heavy frameworks or rely on template-specific syntax. OWT takes a different path:
+  <h1>{title} ({remaining} left)</h1>
+  <form onSubmit={(e) => { e.preventDefault(); add() }}>
+    <input bind:value={draft} placeholder="What needs doing?" />
+  </form>
+  <ul>
+    for (todo of todos; track todo.id) {
+      <li class:done={todo.done}>
+        <input type="checkbox" bind:checked={todo.done} /> {todo.text}
+      </li>
+    } empty {
+      <li>Nothing to do</li>
+    }
+  </ul>
 
-### Plain TSX
-TSX lets you author UI in TypeScript, but you still manage reactivity and DOM updates manually. OWT adds declarative state and reactivity while keeping the authoring experience close to TSX.
+  <style>
+    .done { text-decoration: line-through; opacity: 0.6; }
+  </style>
+}
+```
 
-### React
-React popularized components and a virtual DOM but introduces hooks, `useState`, and reconciliation overhead. OWT compiles components to direct DOM operations, so updating state is as simple as assigning to a `var`.
+You won't find hooks, dependency arrays, `$` prefixes or a virtual DOM here. A component body runs **once**. The compiler turns markup into cloned templates and wires each dynamic part to a fine-grained signal, so an update only touches the DOM nodes that changed.
 
-### Svelte
-Svelte removes the virtual DOM but adds magic like `$:` labels and `$` store prefixes. OWT aims for the same compiled efficiency without special syntax—just TypeScript and a few keywords.
+## Highlights
 
-Together these ideas aim to be a game changer for typed UI development.
+- **Fast**: in a js-framework-benchmark style suite OWT beats Vue 3.5 and React 19 on every operation. The runtime of a typical app is about **6 KB gzipped**. See [Performance](#performance).
+- **Typed end to end**: props, generics, slots, events and bindings are all type-checked, in markup too. Editors flag a wrong prop type, an unknown attribute or an assignment to a `val`. `owt-tsc` reports the same errors in CI.
+- **Readable control flow**:
+  - `if` / `else if` / `else`;
+  - keyed `for` loops with `track`, meta (`index`, `first`, `last`...) and an `empty` block;
+  - ranges `1..10` and `rev`;
+  - `switch` with multiple values and guards;
+  - `await` / `then` / `catch` blocks;
+  - `try` / `catch` error boundaries with reset;
+  - `key` blocks.
+- **Batteries included**:
+  - two-way bindings (`bind:value`, `bind:checked`, `bind:group`, `bind:this`, element sizes, media...);
+  - `class:` and `style:` directives and actions (`use:`);
+  - transitions (`transition:`, `in:`, `out:`) with built-in `fade`, `fly`, `slide`, `scale` and `blur`, running on the Web Animations API;
+  - named slots with arguments;
+  - context and portals;
+  - `<window>`, `<document>` and `<head>` elements;
+  - deeply reactive objects and arrays;
+  - scoped CSS with `:global`.
+- **First-class tooling**:
+  - a Vite 8 plugin with HMR that keeps component state and an error overlay with code frames;
+  - a Volar-based language server used by the VS Code extension, the JetBrains plugin, Neovim, Zed and Helix;
+  - source maps throughout.
 
-## Features
-
-- **State with `var` and `val`** – `var` declares reactive writable state, while `val` defines derived read-only values.
-- **Typed components** – Component signatures are real TypeScript functions, giving you autocompletion and static checking.
-- **Control flow** – Use `if/else` and `for … empty` blocks, including numeric ranges like `1..10`, to render lists and branches.
-- **Slots** – Components expose named insertion points for children.
-- **Scoped styles** – Inline `<style>` blocks are scoped to the component.
-- **Async blocks** – Await Promises directly within markup.
-- **Tiny runtime** – Compiled output targets a minimal DOM runtime with fine‑grained updates.
-
-See [`features/`](features) and the full [language specification](spec.md) for details and current limitations.
-
-## Quick Start
-
-Install dependencies and add the Vite plugin:
+## Quick start
 
 ```bash
-pnpm install
+pnpm add owt
+pnpm add -D @owt/vite vite
 ```
 
 ```ts
 // vite.config.ts
-import { defineConfig } from 'vite';
-import owt from '@owt/vite';
+import { defineConfig } from 'vite'
+import owt from '@owt/vite'
 
 export default defineConfig({
   plugins: [owt()],
-});
+})
 ```
 
-Create a component:
+```ts
+// src/main.ts
+import { mount } from 'owt'
+import { App } from './App.owt'
+
+mount(App, { target: document.getElementById('app')!, props: { name: 'World' } })
+```
 
 ```owt
-export component App(props: { title: string }) {
-  <h1>{props.title}</h1>
+// src/App.owt
+export component App(name: string) {
+  var count = 0
+  val doubled = count * 2
+
+  <h1>Hello {name}!</h1>
+  <button onClick={() => count++}>Clicked {count} times</button>
+  if (count > 0) {
+    <p>Doubled: {doubled}</p>
+  }
 }
 ```
 
-Mount it in your app:
+To give `.ts` files typed `.owt` imports in editors, add the TypeScript plugin to your `tsconfig.json`:
 
-```ts
-import { mount } from 'owt/dom';
-import { App } from './App.owt';
-
-mount(App, { props: { title: 'Hello' }, target: document.getElementById('root')! });
+```jsonc
+{
+  "compilerOptions": {
+    "plugins": [{ "name": "@owt/typescript-plugin" }],
+    "types": ["vite/client"]
+  }
+}
 ```
 
-The `mount` helper automatically initializes the DOM host—no extra setup required.
+Then type-check everything, markup included, with `owt-tsc --noEmit`.
+
+> The packages are not published to npm yet. Inside this repository, run `pnpm install && pnpm build`, then try the [examples](#examples).
+
+## A short tour
+
+Full details are in the [language reference](spec.md).
+
+```owt
+import { Portal, onMount } from 'owt'
+import { fade, fly } from 'owt/transition'
+import { tooltip } from './actions'
+import { fetchUser } from './api'
+import { Chart, Likes, Posts } from './widgets.owt'
+
+// three ways to declare props: (props: P), ({ a, b = 1 }: P), or named props
+export component Profile(userId: number, size: 'sm' | 'lg' = 'sm', class?: string) {
+  var tab = 'posts'
+  var open = false
+  val avatar = `/avatars/${userId}.png`          // re-computed when userId changes
+
+  onMount(() => console.log('mounted'))
+
+  <window onKeyDown={(e) => e.key === 'Escape' && (open = false)} />
+  <head><title>Profile #{userId}</title></head>
+
+  <section class={['profile', size, class]} class:open style:--accent="tomato">
+    <img src={avatar} alt="" use:tooltip={'User ' + userId} />
+
+    await (fetchUser(userId)) {
+      <p>Loading…</p>
+    } then (user) {
+      <h2>{user.name}</h2>
+    } catch (error) {
+      <p class="error">Could not load the user: {String(error)}</p>
+    }
+
+    for (name of ['posts', 'likes'], { index }) {
+      <button class:active={tab === name} onClick={tab = name}>{index + 1}. {name}</button>
+    }
+
+    switch (tab) {
+      case 'posts' { <Posts {userId} /> }
+      case 'likes' if (open) { <Likes {userId} /> }
+      default { <p>Pick a tab</p> }
+    }
+
+    try {
+      <Chart {userId} />
+    } catch (error, reset) {
+      <button onClick={reset}>Retry chart</button>
+    }
+
+    <slot name="footer" {userId}>Default footer</slot>
+  </section>
+
+  if (open) {
+    <Portal>
+      <div class="backdrop" transition:fade>
+        <div class="modal" in:fly={{ y: 20 }} out:fade>…</div>
+      </div>
+    </Portal>
+  }
+
+  <style>
+    .profile { border: 1px solid var(--accent); }
+    .profile :global(a) { color: inherit; }
+  </style>
+}
+```
+
+Using it:
+
+```owt
+<Profile userId={id} size="lg">
+  slot footer({ userId }) {
+    <a href={`/users/${userId}`}>Open full profile</a>
+  }
+</Profile>
+```
+
+Shared state is plain TypeScript:
+
+```ts
+// store.ts
+import { reactive, computed } from 'owt'
+
+type Item = { name: string; price: number }
+
+export const cart = reactive({ items: [] as Item[] })
+export const total = computed(() => cart.items.reduce((sum, i) => sum + i.price, 0))
+```
+
+## Performance
+
+`benchmark/` runs a [js-framework-benchmark](https://github.com/krausest/js-framework-benchmark)-style keyed suite. The same table app is written in vanilla JS, Vue 3.5, React 19 and OWT, built with Vite in production mode and driven by Playwright in Chromium. Durations are median click-to-paint times. Lower is better; the number in parentheses is the slowdown vs. vanilla.
+
+<!-- benchmark:start -->
+| Benchmark | vanilla | Vue 3.5 | React 19 | **OWT** |
+|:---|---:|---:|---:|---:|
+| create 1,000 rows | 111.6 | 141.2 (1.26) | 142.6 (1.28) | **127.7 (1.14)** |
+| replace all 1,000 rows | 122.1 | 163.4 (1.34) | 166.8 (1.37) | **139.8 (1.15)** |
+| partial update (every 10th row, 4x CPU slowdown) | 56.5 | 91.1 (1.61) | 82.6 (1.46) | **80.0 (1.42)** |
+| select row (4x CPU slowdown) | 36.1 | 54.3 (1.50) | 41.9 (1.16) | **39.0 (1.08)** |
+| swap rows (4x CPU slowdown) | 72.9 | 98.3 (1.35) | 658.7 (9.04) | **76.4 (1.05)** |
+| remove row (4x CPU slowdown) | 128.6 | 148.6 (1.16) | 137.6 (1.07) | **129.1 (1.00)** |
+| create 10,000 rows | 1163.9 | 1379.2 (1.18) | 1528.5 (1.31) | **1213.7 (1.04)** |
+| append 1,000 rows to 1,000 | 133.0 | 168.0 (1.26) | 162.8 (1.22) | **159.3 (1.20)** |
+| clear 1,000 rows | 10.0 | 12.7 (1.27) | 17.4 (1.75) | **12.4 (1.24)** |
+| **geometric mean** | 1.00 | 1.32 | 1.63 | **1.14** |
+| memory after creating 1,000 rows (MB) | 2.12 | 4.13 | 4.37 | **2.93** |
+| JS bundle, gzip | 1.2 KiB | 24.8 KiB | 67.0 KiB | **6.2 KiB** |
+<!-- benchmark:end -->
+
+Headless Chromium 141 on 4 Xeon cores. Run it yourself with `pnpm bench`. The full report, with every sample and the machine details, is in [`benchmark/results/latest.md`](benchmark/results/latest.md).
+
+Where the speed comes from:
+
+- **Compiled templates.** Static HTML is hoisted and cloned. Dynamic nodes are reached through precomputed `firstChild`/`nextSibling` paths. All dynamic parts of a template share one render effect, which compares against the previous value before touching the DOM.
+- **Push-pull signals.** Dependencies are linked lists (no allocations on re-tracking). Derived values are lazy and validated by version, and DOM updates are batched in a microtask.
+- **Lists.**
+  - The keyed diff uses a longest increasing subsequence, so it makes the minimum number of DOM moves.
+  - Rows replaced by new objects with the same `track` key keep their DOM.
+  - Clearing an only-child list is O(1).
+  - Reactive arrays are tracked with one dependency, not one per item.
+- **Event delegation.** One document listener per event type, so thousands of rows cost no listeners.
+- **No component re-execution.** Props are lazy getters, so a child only updates the nodes that read a changed prop.
+
+## Tooling
+
+| Package | Description |
+|---|---|
+| [`owt`](packages/owt) | Runtime: signals, deep reactivity, DOM layer, public API |
+| [`@owt/vite`](packages/vite-plugin-owt) | Vite 7/8 plugin: compilation, scoped CSS through Vite's CSS pipeline, state-preserving HMR, error overlay |
+| [`@owt/compiler`](packages/owt-compiler) | `compile(source, { filename, dev, hmr, css, sourcemap })` for other build tools |
+| [`@owt/parser`](packages/owt-parser), [`@owt/ast`](packages/owt-ast) | Error-tolerant parser and AST |
+| [`@owt/language-core`](packages/owt-language-core) | Volar language plugin: `.owt` to virtual TypeScript, formatter |
+| [`@owt/language-server`](packages/owt-language-server) | LSP server: diagnostics, completions, hover, go to definition, references, rename, symbols, folding, formatting, CSS in `<style>` |
+| [`@owt/typescript-plugin`](packages/owt-typescript-plugin) | Typed `.owt` imports in `.ts` files |
+| [`owt-tsc`](packages/owt-tsc) | `tsc` with `.owt` support for CI |
+| [VS Code extension](packages/owt-vscode) | Language client, TextMate grammar, snippets, compiled-output and virtual-code previews |
+| [JetBrains plugin](packages/owt-jetbrains) | File type, highlighting and LSP integration for IntelliJ IDEA, WebStorm and other JetBrains IDEs 2025.2+ |
+
+Setup instructions for VS Code, JetBrains IDEs, Neovim, Zed and Helix are in [`docs/editors.md`](docs/editors.md).
 
 ## Examples
 
-The [`examples/`](examples) directory contains runnable projects. Start with [`basic`](examples/basic) or explore the more complete [`todo-app`](examples/todo-app).
+| Example | Shows |
+|---|---|
+| [`examples/basic`](examples/basic) | Counter, conditionals, ranges and `rev` loops |
+| [`examples/todo-app`](examples/todo-app) | Keyed lists, editing, filters, `localStorage` persistence, scoped styles |
+| [`examples/showcase`](examples/showcase) | Most of the language in one app: bindings, slots, generics, context, actions, transitions, `await`, `try`, portals, `<window>`/`<head>` |
+
+```bash
+pnpm install && pnpm build
+pnpm --filter owt-example-showcase dev
+```
+
+## Development
+
+```bash
+pnpm install
+pnpm build          # build every package
+pnpm test           # unit and integration tests (Vitest)
+pnpm test:e2e       # build the examples and test them in Chromium
+pnpm typecheck
+pnpm lint
+pnpm bench          # benchmark against Vue, React and vanilla
+```
+
+Conventions and the architecture overview are in [`agent.md`](agent.md).
 
 ## Status
 
-OWT is a work in progress. Expect breaking changes while the language and tooling evolve.
+OWT 1.0 is in beta. The language and APIs are close to final, but breaking changes are still possible before 1.0. Changes from 0.x are listed in the [migration notes](spec.md#migrating-from-0x).

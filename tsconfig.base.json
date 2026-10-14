@@ -33,6 +33,9 @@
       "owt/dom": [
         "./packages/owt/src/dom.ts"
       ],
+      "owt/transition": [
+        "./packages/owt/src/transition.ts"
+      ],
       "owt/elements": [
         "./packages/owt/src/elements.ts"
       ],

@@ -20,22 +20,23 @@ import {
   untrack,
 } from '../reactivity';
 import { reactive, toRaw, trackArray } from '../proxy';
-import { insertContent, moveRange, removeRange, type NodeRange } from './nodes';
+import { insertContent, moveRange, type NodeRange } from './nodes';
+import { BlockScope, destroyContent, hasOutros } from './transitions';
 
 type Render = () => Node;
 
 type Branch = { scope: Owner; first: Node; last: Node };
 
-function renderBranch(owner: Owner | null, anchor: Node, render: Render): Branch {
-  const scope = new Owner(owner);
+/** `intro`: the content is created by an update of its block (not its first render), so intros play. */
+function renderBranch(owner: Owner | null, anchor: Node, render: Render, intro: boolean): Branch {
+  const scope = new BlockScope(owner, intro);
   const content = runWithOwner(scope, render);
   const range = insertContent(anchor, content);
   return { scope, first: range.first, last: range.last };
 }
 
 function destroyBranch(branch: Branch): void {
-  dispose(branch.scope);
-  removeRange(branch.first, branch.last);
+  destroyContent(branch.scope, branch.first, branch.last);
 }
 
 // ---------------------------------------------------------------------------
@@ -53,6 +54,7 @@ export function branch(anchor: Node, select: () => number, branches: readonly Re
   renderEffect(() => {
     const next = select();
     if (next === index) return;
+    const intro = index !== -2;
     index = next;
     untrack(() => {
       if (current !== null) {
@@ -60,7 +62,7 @@ export function branch(anchor: Node, select: () => number, branches: readonly Re
         current = null;
       }
       const render = next >= 0 ? branches[next] : undefined;
-      if (render !== undefined) current = renderBranch(owner, anchor, render);
+      if (render !== undefined) current = renderBranch(owner, anchor, render, intro);
     });
   });
 }
@@ -79,11 +81,12 @@ export function keyed<K>(anchor: Node, key: () => K, render: (key: K) => Node): 
   renderEffect(() => {
     const k = key();
     if (!first && k === prev) return;
+    const intro = !first;
     first = false;
     prev = k;
     untrack(() => {
       if (current !== null) destroyBranch(current);
-      current = renderBranch(owner, anchor, () => render(k));
+      current = renderBranch(owner, anchor, () => render(k), intro);
     });
   });
 }
@@ -103,6 +106,7 @@ export function dynamic<P>(anchor: Node, getComponent: () => ComponentLike<P>, p
   renderEffect(() => {
     const next = getComponent();
     if (!first && next === component) return;
+    const intro = !first;
     first = false;
     component = next;
     untrack(() => {
@@ -110,7 +114,7 @@ export function dynamic<P>(anchor: Node, getComponent: () => ComponentLike<P>, p
         destroyBranch(current);
         current = null;
       }
-      if (typeof next === 'function') current = renderBranch(owner, anchor, () => next(props));
+      if (typeof next === 'function') current = renderBranch(owner, anchor, () => next(props), intro);
     });
   });
 }
@@ -131,6 +135,7 @@ export function slot<A>(
   renderEffect(() => {
     const next = getSnippet();
     if (!first && next === snippet) return;
+    const intro = !first;
     first = false;
     snippet = next;
     untrack(() => {
@@ -138,8 +143,8 @@ export function slot<A>(
         destroyBranch(current);
         current = null;
       }
-      if (typeof next === 'function') current = renderBranch(owner, anchor, () => next(args));
-      else if (fallback !== null) current = renderBranch(owner, anchor, fallback);
+      if (typeof next === 'function') current = renderBranch(owner, anchor, () => next(args), intro);
+      else if (fallback !== null) current = renderBranch(owner, anchor, fallback, intro);
     });
   });
 }
@@ -173,6 +178,7 @@ export function awaitBlock<T>(
   let state = -1;
   let current: Branch | null = null;
   let token = 0;
+  let ready = false;
 
   const show = (next: number) => {
     if (next === state && current !== null) return;
@@ -185,7 +191,7 @@ export function awaitBlock<T>(
       next === 0 ? pending : next === 1 && then !== null ? () => then(value) : next === 2 && rejected !== null ? () => rejected(error) : null;
     if (render !== null) {
       try {
-        current = renderBranch(owner, anchor, render);
+        current = renderBranch(owner, anchor, render, ready);
       } catch (err) {
         reportError(owner, err);
       }
@@ -220,6 +226,7 @@ export function awaitBlock<T>(
         },
       );
     });
+    ready = true;
   });
 }
 
@@ -239,6 +246,7 @@ export function tryBlock(
   let current: Branch | null = null;
   let failed = false;
   let rendering = false;
+  let ready = false;
   let pendingError: { err: unknown } | null = null;
 
   const showFallback = (err: unknown) => {
@@ -248,7 +256,7 @@ export function tryBlock(
     }
     failed = true;
     set(error, err);
-    current = renderBranch(owner, anchor, () => fallback(error, reset));
+    current = renderBranch(owner, anchor, () => fallback(error, reset), ready);
   };
 
   const renderBody = () => {
@@ -256,7 +264,7 @@ export function tryBlock(
     pendingError = null;
     let branchResult: Branch | null = null;
     try {
-      branchResult = renderBranch(boundary, anchor, body);
+      branchResult = renderBranch(boundary, anchor, body, ready);
     } catch (err) {
       pendingError ??= { err };
     } finally {
@@ -295,6 +303,7 @@ export function tryBlock(
   };
 
   untrack(renderBody);
+  ready = true;
 }
 
 // ---------------------------------------------------------------------------
@@ -400,6 +409,7 @@ export function each<T>(
   const length = new Source(0);
   let rows: Row[] = [];
   let emptyBranch: Branch | null = null;
+  let ready = false;
 
   const makeMeta = (index: Source<number>): LoopMeta => ({
     get index() {
@@ -423,7 +433,7 @@ export function each<T>(
   });
 
   const createRow = (key: unknown, raw: unknown, i: number, before: Node | null, parent: Node): Row => {
-    const scope = new Owner(owner);
+    const scope = new BlockScope(owner, ready);
     const value = reactive(raw) as T;
     const item = itemSource ? new Source<T>(value) : value;
     const index = indexSource ? new Source(i) : i;
@@ -447,18 +457,26 @@ export function each<T>(
   };
 
   const removeRow = (row: Row) => {
-    dispose(row.scope);
-    removeRange(row.first, row.last);
+    destroyContent(row.scope, row.first, row.last);
   };
 
   const clearAll = () => {
     const parent = anchor.parentNode!;
-    for (let i = 0; i < rows.length; i++) dispose(rows[i]!.scope);
-    if (flags & EACH_ONLY_CHILD && emptyBranch === null) {
+    let fast = (flags & EACH_ONLY_CHILD) !== 0 && emptyBranch === null;
+    if (fast) {
+      for (let i = 0; i < rows.length; i++) {
+        if (hasOutros(rows[i]!.scope)) {
+          fast = false;
+          break;
+        }
+      }
+    }
+    if (fast) {
+      for (let i = 0; i < rows.length; i++) dispose(rows[i]!.scope);
       (parent as Element).textContent = '';
       parent.appendChild(anchor);
     } else {
-      for (let i = 0; i < rows.length; i++) removeRange(rows[i]!.first, rows[i]!.last);
+      for (let i = 0; i < rows.length; i++) removeRow(rows[i]!);
     }
     rows = [];
   };
@@ -471,7 +489,7 @@ export function each<T>(
 
     if (n === 0) {
       if (oldLen > 0) clearAll();
-      if (empty !== null && emptyBranch === null) emptyBranch = renderBranch(owner, anchor, empty);
+      if (empty !== null && emptyBranch === null) emptyBranch = renderBranch(owner, anchor, empty, ready);
       return;
     }
     if (emptyBranch !== null) {
@@ -522,6 +540,19 @@ export function each<T>(
       }
       const oldIndex = new Map<Row, number>();
       for (let i = start; i <= oldEnd; i++) oldIndex.set(oldRows[i]!, i);
+      if (start === 0 && newEnd === n - 1) {
+        let reused = false;
+        for (let i = 0; i < n && !reused; i++) reused = byKey.has(keys[i]);
+        if (!reused) {
+          // nothing is kept (e.g. replacing every row): clear, then build the new rows off-document
+          clearAll();
+          const frag = document.createDocumentFragment();
+          for (let i = 0; i < n; i++) next[i] = createRow(keys[i], items[i], i, null, frag);
+          parent.insertBefore(frag, anchor);
+          rows = next;
+          return;
+        }
+      }
       const sources = new Int32Array(newEnd - start + 1).fill(-1);
       let moved = false;
       let lastOld = -1;
@@ -571,6 +602,7 @@ export function each<T>(
       set(length, n);
       reconcile(items, keys);
     });
+    ready = true;
   });
 }
 

@@ -534,6 +534,11 @@ export function transformExpression(node: t.Node, ctx: JsContext, locals: readon
   const tr = new Transformer(ctx, node.start ?? 0, node.end ?? 0);
   tr.walker(locals).expression(node);
   tr.flushPatternWrites();
+  // expressions are emitted in arrow bodies and argument lists: `{ a }` and `a, b` need parentheses there
+  if (node.type === 'SequenceExpression' || tr.edits.ms.toString().trimStart().startsWith('{')) {
+    tr.edits.ms.prepend('(');
+    tr.edits.ms.append(')');
+  }
   return tr.edits.result();
 }
 

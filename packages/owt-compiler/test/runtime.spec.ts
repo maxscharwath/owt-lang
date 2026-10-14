@@ -53,6 +53,26 @@ describe('state and events', () => {
     expect(text(m, 'button')).toBe('2-1');
   });
 
+  it('derives object literals', async () => {
+    const m = await render(`export component App() {\n  var n = 1\n  val pair = { n, double: n * 2 }\n  <p onClick={() => n++}>{pair.n}:{pair.double}</p>\n}`);
+
+    m.click('p');
+
+    expect(text(m, 'p')).toBe('2:4');
+  });
+
+  it('passes object literal parameters to actions', async () => {
+    const m = await render(`function label(el: HTMLElement, p: { text: string }) { el.textContent = p.text }\nexport component App() {\n  <p use:label={{ text: 'hi' }}></p>\n}`);
+
+    expect(text(m, 'p')).toBe('hi');
+  });
+
+  it('iterates over object literals', async () => {
+    const m = await render(`export component App() {\n  <ul>\n    for ([k, v] of { a: 1, b: 2 }) { <li>{k}={v}</li> }\n  </ul>\n}`);
+
+    expect(text(m, 'ul')).toBe('a=1b=2');
+  });
+
   it('supports compound assignments', async () => {
     const m = await render(`export component App() {\n  var s = 'a'\n  <button onClick={() => s += 'b'}>{s}</button>\n}`);
 

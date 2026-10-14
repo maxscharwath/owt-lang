@@ -162,6 +162,7 @@ function add() {
 | `bind:value={name}` | two-way binding |
 | `ref={el}` / `bind:this={el}` | element reference (also accepts a callback `ref={(el) => ...}`) |
 | `use:action={params}` | attach an action |
+| `transition:fade`, `in:fly={{ y: 20 }}`, `out:slide` | animate when entering / leaving |
 
 ### Events
 
@@ -199,6 +200,50 @@ export function tooltip(el: HTMLElement, text: string) {
 ```owt
 <button use:tooltip={`Delete ${item.name}`}>×</button>
 ```
+
+### Transitions
+
+`transition:fn` animates an element when it enters and leaves the document, `in:fn` only when it enters, `out:fn` only when it leaves. Built-in transitions come from `owt/transition`:
+
+```owt
+import { fade, fly, slide } from 'owt/transition'
+
+if (open) {
+  <div class="backdrop" transition:fade={{ duration: 150 }} />
+  <aside in:fly={{ x: -300 }} out:fade>…</aside>
+}
+for (todo of todos; track todo.id) {
+  <li transition:slide>{todo.text}</li>
+}
+```
+
+| Transition | Parameters (all optional) | Effect |
+|---|---|---|
+| `fade` | `delay`, `duration`, `easing` | opacity |
+| `fly` | `x`, `y` (px or CSS length), `opacity`, timing | translate and fade |
+| `scale` | `start` (scale of the hidden state), `opacity`, timing | scale and fade |
+| `blur` | `amount` (px or CSS length), `opacity`, timing | blur and fade |
+| `slide` | `axis` (`'y'` or `'x'`), timing | height (or width), padding, margin and border |
+
+Easings are CSS easing functions (`'ease-out'`, `'cubic-bezier(...)'`, `'linear(...)'`); `owt/transition` also exports `cubicIn`, `cubicOut`, `cubicInOut`, `quintOut`, `expoOut` and `backOut`.
+
+Transitions are **local**: an element animates when the block content that directly contains it (an `if` branch, a `for` row, an `await` state, a `key` block...) is added or removed by an update. Child components belong to the block that contains them. Content rendered by the initial mount, or by a block that is itself being created, appears without intro. Leaving content stays in the document, with its effects already stopped, until all its outros have finished. A `transition:` that is interrupted while coming in plays backwards from where it is.
+
+A transition is a function returning [Web Animations](https://developer.mozilla.org/docs/Web/API/Web_Animations_API) keyframes from the hidden to the visible state; the outro plays them in reverse:
+
+```ts
+import type { TransitionConfig } from 'owt/transition'
+
+export function spin(node: Element, params: { turns?: number; duration?: number } = {}): TransitionConfig {
+  return {
+    duration: params.duration ?? 400,
+    easing: 'ease-out',
+    keyframes: [{ transform: `rotate(${params.turns ?? 1}turn) scale(0)` }, { transform: 'none' }],
+  }
+}
+```
+
+The third argument tells the direction (`{ direction: 'in' | 'out' | 'both' }`); returning `null` skips the animation. Elements receive `introstart`, `introend`, `outrostart` and `outroend` events (`onIntroEnd={...}`).
 
 ## Control flow
 
@@ -372,7 +417,7 @@ export component Card() {
 
 ## Runtime API
 
-Everything is exported from `owt`.
+Everything is exported from `owt`, except the built-in transitions (`owt/transition`).
 
 | API | Description |
 |---|---|
@@ -389,7 +434,7 @@ Everything is exported from `owt`.
 | `createContext<T>()`, `setContext(key, value)`, `getContext(key)` | values provided to descendants |
 | `Portal` | render children elsewhere |
 | `range(a, b)`, `rev(list)` | helpers behind `a..b` and `rev` |
-| types | `Component<P>`, `Snippet<A>`, `LoopMeta`, `Action<E, P>` |
+| types | `Component<P>`, `Snippet<A>`, `LoopMeta`, `Action<E, P>`, `Transition<E, P>`, `TransitionConfig` |
 
 Shared state is just TypeScript:
 
@@ -443,7 +488,7 @@ TagName         = Name { ( "." | "-" | ":" ) Name } ;
 Attribute       = AttrName [ "=" ( String | Unquoted | "{" TsExpression "}" ) ]
                 | "{" Identifier "}"
                 | "{" "..." TsExpression "}" ;
-AttrName        = [ ( "bind" | "class" | "style" | "use" | "on" ) ":" ] Name ;
+AttrName        = [ ( "bind" | "class" | "style" | "use" | "on" | "transition" | "in" | "out" ) ":" ] Name ;
 ExpressionTag   = "{" [ TsExpression ] "}" ;
 Comment         = "<!--" ... "-->" ;
 

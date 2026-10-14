@@ -746,6 +746,28 @@ export class TemplateCompiler {
         ops.post.push(() => [`${rt}.action(${node.ref}, `, fn, params === null ? '' : [', ', this.getterFn(params, scope)], ');']);
         return;
       }
+      case 'transition':
+      case 'in':
+      case 'out': {
+        const kind = attr.directive;
+        const flags = kind === 'in' ? 1 : kind === 'out' ? 2 : 3;
+        const earlier = el.attributes.slice(0, el.attributes.indexOf(attr));
+        const conflict = earlier.find(
+          (a) => a.type === 'Attribute' && (a.directive === kind || (a.directive === 'transition' && kind !== 'transition') || (kind === 'transition' && (a.directive === 'in' || a.directive === 'out'))),
+        );
+        if (conflict !== undefined && conflict.type === 'Attribute') {
+          this.c.error('duplicate-transition', `${attr.name} conflicts with ${conflict.name}: an element has one transition: or at most one in: and one out:`, attr.start, attr.end);
+        }
+        if (arg.includes('|')) {
+          this.c.error('unknown-modifier', `Transitions have no modifiers: ${attr.name}`, attr.start, attr.end);
+        }
+        const parts = arg.split('.');
+        const rootId = identifier(parts[0]!, attr.nameSpan.start + kind.length + 1);
+        const fn: Chunk = [this.c.expr(rootId, scope), parts.length > 1 ? `.${parts.slice(1).join('.')}` : ''];
+        const params = value.type === 'Expression' && value.expression !== null ? value.expression : null;
+        ops.post.push(() => [`${rt}.transition(${node.ref}, `, fn, ', ', params === null ? 'null' : this.getterFn(params, scope), `, ${flags});`]);
+        return;
+      }
       case 'bind':
         this.binding(el, attr, node, scope, ops, exprOf());
         return;

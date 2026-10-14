@@ -85,7 +85,9 @@ export const VOID_ELEMENTS = new Set([
 ]);
 
 const RAW_TEXT_ELEMENTS = new Set(['script', 'style']);
-const DIRECTIVES = new Set<DirectiveKind>(['bind', 'class', 'style', 'use', 'on']);
+const DIRECTIVES = new Set<DirectiveKind>(['bind', 'class', 'style', 'use', 'on', 'transition', 'in', 'out']);
+/** directives whose value is optional parameters (`use:tooltip`, `transition:fade`) */
+const PARAM_DIRECTIVES = new Set<DirectiveKind>(['use', 'transition', 'in', 'out']);
 const SPECIAL_ELEMENTS: Record<string, ElementKind> = {
   window: 'window',
   document: 'document',
@@ -1203,7 +1205,7 @@ class Parser {
         end = q;
       }
     }
-    if (directive !== null && directive !== 'class' && directive !== 'use' && value.type !== 'Expression') {
+    if (directive !== null && directive !== 'class' && !PARAM_DIRECTIVES.has(directive) && value.type !== 'Expression') {
       if (!(directive === 'style' && value.type === 'Static')) {
         this.error('directive-value', `${name} needs an expression value: ${name}={...}`, pos, end);
       }

@@ -32,6 +32,13 @@ export component Markup() {
 //                          ^^^^ keyword.control.directive.owt
 //                                         ^^ keyword.control.directive.owt
 //                                                       ^^^ entity.other.attribute-name.owt
+    <p transition:fade in:fly={{ y: 20 }} out:slide>Hi</p>
+//     ^^^^^^^^^^ keyword.control.directive.owt
+//                ^^^^ entity.other.attribute-name.owt
+//                     ^^ keyword.control.directive.owt
+//                        ^^^ entity.other.attribute-name.owt
+//                                        ^^^ keyword.control.directive.owt
+//                                            ^^^^^ entity.other.attribute-name.owt
     <input {...rest} {disabled} type="checkbox" checked>
 //          ^^^ source.ts keyword.operator.spread.ts
 //             ^^^^ source.ts variable.other.readwrite.ts

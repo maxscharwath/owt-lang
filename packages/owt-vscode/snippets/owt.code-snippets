@@ -203,5 +203,15 @@
     "prefix": "class:",
     "description": "Toggle a class",
     "body": ["class:${1:active}={${2:condition}}$0"]
+  },
+  "transition directive": {
+    "prefix": ["transition", "transition:"],
+    "description": "Animate an element in and out (import from 'owt/transition')",
+    "body": ["transition:${1|fade,fly,slide,scale,blur|}={{ ${2:duration: 200} }}$0"]
+  },
+  "import transitions": {
+    "prefix": ["import-transition", "imtr"],
+    "description": "Import built-in transitions",
+    "body": ["import { ${1:fade} } from 'owt/transition'$0"]
   }
 }

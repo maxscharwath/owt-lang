@@ -264,6 +264,11 @@ export type EventHandler<E extends Event, T extends EventTarget> = (
 export interface OwtEventMap extends HTMLVideoElementEventMap {
   command: CommandEvent;
   contentvisibilityautostatechange: ContentVisibilityAutoStateChangeEvent;
+  // dispatched by OWT transitions (`transition:`, `in:`, `out:`)
+  introstart: Event;
+  introend: Event;
+  outrostart: Event;
+  outroend: Event;
 }
 
 /** Event handler prop name to DOM event name, for events every element can receive. */
@@ -358,6 +363,12 @@ export type GlobalEventProps = {
   onTransitionEnd: 'transitionend';
   onTransitionRun: 'transitionrun';
   onTransitionStart: 'transitionstart';
+
+  // OWT transitions (`transition:`, `in:`, `out:`)
+  onIntroStart: 'introstart';
+  onIntroEnd: 'introend';
+  onOutroStart: 'outrostart';
+  onOutroEnd: 'outroend';
 
   // Media (audio, video, track)
   onAbort: 'abort';

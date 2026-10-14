@@ -1,11 +1,13 @@
 import { Portal } from 'owt'
+import { fade, fly, scale } from 'owt/transition'
 
 // Portal renders into document.body; <window> listens to global events.
+// Transitions play when `open` changes, and the modal stays until its outro has finished.
 export component Modal(open: boolean, onClose: () => void) {
   if (open) {
     <Portal>
-      <div class="backdrop" onClick={onClose}>
-        <div class="modal" role="dialog" onClick={(e) => e.stopPropagation()}>
+      <div class="backdrop" onClick={onClose} transition:fade={{ duration: 150 }}>
+        <div class="modal" role="dialog" onClick={(e) => e.stopPropagation()} in:fly={{ y: 24, duration: 200 }} out:scale={{ start: 0.95, duration: 150 }}>
           <slot />
           <button class="close" onClick={onClose}>Close</button>
         </div>

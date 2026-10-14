@@ -13,6 +13,7 @@ import {
 } from '../reactivity';
 import { dynamic } from './blocks';
 import { insertContent, removeRange } from './nodes';
+import { BlockScope, destroyContent, introAllowed } from './transitions';
 import { DEV } from '../env';
 
 type Dict = Record<PropertyKey, unknown>;
@@ -210,10 +211,16 @@ export type PortalProps = {
   children?: (args: Record<string, never>) => Node;
 };
 
-/** Render children somewhere else in the document (modals, toasts...). */
+/**
+ * Render children somewhere else in the document (modals, toasts...). The
+ * content has its own transition scope: its outros play before it is removed.
+ */
 export function Portal(props: PortalProps): Node {
   const placeholder = document.createComment('portal');
-  const owner = new Owner(getOwner());
+  const parent = getOwner();
+  const owner = new Owner(parent);
+  const intro = introAllowed(parent);
+  let scope: BlockScope | null = null;
   let range: { first: Node; last: Node } | null = null;
   const resolveTarget = (): Element => {
     const t = props.target;
@@ -225,13 +232,14 @@ export function Portal(props: PortalProps): Node {
     const host = resolveTarget();
     const end = document.createTextNode('');
     host.appendChild(end);
-    const content = runWithOwner(owner, () => props.children!({}));
+    scope = new BlockScope(owner, intro);
+    const content = runWithOwner(scope, () => props.children!({}));
     range = insertContent(end, content);
     end.remove();
   });
   runWithOwner(owner, () => {
     (owner.cleanups ??= []).push(() => {
-      if (range !== null) removeRange(range.first, range.last);
+      if (scope !== null && range !== null) destroyContent(scope, range.first, range.last);
     });
   });
   return placeholder;

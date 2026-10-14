@@ -62,8 +62,14 @@ const scenarios = {
     await page.click('#add-fruit');
     assert((await page.locator('.list li').count()) === 4, 'fruit added');
     assert((await text('#notifications')) === '1', 'store update rendered');
-    await page.locator('.list .remove').first().click();
-    assert((await page.locator('.list li').count()) === 3, 'fruit removed');
+    const leaving = await page.evaluate(async () => {
+      const li = document.querySelector('.list li');
+      li.querySelector('.remove').click();
+      await new Promise((r) => setTimeout(r, 0));
+      return { connected: li.isConnected, animations: li.getAnimations().length };
+    });
+    assert(leaving.connected && leaving.animations === 1, 'removed fruit stays while its outro plays');
+    await page.waitForFunction(() => document.querySelectorAll('.list li').length === 3);
     // async data
     await page.waitForSelector('.user strong');
     assert((await text('.user strong')) === 'User #1', 'await then branch');
@@ -77,10 +83,19 @@ const scenarios = {
     await page.check('input[value=nuts]');
     assert((await text('#order')) === 'One chocolate ice cream with sprinkles and nuts.', `bind:group (got ${await text('#order')})`);
     // portal + context + window events
-    await page.click('#open-modal');
+    // number of running animations in the subtree of an element (-1: element missing)
+    const animating = (selector) =>
+      page.evaluate(async (sel) => {
+        await new Promise((r) => setTimeout(r, 0));
+        return document.querySelector(sel)?.getAnimations({ subtree: true }).length ?? -1;
+      }, selector);
+    await page.evaluate(() => document.querySelector('#open-modal').click());
+    assert((await animating('.backdrop')) > 0, 'modal intro plays');
     assert((await page.locator('body > .backdrop').count()) === 1, 'modal rendered in body (portal)');
     assert((await text('.modal strong')) === 'Ada', 'context read inside portal');
-    await page.keyboard.press('Escape');
+    await page.evaluate(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })));
+    assert((await animating('.backdrop')) > 0, 'modal stays while its outro plays');
+    await page.waitForSelector('.backdrop', { state: 'detached' });
     assert((await page.locator('.backdrop').count()) === 0, 'window keydown closes modal');
   },
 };

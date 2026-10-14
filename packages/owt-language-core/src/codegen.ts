@@ -523,7 +523,7 @@ class ComponentGen {
       this.nodes(el.children);
       return;
     }
-    const needsVar = el.attributes.some((a) => a.type === 'Attribute' && (a.directive === 'bind' || a.directive === 'use' || a.directive === 'on' || a.name === 'ref'));
+    const needsVar = el.attributes.some((a) => a.type === 'Attribute' && (a.directive === 'bind' || a.directive === 'use' || a.directive === 'on' || a.directive === 'transition' || a.directive === 'in' || a.directive === 'out' || a.name === 'ref'));
     const v = needsVar ? this.id('el') : null;
     if (v !== null) b.text(`const ${v} = `);
     // explicit type argument: much cheaper for TypeScript than inferring K
@@ -610,6 +610,20 @@ class ComponentGen {
           if (v === null) break;
           b.text('__owt.action(');
           this.identifierRef(attr.arg.split('.')[0]!, attr.nameSpan.start + 4);
+          if (attr.arg.includes('.')) b.text(attr.arg.slice(attr.arg.indexOf('.')));
+          b.text(`, ${v}`);
+          if (value.type === 'Expression') {
+            b.text(', ');
+            this.expr(value.span);
+          }
+          b.text(');\n');
+          break;
+        case 'transition':
+        case 'in':
+        case 'out':
+          if (v === null) break;
+          b.text('__owt.transition(');
+          this.identifierRef(attr.arg.split('.')[0]!, attr.nameSpan.start + attr.directive.length + 1);
           if (attr.arg.includes('.')) b.text(attr.arg.slice(attr.arg.indexOf('.')));
           b.text(`, ${v}`);
           if (value.type === 'Expression') {

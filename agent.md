@@ -13,7 +13,7 @@ Conventions for this repository. They are intentionally short and opinionated.
 
 | Package | Role |
 |---|---|
-| `packages/owt` (`owt`) | Runtime: signals (`reactivity.ts`), deep proxies (`proxy.ts`), DOM layer (`dom/`), public API (`index.ts`), compiler target (`internal.ts`), editor typings (`elements.ts`, `language.ts`) |
+| `packages/owt` (`owt`) | Runtime: signals (`reactivity.ts`), deep proxies (`proxy.ts`), DOM layer (`dom/`, transitions in `dom/transitions.ts`), public API (`index.ts`), built-in transitions (`transition.ts`, `owt/transition`), compiler target (`internal.ts`), editor typings (`elements.ts`, `language.ts`) |
 | `packages/owt-ast` (`@owt/ast`) | AST types, guards, `walkTemplate`, `LineMap`, `codeFrame` |
 | `packages/owt-parser` (`@owt/parser`) | Hand-written markup parser + JS-aware scanner; never throws, collects diagnostics |
 | `packages/owt-compiler` (`@owt/compiler`) | `compile()` → JS module + CSS + source map |
@@ -45,6 +45,7 @@ Principles: single responsibility per module, explicit inputs (contexts are pass
 - Reads are tracked, writes push "maybe stale" marks; computeds validate by version before recomputing.
 - DOM work happens in render effects that compare with the previous value before touching the DOM.
 - Every rendered piece of content has a stable first and last node (blocks render before an anchor comment; templates starting with a block get a leading marker).
+- Block content lives in a `BlockScope`; removing it goes through `destroyContent`, which lets outro transitions finish before the nodes are removed.
 - Hot paths avoid allocations (linked dependency lists, closure caches instead of objects).
 
 ## TypeScript

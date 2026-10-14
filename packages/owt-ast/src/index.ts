@@ -166,7 +166,7 @@ export type Element = Span & {
 
 export type AttributeLike = Attribute | SpreadAttribute;
 
-export type DirectiveKind = 'bind' | 'class' | 'style' | 'use' | 'on';
+export type DirectiveKind = 'bind' | 'class' | 'style' | 'use' | 'on' | 'transition' | 'in' | 'out';
 
 export type Attribute = Span & {
   type: 'Attribute';

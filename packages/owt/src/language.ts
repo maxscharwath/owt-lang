@@ -5,6 +5,7 @@
 import type { DOMAttributes, OwtElements, OwtElementInstance } from './elements';
 import type { LoopMeta, Snippet } from './dom/blocks';
 import type { Action } from './dom/bindings';
+import type { Transition } from './dom/transitions';
 
 type Iterated<T> = T extends readonly (infer U)[] ? U : T extends Iterable<infer U> ? U : T extends ArrayLike<infer U> ? U : T extends number ? number : unknown;
 
@@ -67,6 +68,8 @@ export interface Helpers {
   slot<A>(snippet: Snippet<A> | null | undefined, args: A): void;
   /** `use:action={params}` */
   action<E extends Element, P>(action: Action<E, P>, el: E, ...params: undefined extends P ? [params?: P] : [params: P]): void;
+  /** `transition:fn={params}`, `in:fn`, `out:fn` */
+  transition<E extends Element, P>(fn: Transition<E, P>, el: E, ...params: undefined extends P ? [params?: P] : [params: P]): void;
   /** `on:event={handler}` */
   on(el: EventTarget, type: string, handler: ((event: CustomEvent) => unknown) | null | undefined): void;
   /** `ref={callback}` */
