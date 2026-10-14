@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from 'vitest';
 import { flushSync } from 'owt';
+import { compile } from '../src/index';
 import { render, text } from './helpers';
 
 describe('state and events', () => {
@@ -327,6 +328,40 @@ describe('components', () => {
     const m = await render(src);
 
     expect(m.html()).toBe('<input placeholder="Name">');
+  });
+});
+
+describe('list selection', () => {
+  const source = `export component App() {
+  var selected = 0
+  var rows = [{ id: 1 }, { id: 2 }, { id: 3 }]
+  <table><tbody>
+    for (row of rows; track row.id) {
+      <tr class:danger={selected === row.id} aria-selected={row.id === selected} onClick={() => selected = row.id}><td>{row.id}</td></tr>
+    }
+  </tbody></table>
+}`;
+
+  it('compiles row/state comparisons to a selector created once per list', () => {
+    const out = compile(source, { filename: 'App.owt' });
+
+    expect(out.js.code.match(/\.selector\(/g)).toHaveLength(1);
+  });
+
+  it('keeps the selection classes and attributes correct', async () => {
+    const m = await render(source);
+
+    m.click('tr:nth-child(2)');
+    m.click('tr:nth-child(3)');
+
+    expect(Array.from(m.root.querySelectorAll('tr.danger'), (tr) => tr.textContent)).toEqual(['3']);
+    expect(Array.from(m.root.querySelectorAll('tr'), (tr) => tr.getAttribute('aria-selected'))).toEqual(['false', 'false', 'true']);
+  });
+
+  it('leaves other comparisons alone', () => {
+    const out = compile(`export component App() {\n  var rows = [{ a: 1, b: 1 }]\n  <ul>\n    for (row of rows) { <li class:same={row.a === row.b}>x</li> }\n  </ul>\n}`, { filename: 'App.owt' });
+
+    expect(out.js.code).not.toContain('.selector(');
   });
 });
 

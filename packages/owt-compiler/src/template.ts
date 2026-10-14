@@ -44,7 +44,7 @@ import {
   templateLiteralText,
 } from './html';
 import { A11yChecker } from './a11y';
-import { destructure } from './js';
+import { destructure, freeIdentifiers } from './js';
 import { eventInfo, parseModifiers, splitModifiers } from './modifiers';
 import { patternNames } from './walk';
 
@@ -126,6 +126,9 @@ function serialize(node: DNode, ns: Namespace): string {
 }
 
 type Update = { node: DNode; value: Chunk; apply: (ref: string, value: string) => string };
+
+/** A `for` block being compiled: selectors are created once, before `$.each`. */
+type LoopContext = { outer: BindingScope; selectors: Map<string, string>; hoisted: Chunk[] };
 
 /** Code collected for one template instance. */
 class Ops {
@@ -232,6 +235,8 @@ export class TemplateCompiler {
 
   /** root elements of `for` rows: where `animate:` is allowed */
   private readonly rowRoots = new Set<Element>();
+  /** enclosing `for` blocks (innermost last) */
+  private readonly loops: LoopContext[] = [];
 
   constructor(private readonly c: ComponentContext) {
     this.a11y = new A11yChecker(c);
@@ -685,7 +690,7 @@ export class TemplateCompiler {
     const value = attr.value;
     if (value.type === 'Boolean') return 'true';
     if (value.type === 'Static') return JSON.stringify(decodeEntities(value.value));
-    return value.expression === null ? 'undefined' : this.c.expr(value.expression, scope);
+    return value.expression === null ? 'undefined' : this.valueExpr(value.expression, scope);
   }
 
   /** Handler chunk and listener options for an event attribute with optional modifiers. */
@@ -773,7 +778,7 @@ export class TemplateCompiler {
     switch (attr.directive) {
       case 'class': {
         const expr = exprOf();
-        ops.updates.push({ node, value: this.c.expr(expr, scope), apply: (ref, v) => `${rt}.toggleClass(${ref}, ${JSON.stringify(arg)}, ${v})` });
+        ops.updates.push({ node, value: this.valueExpr(expr, scope), apply: (ref, v) => `${rt}.toggleClass(${ref}, ${JSON.stringify(arg)}, ${v})` });
         return;
       }
       case 'style': {
@@ -1269,9 +1274,61 @@ export class TemplateCompiler {
 
     const params = metaParam !== '' ? `${itemParam}, ${this.c.file.name('i')}, ${metaParam}` : itemParam;
     for (const child of block.body.children) if (child.type === 'Element') this.rowRoots.add(child);
+    const loop: LoopContext = { outer: scope, selectors: new Map(), hoisted: [] };
+    this.loops.push(loop);
     const render = this.renderFn(block.body.children, inner, ns, params, parentTag);
+    this.loops.pop();
     const empty: Chunk = block.empty !== null ? this.renderFn(block.empty.children, scope.child(), ns, '', parentTag) : 'null';
-    return [origin(`${rt}.each(${anchor}, () => `, block.start), list, ', ', render, ', ', keyFn, `, ${flags}, `, empty, ');'];
+    return [...loop.hoisted, origin(`${rt}.each(${anchor}, () => `, block.start), list, ', ', render, ', ', keyFn, `, ${flags}, `, empty, ');'];
+  }
+
+  /**
+   * `row.id === selected` inside a `for` row, where one side only depends on
+   * the row and the other is component state: compiled to a selector created
+   * once for the loop, so changing `selected` re-evaluates two rows instead of
+   * all of them.
+   */
+  private selectorValue(expr: t.Expression, scope: BindingScope): Chunk | null {
+    const loop = this.loops[this.loops.length - 1];
+    if (loop === undefined || expr.type !== 'BinaryExpression' || expr.operator !== '===' || expr.left.type === 'PrivateName') return null;
+    const isPath = (e: t.Node): boolean =>
+      e.type === 'Identifier' || (e.type === 'MemberExpression' && !e.computed && e.property.type === 'Identifier' && isPath(e.object));
+    const rowOnly = (e: t.Expression): boolean => {
+      if (!isPath(e)) return false;
+      return freeIdentifiers(e).reads.every((id) => {
+        const b = scope.lookup(id.name);
+        return b !== undefined && b !== loop.outer.lookup(id.name);
+      });
+    };
+    const outerState = (e: t.Expression): string | null => {
+      if (e.type !== 'Identifier') return null;
+      const b = scope.lookup(e.name);
+      if (b === undefined || b !== loop.outer.lookup(e.name)) return null;
+      return b.kind === 'state' || b.kind === 'derived' || b.kind === 'prop' ? e.name : null;
+    };
+    let key: t.Expression;
+    let state: t.Identifier;
+    if (rowOnly(expr.left) && outerState(expr.right) !== null && expr.right.type === 'Identifier') {
+      key = expr.left;
+      state = expr.right;
+    } else if (rowOnly(expr.right) && expr.left.type === 'Identifier' && outerState(expr.left) !== null) {
+      key = expr.right;
+      state = expr.left;
+    } else {
+      return null;
+    }
+    let fn = loop.selectors.get(state.name);
+    if (fn === undefined) {
+      fn = this.c.file.name('selected');
+      loop.selectors.set(state.name, fn);
+      loop.hoisted.push([`const ${fn} = ${this.rt}.selector(() => `, this.c.expr(state, loop.outer), ');\n']);
+    }
+    return [`${fn}(`, this.c.expr(key, scope), ')'];
+  }
+
+  /** Expression value of an attribute or directive (with the loop selector optimization). */
+  private valueExpr(expr: t.Expression, scope: BindingScope): Chunk {
+    return this.selectorValue(expr, scope) ?? this.c.expr(expr, scope);
   }
 
   /** Bind each name of a destructuring pattern to a path on `root`. */

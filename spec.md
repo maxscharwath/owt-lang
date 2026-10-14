@@ -354,7 +354,7 @@ for (todo of todos, { index, first, last }; track todo.id) {
 - `track <expr>` sets the key used to match items between updates. Without `track`, items are matched by identity. With `track`, an item that is replaced by a new object with the same key keeps its DOM and updates in place. `track index` keys by position.
 - `empty { }` renders when the list is empty.
 
-Updates use a keyed diff with minimal DOM moves (longest increasing subsequence), and clearing a list that is the only child of its parent is O(1).
+Updates use a keyed diff with minimal DOM moves (longest increasing subsequence), and clearing a list that is the only child of its parent is O(1). Inside a row, a comparison between the row and component state is compiled to a `selector()`. Examples: `class:selected={row.id === selectedId}`, `aria-current={tab.name === current}`. Changing `selectedId` then updates the two affected rows instead of re-checking every row.
 
 ### switch
 
