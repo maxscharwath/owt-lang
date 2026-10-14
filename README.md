@@ -69,6 +69,7 @@ You won't find hooks, dependency arrays, `$` prefixes or a virtual DOM here. A c
   - async data with `resource()` (aborts outdated requests), code-split `lazy()` components and `<Defer on="viewport">` blocks;
   - `selector()` for O(1) selection in large lists, `uid()` for accessible ids;
   - scoped CSS with `:global`, and compile-time warnings for selectors that match nothing.
+- **Compile-time checks**: 12 accessibility rules (missing `alt`, click handlers without keyboard access, unknown ARIA attributes and roles with "did you mean"…), unused CSS selectors and unreachable `match` cases. They show up in the editor and in Vite, and `<!-- owt-ignore code -->` silences one.
 - **First-class tooling**:
   - a Vite 8 plugin with HMR that keeps component state and an error overlay with code frames;
   - a Volar-based language server used by the VS Code extension, the JetBrains plugin, Neovim, Zed and Helix;
