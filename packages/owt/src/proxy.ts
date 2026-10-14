@@ -190,6 +190,26 @@ function createArrayMethod(target: AnyArray, key: string, receiver: AnyArray): A
       return fn.call(target, (acc: unknown, item: unknown, i: number) => call(acc, reactive(item), i, receiver), ...init);
     };
   }
+  if (key === 'includes' || key === 'indexOf' || key === 'lastIndexOf') {
+    // arrays may hold raw objects or proxies (e.g. after `list = list.filter(...)`): compare unwrapped
+    return (search, from) => {
+      trackShape(target);
+      const wanted = toRaw(search);
+      const n = target.length;
+      // includes uses SameValueZero (finds NaN), indexOf / lastIndexOf use ===
+      const same = (v: unknown) => v === wanted || (key === 'includes' && wanted !== wanted && v !== v);
+      if (key === 'lastIndexOf') {
+        let i = from === undefined ? n - 1 : Number(from) < 0 ? n + Number(from) : Math.min(Number(from), n - 1);
+        for (; i >= 0; i--) if (same(toRaw(target[i]))) return i;
+        return -1;
+      }
+      let i = from === undefined ? 0 : Number(from) < 0 ? Math.max(0, n + Number(from)) : Number(from);
+      for (; i < n; i++) {
+        if (same(toRaw(target[i]))) return key === 'includes' ? true : i;
+      }
+      return key === 'includes' ? false : -1;
+    };
+  }
   if (reads.has(key)) {
     return (...args) => {
       trackShape(target);

@@ -1,0 +1,27 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run OWT Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}", "${workspaceFolder}/../../examples/todo-app"],
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "preLaunchTask": "owt-vscode: build"
+    },
+    {
+      "name": "Attach to OWT Language Server",
+      "type": "node",
+      "request": "attach",
+      "port": 6009,
+      "restart": true,
+      "outFiles": ["${workspaceFolder}/server/**/*.js", "${workspaceFolder}/../owt-language-server/dist/**/*.js"]
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Extension + Language Server",
+      "configurations": ["Run OWT Extension", "Attach to OWT Language Server"]
+    }
+  ]
+}

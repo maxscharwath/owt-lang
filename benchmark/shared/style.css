@@ -1,0 +1,99 @@
+/*
+ * Minimal Bootstrap-3-like stylesheet for the benchmark DOM.
+ * It is inlined into every app's index.html at build time (no network fetches)
+ * and covers only the classes used by js-framework-benchmark markup.
+ */
+*, *::before, *::after { box-sizing: border-box; }
+html { font-size: 10px; -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.428571429;
+  color: #333;
+  background-color: #fff;
+}
+h1 { margin: 20px 0 10px; font-size: 36px; font-weight: 500; line-height: 1.1; }
+a { color: #337ab7; text-decoration: none; cursor: pointer; }
+a:hover, a:focus { color: #23527c; text-decoration: underline; }
+
+.container { padding-right: 15px; padding-left: 15px; margin-right: auto; margin-left: auto; }
+@media (min-width: 768px) { .container { width: 750px; } }
+@media (min-width: 992px) { .container { width: 970px; } }
+@media (min-width: 1200px) { .container { width: 1170px; } }
+
+.row { margin-right: -15px; margin-left: -15px; }
+.row::before, .row::after { display: table; content: " "; }
+.row::after { clear: both; }
+.col-sm-6, .col-md-1, .col-md-4, .col-md-6 {
+  position: relative;
+  min-height: 1px;
+  padding-right: 15px;
+  padding-left: 15px;
+}
+@media (min-width: 768px) {
+  .col-sm-6 { float: left; width: 50%; }
+}
+@media (min-width: 992px) {
+  .col-md-1, .col-md-4, .col-md-6 { float: left; }
+  .col-md-1 { width: 8.33333333%; }
+  .col-md-4 { width: 33.33333333%; }
+  .col-md-6 { width: 50%; }
+}
+
+.jumbotron {
+  padding: 30px 15px;
+  margin-bottom: 30px;
+  color: inherit;
+  background-color: #eee;
+}
+.jumbotron h1 { font-size: 63px; }
+.container .jumbotron { padding-right: 15px; padding-left: 15px; border-radius: 6px; }
+
+.btn {
+  display: inline-block;
+  padding: 6px 12px;
+  margin-bottom: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.428571429;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  touch-action: manipulation;
+  cursor: pointer;
+  user-select: none;
+  background-image: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+.btn-primary { color: #fff; background-color: #337ab7; border-color: #2e6da4; }
+.btn-primary:hover { color: #fff; background-color: #286090; border-color: #204d74; }
+.btn-block { display: block; width: 100%; }
+.smallpad { padding: 5px; }
+
+table { border-spacing: 0; border-collapse: collapse; background-color: transparent; }
+td, th { padding: 0; }
+.table { width: 100%; max-width: 100%; margin-bottom: 20px; }
+.table > tbody > tr > td {
+  padding: 8px;
+  line-height: 1.428571429;
+  vertical-align: top;
+  border-top: 1px solid #ddd;
+}
+.table-striped > tbody > tr:nth-of-type(odd) { background-color: #f9f9f9; }
+.table-hover > tbody > tr:hover { background-color: #f5f5f5; }
+.table > tbody > tr.danger > td { background-color: #f2dede; }
+.table-hover > tbody > tr.danger:hover > td { background-color: #ebcccc; }
+.test-data a { display: block; }
+
+.glyphicon {
+  position: relative;
+  top: 1px;
+  display: inline-block;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1;
+}
+.glyphicon-remove::before { content: "\00d7"; }
+.preloadicon { position: absolute; top: -20px; left: -20px; }

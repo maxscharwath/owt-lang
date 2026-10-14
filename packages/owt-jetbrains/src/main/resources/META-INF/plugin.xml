@@ -1,0 +1,52 @@
+<idea-plugin>
+    <id>dev.owt.lang</id>
+    <name>OWT</name>
+    <vendor url="https://github.com/maxscharwath/owt-lang">OWT</vendor>
+    <resource-bundle>messages.OwtBundle</resource-bundle>
+
+    <description><![CDATA[
+    Language support for <a href="https://github.com/maxscharwath/owt-lang">OWT</a>, a typed UI language
+    (<code>.owt</code> single-file components that mix TypeScript and HTML-like markup).
+    <ul>
+      <li>OWT file type with syntax highlighting (TextMate grammar), comments and brace matching</li>
+      <li>Diagnostics, completion, hover, go to definition, find usages, rename, document symbols,
+          semantic highlighting, formatting, folding and quick fixes through the OWT language server
+          (<code>@owt/language-server</code>, requires Node.js 20+)</li>
+      <li>Settings under <b>Languages &amp; Frameworks | OWT</b> and a <b>Tools | Restart OWT Language Server</b> action</li>
+    </ul>
+    The language server features use the IntelliJ Platform LSP API, available in IntelliJ IDEA, WebStorm,
+    PhpStorm, PyCharm, GoLand, RubyMine, CLion, Rider, RustRover and DataGrip 2025.2.1 or newer.
+    In other IDEs the plugin still provides the file type and highlighting.
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <!-- Highlighting, brace matching (TextMate grammar). -->
+    <depends optional="true" config-file="owt-textmate.xml">org.jetbrains.plugins.textmate</depends>
+    <!-- Language server integration: LSP API (alias provided by the IDE since 2025.2.1). -->
+    <depends optional="true" config-file="owt-lsp.xml">com.intellij.modules.lsp</depends>
+    <!-- Reuse the Node.js interpreter configured in Settings | Languages & Frameworks | Node.js. -->
+    <depends optional="true" config-file="owt-javascript.xml">JavaScript</depends>
+
+    <extensionPoints>
+        <extensionPoint qualifiedName="dev.owt.lang.nodeInterpreterProvider"
+                        interface="dev.owt.ide.node.OwtNodeInterpreterProvider"
+                        dynamic="true"/>
+    </extensionPoints>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <fileType name="OWT"
+                  implementationClass="dev.owt.ide.lang.OwtFileType"
+                  fieldName="INSTANCE"
+                  language="OWT"
+                  extensions="owt"/>
+        <lang.parserDefinition language="OWT" implementationClass="dev.owt.ide.lang.OwtParserDefinition"/>
+        <lang.commenter language="OWT" implementationClass="dev.owt.ide.lang.OwtCommenter"/>
+
+        <projectConfigurable parentId="language"
+                             id="dev.owt.ide.settings"
+                             key="settings.display.name"
+                             instance="dev.owt.ide.settings.OwtSettingsConfigurable"/>
+
+        <notificationGroup id="OWT" displayType="BALLOON" key="notification.group.owt"/>
+    </extensions>
+</idea-plugin>

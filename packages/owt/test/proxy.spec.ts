@@ -124,3 +124,18 @@ describe('reactive proxies', () => {
     expect(reactive(raw)).toBe(reactive(raw));
   });
 });
+
+describe('reactive array searches', () => {
+  it('finds items in arrays rebuilt from proxies', () => {
+    const list = reactive([{ id: 1 }, { id: 2 }]);
+    const rebuilt = reactive(list.filter(() => true));
+
+    expect(rebuilt.indexOf(list[1]!)).toBe(1);
+  });
+
+  it('does not treat NaN as found by indexOf', () => {
+    const list = reactive([Number.NaN]);
+
+    expect([list.indexOf(Number.NaN), list.includes(Number.NaN)]).toEqual([-1, true]);
+  });
+});

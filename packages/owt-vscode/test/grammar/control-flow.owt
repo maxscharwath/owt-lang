@@ -1,0 +1,67 @@
+export component Flow(props: { items: { id: number; name: string }[]; filter: 'all' | 'done' | 'active'; ok: boolean }) {
+  var userId = 1
+  var count = 3
+
+  if (count > 0) {
+    <p>{count} left</p>
+  } else if (props.items.length) {
+    <p>All done</p>
+  } else {
+    <p>Empty</p>
+  }
+
+  <ul>
+    for (item of props.items, { index, first, last, even, odd }; track item.id) {
+      <li class:first={first} class:last={last}>{index + 1}. {item.name}</li>
+    } empty {
+      <li>Nothing to do</li>
+    }
+    for (i of rev 1..10) { <span>{i}</span> }
+    for (n of 1..count, meta) {
+      <span>{n}/{meta.index}</span>
+    }
+    for ([key, entry] of Object.entries(props.items)) { <li>{key}: {entry.name}</li> }
+  </ul>
+
+  <div>if (count > 1) { <b>inline if</b> } else { <i>inline else</i> }</div>
+
+  switch (props.filter) {
+    case 'all' { <All /> }
+    case 'done', 'active' if (props.ok) {
+      <Some />
+    }
+    default { <None /> }
+  }
+
+  await (loadUser(userId)) {
+    <Spinner />
+  } then (user) {
+    <p>{user.name}</p>
+  } catch (err) {
+    <p class="error">{err.message}</p>
+  }
+  await (loadUser(userId)) then (user) { <p>{user.name}</p> }
+
+  try {
+    <Risky />
+  } catch (error, reset) {
+    <button onClick={reset}>Retry</button>
+  }
+
+  key (userId) {
+    <Profile id={userId} />
+  }
+
+  <section>
+    if (count > 2)
+    {
+      <p>Allman style</p>
+    }
+    else
+    {
+      <p>else on its own line</p>
+    }
+    val doubled = count * 2
+    <p>{doubled}</p>
+  </section>
+}

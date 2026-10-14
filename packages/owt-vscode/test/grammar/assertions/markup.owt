@@ -1,0 +1,88 @@
+// SYNTAX TEST "source.owt" "elements, components and attributes"
+export component Markup() {
+  <section class="app" id=main data-count={count}>
+// ^^^^^^^ entity.name.tag.owt
+//         ^^^^^ entity.other.attribute-name.owt
+//              ^ punctuation.separator.key-value.owt
+//               ^^^^^ string.quoted.double.owt
+//                        ^^^^ string.unquoted.owt
+//                             ^^^^^^^^^^ entity.other.attribute-name.owt
+//                                         ^^^^^ meta.embedded.expression.owt source.ts variable.other.readwrite.ts
+//                                               ^ punctuation.definition.tag.end.owt
+    <input bind:value={draft} onKeyDown={(e) => e.key === "Enter" && add()} placeholder="New todo" />
+//   ^^^^^ entity.name.tag.owt
+//         ^^^^ keyword.control.directive.owt
+//             ^ punctuation.separator.directive.owt
+//              ^^^^^ entity.other.attribute-name.owt
+//                            ^^^^^^^^^ entity.other.attribute-name.event.owt
+//                                           ^^ source.ts storage.type.function.arrow.ts
+//                                                        ^^^^^^^ source.ts string.quoted.double.ts
+//                                                                          ^^^^^^^^^^^ entity.other.attribute-name.owt
+//                                                                                                 ^^ punctuation.definition.tag.end.owt
+    <li class:done={todo.done} style:color={todo.done ? "gray" : null}>{index + 1}. {todo.text}</li>
+//      ^^^^^ keyword.control.directive.owt
+//            ^^^^ entity.other.attribute-name.owt
+//                             ^^^^^ keyword.control.directive.owt
+//                                   ^^^^^ entity.other.attribute-name.owt
+//                                                                                ^^ meta.tag.owt
+//                                                                      ^^^^^ source.ts variable.other.readwrite.ts
+    <div use:tooltip={text} bind:this={el} on:click={go} ref={el}></div>
+//       ^^^ keyword.control.directive.owt
+//           ^^^^^^^ entity.other.attribute-name.owt
+//                          ^^^^ keyword.control.directive.owt
+//                                         ^^ keyword.control.directive.owt
+//                                                       ^^^ entity.other.attribute-name.owt
+    <input {...rest} {disabled} type="checkbox" checked>
+//          ^^^ source.ts keyword.operator.spread.ts
+//             ^^^^ source.ts variable.other.readwrite.ts
+//                    ^^^^^^^^ source.ts variable.other.readwrite.ts
+//                                              ^^^^^^^ entity.other.attribute-name.owt
+//                                                     ^ meta.tag.void.owt punctuation.definition.tag.end.owt
+    <br>
+//   ^^ meta.tag.void.owt entity.name.tag.owt
+    <p style="color: red">Text &amp; more</p>
+//     ^^^^^ entity.other.attribute-name.owt
+//            ^^^^^ source.css support.type.property-name.css
+//                   ^^^ source.css support.constant.color.w3c-standard-color-name.css
+//                             ^^^^^ constant.character.entity.owt
+    <Button title="x" onClick={add} />
+//   ^^^^^^ support.class.component.owt
+//                    ^^^^^^^ entity.other.attribute-name.event.owt
+    <Icons.Plus size={16} />
+//   ^^^^^ support.class.component.owt
+//        ^ punctuation.accessor.owt
+//         ^^^^ support.class.component.owt
+    <Card title="x">
+//   ^^^^ support.class.component.owt
+      <p>default content</p>
+//     ^ entity.name.tag.owt
+//       ^^^^^^^^^^^^^^^ meta.tag.owt
+    </Card>
+//  ^^ punctuation.definition.tag.begin.owt
+//    ^^^^ support.class.component.owt
+//        ^ punctuation.definition.tag.end.owt
+    <slot />  <slot name="header" title={x}>fallback</slot>
+//   ^^^^ entity.name.tag.special.owt
+//             ^^^^ entity.name.tag.special.owt
+//                  ^^^^ entity.other.attribute-name.owt
+    <!-- html comment -->
+//  ^^^^ comment.block.html.owt punctuation.definition.comment.begin.owt
+//       ^^^^^^^^^^^^ comment.block.html.owt
+    <>fragment</>
+//  ^ punctuation.definition.tag.begin.owt
+//   ^ punctuation.definition.tag.end.owt
+//            ^^ punctuation.definition.tag.begin.owt
+    <p>a < b</p>
+//     ^^^^^ meta.tag.owt
+  </section>
+//  ^^^^^^^ entity.name.tag.owt
+  <window onResize={onResize} />
+// ^^^^^^ entity.name.tag.special.owt
+//        ^^^^^^^^ entity.other.attribute-name.event.owt
+  <document onKeyDown={onKey} />
+// ^^^^^^^^ entity.name.tag.special.owt
+  <head><title>{title}</title></head>
+// ^^^^ entity.name.tag.special.owt
+//       ^^^^^ entity.name.tag.owt
+}
+// <- punctuation.definition.block.owt

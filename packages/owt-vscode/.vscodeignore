@@ -1,22 +1,21 @@
-# Exclude development-only files from the VSIX
-.git/**
-.github/**
-.vscode/**
-src/**
-tsconfig.json
-tsconfig.*.json
-**/*.ts
-**/*.map
-*.log
-**/__tests__/**
-**/tests/**
+# Allow-list: everything is excluded unless re-included below.
+**
 
-# Keep built output and language assets
-!dist/extension.js
-!language-configuration.json
-!snippets/**
-!syntaxes/**
-!README.md
-!readme.md
-!LICENSE
 !package.json
+!README.md
+!LICENSE
+!language-configuration.json
+!images/icon.png
+!images/file-icon.svg
+!syntaxes/owt.tmLanguage.json
+!snippets/owt.code-snippets
+
+# Bundled client (scripts/build.mjs --production writes no source maps)
+!dist/extension.js
+!dist/terminateProcess.sh
+
+# @owt/language-server, copied by scripts/build.mjs
+!server/**
+
+# node_modules/@owt/typescript-plugin is never collected by `vsce package --no-dependencies`;
+# scripts/inject-ts-plugin.mjs adds it to the VSIX afterwards.

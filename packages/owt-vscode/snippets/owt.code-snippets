@@ -1,63 +1,207 @@
 {
-  "Component": {
-    "prefix": ["component", "owt-component"],
+  "Component (props object)": {
+    "prefix": ["component", "comp"],
+    "description": "Exported component receiving a typed props object",
     "body": [
-      "export component ${1:App}(${2:props}: ${3:{}}) {",
-      "  ${0}",
-      "}"
-    ],
-    "description": "Create an OWT component"
+      "export component ${1:${TM_FILENAME_BASE/(.*)/${1:/pascalcase}/}}(props: { ${2:title: string} }) {",
+      "\t${3:<div>{props.${4:title}\\}</div>}",
+      "}",
+      "$0"
+    ]
   },
-  "var": {
-    "prefix": ["var"],
-    "body": ["var ${1:name}${2:: ${3:type}} = ${0:value};"],
-    "description": "Reactive var"
-  },
-  "val": {
-    "prefix": ["val"],
-    "body": ["val ${1:name}${2:: ${3:type}} = ${0:expr};"],
-    "description": "Derived val"
-  },
-  "if-else": {
-    "prefix": ["if"],
+  "Component (destructured props)": {
+    "prefix": ["component-destructured", "compd"],
+    "description": "Exported component destructuring its props type",
     "body": [
-      "if (${1:condition}) {",
-      "  ${2}",
-      "} else {",
-      "  ${0}",
-      "}"
-    ],
-    "description": "If/else block"
+      "type ${1:${TM_FILENAME_BASE/(.*)/${1:/pascalcase}/}}Props = {",
+      "\t${2:title}: ${3:string}",
+      "}",
+      "",
+      "export component ${1}({ ${2} }: ${1}Props) {",
+      "\t${4:<div>{${2}\\}</div>}",
+      "}",
+      "$0"
+    ]
   },
-  "for-empty": {
-    "prefix": ["for"],
+  "Component (named props)": {
+    "prefix": ["component-named", "compn"],
+    "description": "Exported component with named props and defaults",
     "body": [
-      "for (${1:item} of ${2:iterable}${3:, meta}) {",
-      "  ${4}",
+      "export component ${1:${TM_FILENAME_BASE/(.*)/${1:/pascalcase}/}}(${2:label}: ${3:string}, ${4:size} = ${5:16}) {",
+      "\t${6:<span>{${2}\\}</span>}",
+      "}",
+      "$0"
+    ]
+  },
+  "Component (generic)": {
+    "prefix": ["component-generic", "compg"],
+    "description": "Exported generic component",
+    "body": [
+      "export component ${1:List}<${2:T}>(${3:items}: ${2}[]) {",
+      "\t<ul>",
+      "\t\tfor (${4:item} of ${3}; track ${4}) {",
+      "\t\t\t<li>{${4}}</li>",
+      "\t\t}",
+      "\t</ul>",
+      "}",
+      "$0"
+    ]
+  },
+  "Reactive var": {
+    "prefix": "var",
+    "description": "Reactive, writable state",
+    "body": ["var ${1:name}${2:: ${3:Type}} = ${4:value}"]
+  },
+  "Derived val": {
+    "prefix": "val",
+    "description": "Derived (read-only) value; recomputed when the vars it reads change",
+    "body": ["val ${1:name} = ${2:expression}"]
+  },
+  "if block": {
+    "prefix": "if",
+    "description": "Conditional markup",
+    "body": ["if (${1:condition}) {", "\t$0", "}"]
+  },
+  "if / else block": {
+    "prefix": ["ifelse", "if-else"],
+    "description": "Conditional markup with an else branch",
+    "body": ["if (${1:condition}) {", "\t$2", "} else {", "\t$0", "}"]
+  },
+  "if / else if / else block": {
+    "prefix": ["ifelseif", "if-else-if"],
+    "description": "Conditional markup with else-if and else branches",
+    "body": ["if (${1:condition}) {", "\t$2", "} else if (${3:other}) {", "\t$4", "} else {", "\t$0", "}"]
+  },
+  "else branch": {
+    "prefix": "else",
+    "description": "else branch of an if block",
+    "body": ["else {", "\t$0", "}"]
+  },
+  "for block": {
+    "prefix": "for",
+    "description": "Keyed list rendering with an empty fallback",
+    "body": [
+      "for (${1:item} of ${2:items}; track ${3:${1}.id}) {",
+      "\t${4:<li>{${1}\\}</li>}",
       "} empty {",
-      "  ${0}",
+      "\t${0:<li>Nothing here</li>}",
       "}"
-    ],
-    "description": "for ... empty block"
+    ]
   },
-  "switch": {
-    "prefix": ["switch"],
+  "for block with loop meta": {
+    "prefix": ["formeta", "for-meta"],
+    "description": "List rendering with index / first / last metadata",
     "body": [
-      "switch (${1:expr}) {",
-      "  case ${2:pattern} {",
-      "    ${3}",
-      "  }",
-      "  default {",
-      "    ${0}",
-      "  }",
+      "for (${1:item} of ${2:items}, { ${3:index, first, last} }; track ${4:${1}.id}) {",
+      "\t${0:<li>{index + 1\\}. {${1}\\}</li>}",
       "}"
-    ],
-    "description": "switch with cases"
+    ]
   },
-  "slot-placeholder": {
-    "prefix": ["slot"],
-    "body": ["<slot name=\"${1:name}\" />"],
-    "description": "Slot placeholder"
+  "for range": {
+    "prefix": ["forrange", "for-range"],
+    "description": "Iterate an inclusive integer range (prefix with rev to reverse)",
+    "body": ["for (${1:i} of ${2:rev }${3:1}..${4:10}) {", "\t${0:<span>{${1}\\}</span>}", "}"]
+  },
+  "switch block": {
+    "prefix": "switch",
+    "description": "Pattern-matching switch with guards and default",
+    "body": [
+      "switch (${1:value}) {",
+      "\tcase ${2:'a'} {",
+      "\t\t$3",
+      "\t}",
+      "\tcase ${4:'b'}, ${5:'c'} if (${6:guard}) {",
+      "\t\t$7",
+      "\t}",
+      "\tdefault {",
+      "\t\t$0",
+      "\t}",
+      "}"
+    ]
+  },
+  "case clause": {
+    "prefix": "case",
+    "description": "switch case",
+    "body": ["case ${1:value} {", "\t$0", "}"]
+  },
+  "await block": {
+    "prefix": "await",
+    "description": "Render the states of a promise",
+    "body": [
+      "await (${1:promise}) {",
+      "\t${2:<p>Loading…</p>}",
+      "} then (${3:value}) {",
+      "\t${4:<p>{${3}\\}</p>}",
+      "} catch (${5:error}) {",
+      "\t${0:<p class=\"error\">{${5}.message\\}</p>}",
+      "}"
+    ]
+  },
+  "try / catch block": {
+    "prefix": ["try", "trycatch"],
+    "description": "Error boundary with a reset callback",
+    "body": [
+      "try {",
+      "\t$1",
+      "} catch (${2:error}, ${3:reset}) {",
+      "\t${0:<p>{${2}.message\\}</p>",
+      "\t<button onClick={${3}\\}>Retry</button>}",
+      "}"
+    ]
+  },
+  "key block": {
+    "prefix": "key",
+    "description": "Re-create the content when the key changes",
+    "body": ["key (${1:key}) {", "\t$0", "}"]
+  },
+  "slot outlet": {
+    "prefix": ["slot", "<slot"],
+    "description": "Slot outlet (in the child component), optionally named with fallback content",
+    "body": ["<slot${1: name=\"${2:header}\"}>${3:fallback}</slot>$0"]
+  },
+  "default slot outlet": {
+    "prefix": "slot-default",
+    "description": "Default slot outlet",
+    "body": ["<slot />$0"]
+  },
+  "slot definition": {
+    "prefix": ["slotdef", "slot-def"],
+    "description": "Named slot content passed to a component (inside the component tag)",
+    "body": ["slot ${1:header}(${2:{ ${3:title} \\}}) {", "\t$0", "}"]
+  },
+  "style block": {
+    "prefix": ["style", "<style"],
+    "description": "Scoped CSS for the component",
+    "body": ["<style>", "\t${1:.${2:root}} {", "\t\t$0", "\t}", "</style>"]
+  },
+  "global style block": {
+    "prefix": ["style-global", "<style global"],
+    "description": "Unscoped CSS",
+    "body": ["<style global>", "\t$0", "</style>"]
+  },
+  "onMount import": {
+    "prefix": ["onmount", "import-onmount"],
+    "description": "Import onMount from owt",
+    "body": ["import { onMount } from 'owt'", "$0"]
+  },
+  "onMount": {
+    "prefix": "onMount",
+    "description": "Run code after the component is mounted (return a cleanup function)",
+    "body": ["onMount(() => {", "\t$1", "\treturn () => {", "\t\t$0", "\t}", "})"]
+  },
+  "event handler attribute": {
+    "prefix": "on",
+    "description": "Event handler attribute",
+    "body": ["on${1:Click}={${2:() => $0}}"]
+  },
+  "bind directive": {
+    "prefix": "bind",
+    "description": "Two-way binding",
+    "body": ["bind:${1:value}={${2:name}}$0"]
+  },
+  "class directive": {
+    "prefix": "class:",
+    "description": "Toggle a class",
+    "body": ["class:${1:active}={${2:condition}}$0"]
   }
 }
-

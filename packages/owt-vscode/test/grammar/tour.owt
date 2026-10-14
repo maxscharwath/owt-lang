@@ -1,0 +1,46 @@
+import { Button } from './Button.owt'
+type Todo = { id: number; text: string; done: boolean }
+
+export component TodoApp(props: { title: string }) {
+  var todos: Todo[] = []
+  var draft = ''
+  var filter: 'all' | 'done' | 'active' = 'all'
+  var ok = true
+  var userId = 1
+  val remaining = todos.filter(t => !t.done).length
+  const id = 1
+  function add() { todos.push({ id: Date.now(), text: draft, done: false }); draft = '' }
+
+  <section class="app">
+    <h1>{props.title} ({remaining})</h1>
+    <input bind:value={draft} onKeyDown={(e) => e.key === 'Enter' && add()} placeholder="New todo" />
+    <button onClick={add} disabled={!draft}>Add</button>
+    <ul>
+      for (todo of todos, { index, last }; track todo.id) {
+        <li class:done={todo.done} style:color={todo.done ? 'gray' : null}>{index + 1}. {todo.text}</li>
+      } empty {
+        <li>Nothing to do</li>
+      }
+    </ul>
+    for (i of rev 1..10) { <span>{i}</span> }
+    if (remaining > 0) { <p>{remaining} left</p> } else if (todos.length) { <p>All done</p> } else { <p>Empty</p> }
+    switch (filter) { case 'all' { <All/> } case 'done', 'active' if (ok) { <Some/> } default { <None/> } }
+    await (loadUser(id)) { <Spinner/> } then (user) { <p>{user.name}</p> } catch (err) { <p>{err.message}</p> }
+    try { <Risky/> } catch (error, reset) { <button onClick={reset}>Retry</button> }
+    key (userId) { <Profile id={userId}/> }
+    <Card title="x">
+      slot header({ title }) { <h2>{title}</h2> }
+      <p>default content</p>
+    </Card>
+    <slot />  <slot name="header" title={draft}>fallback</slot>
+    <input {...rest} {disabled} />  <Child bind:value={count} />  <div use:tooltip={text} bind:this={el} ref={el} />
+    <window onResize={onResize} />  <document onKeyDown={onKey} />  <head><title>{props.title}</title></head>
+    <!-- html comment -->
+    <Icons.Plus />
+  </section>
+
+  <style>
+    .app { color: red }
+    :global(body) { margin: 0 }
+  </style>
+}

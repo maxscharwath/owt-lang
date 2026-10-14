@@ -1,0 +1,82 @@
+// SYNTAX TEST "source.owt" "control-flow blocks"
+export component Flow() {
+  if (remaining > 0) { <p>{remaining} left</p> } else if (todos.length) { <p>All done</p> } else { <p>Empty</p> }
+//^^ keyword.control.owt
+//    ^^^^^^^^^ meta.block.if.owt variable.other.readwrite.ts
+//                   ^ punctuation.definition.block.owt
+//                                               ^^^^ keyword.control.owt
+//                                                    ^^ keyword.control.owt
+//                                                                                          ^^^^ keyword.control.owt
+//                                                                                                              ^ punctuation.definition.block.owt
+  <ul>
+    for (todo of todos, { index, last }; track todo.id) {
+//  ^^^ keyword.control.owt
+//       ^^^^ variable.other.readwrite.ts
+//            ^^ keyword.operator.expression.of.owt
+//                        ^^^^^ variable.other.readwrite.ts
+//                                     ^ punctuation.separator.track.owt
+//                                       ^^^^^ keyword.other.track.owt
+//                                                      ^ punctuation.definition.block.owt
+      <li>{index}</li>
+//     ^^ entity.name.tag.owt
+    } empty {
+//  ^ punctuation.definition.block.owt
+//    ^^^^^ keyword.control.owt
+//          ^ punctuation.definition.block.owt
+      <li>Nothing to do</li>
+    }
+//  ^ punctuation.definition.block.owt
+    for (i of rev 1..10) { <span>{i}</span> }
+//  ^^^ keyword.control.owt
+//            ^^^ storage.modifier.rev.owt
+//                ^ constant.numeric.decimal.owt
+//                 ^^ keyword.operator.range.owt
+//                   ^^ constant.numeric.decimal.ts
+//                          ^^^^ entity.name.tag.owt
+  </ul>
+  switch (filter) { case 'all' { <All/> } case 'done', 'active' if (ok) { <Some/> } default { <None/> } }
+//^^^^^^ keyword.control.owt
+//        ^^^^^^ variable.other.readwrite.ts
+//                  ^^^^ keyword.control.owt
+//                       ^^^^^ string.quoted.single.ts
+//                                ^^^ support.class.component.owt
+//                                        ^^^^ keyword.control.owt
+//                                                              ^^ keyword.control.owt
+//                                                                                  ^^^^^^^ keyword.control.owt
+  await (loadUser(id)) { <Spinner/> } then (user) { <p>{user.name}</p> } catch (err) { <p>{err.message}</p> }
+//^^^^^ keyword.control.owt
+//       ^^^^^^^^ entity.name.function.ts
+//                                    ^^^^ keyword.control.owt
+//                                          ^^^^ variable.other.readwrite.ts
+//                                                                       ^^^^^ keyword.control.owt
+  try { <Risky/> } catch (error, reset) { <button onClick={reset}>Retry</button> }
+//^^^ keyword.control.owt
+//                 ^^^^^ keyword.control.owt
+//                               ^^^^^ variable.other.readwrite.ts
+  key (userId) { <Profile id={userId}/> }
+//^^^ keyword.control.owt
+//                ^^^^^^^ support.class.component.owt
+  <div>
+    if (open)
+//  ^^ keyword.control.owt
+    {
+//  ^ punctuation.definition.block.owt
+      <p>Open</p>
+    }
+//  ^ punctuation.definition.block.owt
+    else
+//  ^^^^ keyword.control.owt
+    {
+//  ^ punctuation.definition.block.owt
+      <p>Closed</p>
+    }
+//  ^ punctuation.definition.block.owt
+    val doubled = count * 2
+//  ^^^ storage.type.owt
+//      ^^^^^^^ variable.other.readwrite.ts
+    Text with if and for (words) is not a block
+//            ^^ meta.tag.owt - keyword.control.owt
+//                   ^^^ meta.tag.owt - keyword.control.owt
+  </div>
+}
+// <- meta.component.body.owt punctuation.definition.block.owt

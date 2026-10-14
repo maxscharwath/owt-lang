@@ -9,11 +9,22 @@ type ElementWithStore = Element & {
   $$listeners?: Record<string, EventListener> | undefined;
 };
 
+/** Attributes whose booleans are written as "true" / "false" instead of presence. */
+const ENUMERATED = new Set(['draggable', 'spellcheck', 'contenteditable', 'autocorrect']);
+
+function stringBoolean(name: string): boolean {
+  return name.startsWith('aria-') || name.startsWith('data-') || ENUMERATED.has(name);
+}
+
+/** JSX-style property names that map to a different attribute. */
+const ATTRIBUTE_ALIASES: Record<string, string> = { htmlFor: 'for', className: 'class', acceptCharset: 'accept-charset', httpEquiv: 'http-equiv' };
+
 export function attr(el: Element, name: string, value: unknown): void {
-  if (value == null || value === false) {
+  name = ATTRIBUTE_ALIASES[name] ?? name;
+  if (value == null || (value === false && !stringBoolean(name))) {
     el.removeAttribute(name);
-  } else if (value === true) {
-    el.setAttribute(name, name.startsWith('aria-') || name.startsWith('data-') ? 'true' : '');
+  } else if (typeof value === 'boolean') {
+    el.setAttribute(name, stringBoolean(name) ? String(value) : '');
   } else {
     el.setAttribute(name, typeof value === 'string' ? value : String(value));
   }

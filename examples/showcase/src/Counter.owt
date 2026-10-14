@@ -1,0 +1,14 @@
+// Assigning a prop works when the parent binds it: <Counter bind:value={count} />
+export component Counter(value: number, step = 1, min = 0, max = 10) {
+  <div class="counter">
+    <button onClick={() => value = Math.max(min, value - step)} disabled={value <= min}>−</button>
+    <output>{value}</output>
+    <button onClick={() => value = Math.min(max, value + step)} disabled={value >= max}>+</button>
+  </div>
+
+  <style>
+    .counter { display: inline-flex; align-items: center; gap: 0.5rem; }
+    output { min-width: 2ch; text-align: center; font-variant-numeric: tabular-nums; }
+    button { width: 2rem; height: 2rem; border-radius: 6px; border: 1px solid #d1d5db; background: white; }
+  </style>
+}

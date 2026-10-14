@@ -49,11 +49,43 @@ const scenarios = {
     assert((await items.count()) === 1, 'delete removes a todo');
   },
   async showcase(page) {
-    if (!(await page.locator('#showcase').count())) return;
+    const text = (sel) => page.locator(sel).first().textContent();
+    // two-way bound counter + derived values + switch + range loop
+    await page.locator('.counter').first().locator('button').nth(1).click();
+    assert((await text('#count')) === 'count = 4, doubled = 8', `counter binding (got ${await text('#count')})`);
+    assert((await page.locator('.dot').count()) === 4, 'range loop follows count');
+    // input binding updates the heading and the document title (head)
+    await page.fill('#name', 'OWT');
+    assert((await text('h1')) === 'Hello, OWT!', 'name binding');
+    assert((await page.title()).startsWith('Hello OWT'), `head <title> binding (got ${await page.title()})`);
+    // keyed list with generic component + named slots + shared store
+    await page.click('#add-fruit');
+    assert((await page.locator('.list li').count()) === 4, 'fruit added');
+    assert((await text('#notifications')) === '1', 'store update rendered');
+    await page.locator('.list .remove').first().click();
+    assert((await page.locator('.list li').count()) === 3, 'fruit removed');
+    // async data
+    await page.waitForSelector('.user strong');
+    assert((await text('.user strong')) === 'User #1', 'await then branch');
+    // error boundary with reset
+    await page.check('#explode');
+    await page.waitForSelector('text=Caught: Kaboom');
+    await page.click('text=Recover');
+    assert((await page.locator('text=Everything is fine').count()) === 1, 'boundary reset');
+    // forms: radio + checkbox groups
+    await page.check('input[value=chocolate]');
+    await page.check('input[value=nuts]');
+    assert((await text('#order')) === 'One chocolate ice cream with sprinkles and nuts.', `bind:group (got ${await text('#order')})`);
+    // portal + context + window events
+    await page.click('#open-modal');
+    assert((await page.locator('body > .backdrop').count()) === 1, 'modal rendered in body (portal)');
+    assert((await text('.modal strong')) === 'Ada', 'context read inside portal');
+    await page.keyboard.press('Escape');
+    assert((await page.locator('.backdrop').count()) === 0, 'window keydown closes modal');
   },
 };
 
-const examples = only.length > 0 ? only : Object.keys(scenarios).filter((name) => name !== 'showcase');
+const examples = only.length > 0 ? only : Object.keys(scenarios);
 const browser = await launch();
 let failed = 0;
 for (const name of examples) {

@@ -1,0 +1,16 @@
+<!-- Loaded only when the TextMate Bundles plugin is enabled. -->
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <textmate.bundleProvider implementation="dev.owt.ide.textmate.OwtTextMateBundleProvider"/>
+
+        <!-- Highlight the OWT file type with the TextMate grammar registered above. -->
+        <lang.syntaxHighlighterFactory
+                language="OWT"
+                implementationClass="org.jetbrains.plugins.textmate.language.syntax.highlighting.TextMateSyntaxHighlighterFactory"/>
+        <editorHighlighterProvider
+                filetype="OWT"
+                implementationClass="org.jetbrains.plugins.textmate.language.syntax.highlighting.TextMateEditorHighlighterProvider"/>
+        <!-- Brace matching driven by the "brackets" of the bundle's language-configuration.json. -->
+        <braceMatcher filetype="OWT" implementationClass="org.jetbrains.plugins.textmate.editor.TextMateBraceMatcher"/>
+    </extensions>
+</idea-plugin>

@@ -9,6 +9,7 @@ import type * as vscode from '@volar/language-server';
 import { parse } from '@owt/parser';
 import { compile, CompileError } from '@owt/compiler';
 import { walkTemplate, type ComponentDecl, type Element, type Program, type TemplateNode } from '@owt/ast';
+import { format } from '@owt/language-core';
 
 const KEYWORDS: Record<string, string> = {
   component: 'Declares a component: `export component Name(props: Props) { ... }`. Parameters can be the whole `props` object, a destructuring pattern, or named props `(title: string, size = 16)`.',
@@ -67,6 +68,7 @@ export function createOwtService(): LanguageServicePlugin {
       foldingRangeProvider: true,
       linkedEditingRangeProvider: true,
       hoverProvider: true,
+      documentFormattingProvider: true,
       autoInsertionProvider: { triggerCharacters: ['>'] },
     },
     create(): LanguageServicePluginInstance {
@@ -154,6 +156,17 @@ export function createOwtService(): LanguageServicePlugin {
           const inClose = offset >= el.closeNameSpan.start && offset <= el.closeNameSpan.end;
           if (!inOpen && !inClose) return null;
           return { ranges: [range(doc, el.nameSpan.start, el.nameSpan.end), range(doc, el.closeNameSpan.start, el.closeNameSpan.end)] };
+        },
+
+        provideDocumentFormattingEdits(doc, range, options, embedded) {
+          if (embedded !== undefined) return null;
+          const program = programOf(doc);
+          if (program === null) return null;
+          const from = doc.offsetAt(range.start);
+          const to = doc.offsetAt(range.end);
+          return format(doc.getText(), { tabSize: options.tabSize, insertSpaces: options.insertSpaces }, program)
+            .filter((e) => e.start >= from && e.end <= to)
+            .map((e) => ({ range: { start: doc.positionAt(e.start), end: doc.positionAt(e.end) }, newText: e.text }));
         },
 
         provideHover(doc, position) {

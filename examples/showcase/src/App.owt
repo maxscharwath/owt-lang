@@ -1,0 +1,159 @@
+import { setContext } from 'owt'
+import { Card } from './Card.owt'
+import { Counter } from './Counter.owt'
+import { DataList } from './DataList.owt'
+import { Modal } from './Modal.owt'
+import { Greeting } from './Greeting.owt'
+import { UserCard } from './UserCard.owt'
+import { Unstable } from './Unstable.owt'
+import { settings, notify, UserContext } from './store'
+import { tooltip, autofocus } from './actions'
+
+type Fruit = { id: number; name: string; color: string }
+
+const COLORS = ['tomato', 'goldenrod', 'seagreen', 'royalblue', 'orchid']
+
+export component App() {
+  var count = 3
+  var name = 'World'
+  var userId = 1
+  var explode = false
+  var modalOpen = false
+  var flavor = 'vanilla'
+  var toppings: string[] = ['sprinkles']
+  var width = window.innerWidth
+  var fruits: Fruit[] = [
+    { id: 1, name: 'Apple', color: 'tomato' },
+    { id: 2, name: 'Banana', color: 'goldenrod' },
+    { id: 3, name: 'Kiwi', color: 'seagreen' },
+  ]
+
+  val doubled = count * 2
+  val level = count === 0 ? 'empty' : count < 5 ? 'low' : 'high'
+
+  setContext(UserContext, { name: 'Ada' })
+
+  function addFruit() {
+    const id = fruits.length === 0 ? 1 : Math.max(...fruits.map((f) => f.id)) + 1
+    fruits.push({ id, name: `Fruit ${id}`, color: COLORS[id % COLORS.length]! })
+    notify()
+  }
+
+  function shuffle() {
+    fruits = [...fruits].sort(() => Math.random() - 0.5)
+  }
+
+  <head>
+    <title>Hello {name} · OWT Showcase</title>
+  </head>
+  <window onResize={() => width = window.innerWidth} />
+
+  <main id="showcase" class:dark={settings.theme === 'dark'}>
+    <h1 use:tooltip={`Hello ${name}!`}>Hello, {name}!</h1>
+    <p class="muted">
+      Window width: {width}px · Notifications: <span id="notifications">{settings.notifications}</span>
+      <button onClick={() => settings.theme = settings.theme === 'dark' ? 'light' : 'dark'}>Toggle theme</button>
+    </p>
+
+    <Card title="State, derived values and two-way binding">
+      <Counter bind:value={count} max={20} />
+      <p id="count">count = {count}, doubled = {doubled}</p>
+      switch (level) {
+        case 'empty' { <p class="tag">Nothing yet</p> }
+        case 'low' { <p class="tag">A few</p> }
+        default { <p class="tag">Lots!</p> }
+      }
+      <p>
+        for (i of 1..count) { <span class="dot">{i}</span> }
+      </p>
+      <label>Your name <input id="name" bind:value={name} use:autofocus /></label>
+    </Card>
+
+    <Card title="Keyed lists, generic components and named slots">
+      slot header({ title, open }) {
+        <h2>{title} {open ? '' : '(collapsed)'}</h2>
+      }
+      <div class="row">
+        <button id="add-fruit" onClick={addFruit}>Add fruit</button>
+        <button onClick={shuffle}>Shuffle</button>
+        <button onClick={() => fruits = []}>Clear</button>
+      </div>
+      <DataList items={fruits} key={(f) => f.id}>
+        slot row({ item, index }) {
+          <span style:color={item.color}>{index + 1}. {item.name}</span>
+          <button class="remove" onClick={() => fruits = fruits.filter((f) => f.id !== item.id)}>×</button>
+        }
+        slot empty { <em>No fruit left. Add some!</em> }
+      </DataList>
+    </Card>
+
+    <Card title="Async data" tone="warn">
+      <Counter bind:value={userId} min={1} max={20} />
+      <span class="muted">(user 13 fails on purpose)</span>
+      <UserCard id={userId} />
+    </Card>
+
+    <Card title="Error boundaries">
+      <label><input id="explode" type="checkbox" bind:checked={explode} /> Make it explode</label>
+      try {
+        <Unstable {explode} />
+      } catch (error, reset) {
+        <p class="error">Caught: {(error as Error).message}</p>
+        <button onClick={() => { explode = false; reset() }}>Recover</button>
+      }
+    </Card>
+
+    <Card title="Forms">
+      <fieldset>
+        for (f of ['vanilla', 'chocolate', 'strawberry']) {
+          <label><input type="radio" name="flavor" value={f} bind:group={flavor} /> {f}</label>
+        }
+      </fieldset>
+      <fieldset>
+        for (t of ['sprinkles', 'nuts', 'sauce']) {
+          <label><input type="checkbox" value={t} bind:group={toppings} /> {t}</label>
+        }
+      </fieldset>
+      <p id="order">One {flavor} ice cream with {toppings.length > 0 ? toppings.join(' and ') : 'nothing'}.</p>
+    </Card>
+
+    <Card title="Portals and context">
+      <button id="open-modal" onClick={() => modalOpen = true}>Open modal</button>
+      <Modal open={modalOpen} onClose={() => modalOpen = false}>
+        <Greeting />
+      </Modal>
+    </Card>
+  </main>
+
+  <style>
+    main {
+      max-width: 44rem;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+    main.dark {
+      background: #111827;
+      color: #f9fafb;
+    }
+    .muted { color: #6b7280; }
+    .tag {
+      display: inline-block;
+      padding: 0.1rem 0.6rem;
+      border-radius: 999px;
+      background: #e0e7ff;
+      color: #3730a3;
+    }
+    .dot {
+      display: inline-block;
+      width: 1.6rem;
+      text-align: center;
+      border-radius: 50%;
+      background: #f3f4f6;
+      margin-right: 0.2rem;
+    }
+    .row { display: flex; gap: 0.5rem; }
+    .remove { border: none; background: none; cursor: pointer; color: #9ca3af; }
+    .error { color: #dc2626; }
+    fieldset { border: none; display: flex; gap: 1rem; padding: 0; margin: 0 0 0.5rem; }
+  </style>
+}

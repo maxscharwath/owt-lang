@@ -4,7 +4,7 @@
  * The generated code mirrors the component as a plain function: module code
  * and component statements are copied verbatim, `var` / `val` become `let` /
  * `const`, and markup becomes calls to typed helpers (`__owt.el("input", {...})`,
- * `__owt.component(Button, {...})`) plus real `if` / `for` / `switch`
+ * `Button({...})`) plus real `if` / `for` / `switch`
  * statements so TypeScript narrowing works. Every piece of user code is
  * mapped back to the `.owt` source, which is how diagnostics, completions,
  * hover, go-to-definition and rename work in editors.
@@ -102,6 +102,39 @@ function eventName(name: string): boolean {
   return name.length > 2 && name.startsWith('on') && name.charCodeAt(2) >= 65 && name.charCodeAt(2) <= 90;
 }
 
+/** Names bound by a destructuring pattern (props declared but only used through `<slot>` stay "used"). */
+function patternBindingNames(node: { type: string }): string[] {
+  const out: string[] = [];
+  const visit = (n: unknown) => {
+    if (typeof n !== 'object' || n === null) return;
+    const node = n as { type?: string; name?: string; properties?: unknown[]; elements?: unknown[]; value?: unknown; left?: unknown; argument?: unknown };
+    switch (node.type) {
+      case 'Identifier':
+        if (node.name !== undefined) out.push(node.name);
+        return;
+      case 'ObjectPattern':
+        node.properties?.forEach((p) => {
+          const prop = p as { type: string; value?: unknown; argument?: unknown };
+          visit(prop.type === 'RestElement' ? prop.argument : prop.value);
+        });
+        return;
+      case 'ArrayPattern':
+        node.elements?.forEach(visit);
+        return;
+      case 'AssignmentPattern':
+        visit(node.left);
+        return;
+      case 'RestElement':
+        visit(node.argument);
+        return;
+      default:
+        return;
+    }
+  };
+  visit(node);
+  return out;
+}
+
 class Builder {
   code = '';
   readonly mappings: CodeMapping[] = [];
@@ -187,6 +220,17 @@ class ComponentGen {
   generate(): void {
     const c = this.component;
     const b = this.b;
+    // types of named props that only have a default value: inferred from an (unmapped) copy of the defaults
+    if (c.params.kind === 'named') {
+      const untyped = c.params.params.filter((q) => q.type === null && q.defaultValue !== null && !q.rest);
+      if (untyped.length > 0) {
+        b.text(`function __defaults_${c.name}() { return { `);
+        for (const q of untyped) {
+          b.text(`${JSON.stringify(q.name)}: (${this.src.slice(q.defaultValue!.start ?? 0, q.defaultValue!.end ?? 0)}), `);
+        }
+        b.text('}; }\n');
+      }
+    }
     b.text(c.exported ? (c.isDefault ? 'export default function ' : 'export function ') : 'function ');
     b.map(c.nameSpan.start, c.nameSpan.end, NAME);
     if (c.typeParams !== null) b.map(c.typeParams.start, c.typeParams.end);
@@ -228,6 +272,8 @@ class ComponentGen {
           b.text('let ');
           b.map(pattern.start ?? 0, pattern.typeAnnotation?.start ?? pattern.end ?? 0);
           b.text(' = __props;\n');
+          const names = patternBindingNames(pattern);
+          if (names.length > 0) b.text(`void [${names.join(', ')}];\n`);
         });
         break;
       }
@@ -239,6 +285,7 @@ class ComponentGen {
           b.mapAs(isIdentifierName(param.name) ? param.name : JSON.stringify(param.name), param.nameSpan.start, param.name.length, NAME);
           b.text(param.optional || param.defaultValue !== null ? '?: ' : ': ');
           if (param.type !== null) b.map(param.type.start, param.type.end);
+          else if (param.defaultValue !== null) b.text(`ReturnType<typeof __defaults_${c.name}>[${JSON.stringify(param.name)}]`);
           else b.text('unknown');
           b.text(';');
         }
@@ -275,6 +322,8 @@ class ComponentGen {
             b.text(', ');
           }
           b.text('} = __props;\n');
+          const locals = p.params.map((q) => (RESERVED.has(q.name) && !q.rest ? `$$${q.name}` : q.name));
+          if (locals.length > 0) b.text(`void [${locals.join(', ')}];\n`);
         });
         break;
       }
@@ -299,8 +348,11 @@ class ComponentGen {
           markup.push(item);
       }
     }
+    // markup goes in a closure: `var`s are reassigned by event handlers, so
+    // TypeScript must not narrow them to their initial value
+    b.text('const __markup = () => {\n');
     this.nodes(markup);
-    b.text('return __owt.node;\n}\n');
+    b.text('};\nvoid __markup;\nreturn __owt.node;\n}\n');
   }
 
   private declares(name: string): boolean {
@@ -474,7 +526,8 @@ class ComponentGen {
     const needsVar = el.attributes.some((a) => a.type === 'Attribute' && (a.directive === 'bind' || a.directive === 'use' || a.directive === 'on' || a.name === 'ref'));
     const v = needsVar ? this.id('el') : null;
     if (v !== null) b.text(`const ${v} = `);
-    b.text('__owt.el("');
+    // explicit type argument: much cheaper for TypeScript than inferring K
+    b.text(`__owt.el<${JSON.stringify(el.name)}>("`);
     b.mapAs(el.name, el.nameSpan.start, el.name.length, TAG);
     b.text('", ');
     const objStart = b.code.length;
@@ -484,8 +537,8 @@ class ComponentGen {
     b.text('}');
     b.wrap(objStart, { start: el.start, end: el.nameSpan.end });
     b.text(');\n');
-    if (v !== null) this.directives(el, v);
-    else this.directives(el, null);
+    if (v !== null) b.text(`void ${v};\n`);
+    this.directives(el, v);
     this.nodes(el.children);
   }
 
@@ -594,9 +647,9 @@ class ComponentGen {
 
   private componentElement(el: Element): void {
     const b = this.b;
-    b.text('__owt.component(');
+    // a direct call: generic components infer their type arguments from the props
     this.tagExpression(el);
-    b.text(', ');
+    b.text('(');
     const objStart = b.code.length;
     b.text('{');
     const after: (() => void)[] = [];

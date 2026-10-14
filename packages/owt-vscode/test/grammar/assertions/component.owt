@@ -1,0 +1,69 @@
+// SYNTAX TEST "source.owt" "components, module code and state"
+import { Button } from './Button.owt'
+// <------ keyword.control.import.ts
+type Todo = { id: number; done: boolean }
+// <---- storage.type.type.ts
+//   ^^^^ entity.name.type.alias.ts
+component Plain(props: { title: string }) {
+// <--------- storage.type.owt
+//        ^^^^^ entity.name.type.component.owt
+//              ^^^^^ variable.parameter.ts
+//                                        ^ meta.component.body.owt punctuation.definition.block.owt
+  var todos: Todo[] = []
+//^^^ storage.type.owt
+//    ^^^^^ variable.other.readwrite.ts
+//           ^^^^ entity.name.type.ts
+  var draft = ""
+//^^^ storage.type.owt
+//            ^^ string.quoted.double.ts
+  val remaining = todos.filter(t => !t.done).length
+//^^^ storage.type.owt
+//    ^^^^^^^^^ meta.var.expr.owt variable.other.readwrite.ts
+//                      ^^^^^^ entity.name.function.ts
+//                               ^^ storage.type.function.arrow.ts
+  const id = 1
+//^^^^^ storage.type.ts
+//      ^^ variable.other.constant.ts
+  function add() { todos.push({ id: Date.now(), done: false }); draft = "" }
+//^^^^^^^^ storage.type.function.ts
+//         ^^^ entity.name.function.ts
+  type Local = { a: string }
+//^^^^ storage.type.type.ts
+  <p>{remaining}</p>
+//^ meta.tag.owt punctuation.definition.tag.begin.owt
+// ^ entity.name.tag.owt
+//   ^ punctuation.section.embedded.begin.owt
+//    ^^^^^^^^^ meta.embedded.expression.owt source.ts variable.other.readwrite.ts
+//             ^ punctuation.section.embedded.end.owt
+//              ^^ punctuation.definition.tag.begin.owt
+  {remaining > 0 ? "some" : "none"}
+//^ punctuation.section.embedded.begin.owt
+//               ^ source.ts keyword.operator.ternary.ts
+}
+// <- meta.component.body.owt punctuation.definition.block.owt
+
+export component Named(title: string, size = 16, class: string = "w-4") {
+// <------ keyword.control.export.owt
+//     ^^^^^^^^^ storage.type.owt
+//                     ^^^^^ variable.parameter.ts
+//                                    ^^^^ variable.parameter.ts
+//                                               ^^^^^ variable.parameter.ts
+  <svg {class} width={size} />
+// ^^^ entity.name.tag.owt
+//      ^^^^^ source.ts variable.other.readwrite.ts
+}
+export component Destructured({ label, tone = "info" }: Props) {}
+//                              ^^^^^ variable.parameter.ts
+//                                                      ^^^^^ entity.name.type.ts
+export component Generic<T>(items: T[]) {}
+//               ^^^^^^^ entity.name.type.component.owt
+//                      ^ meta.type.parameters.ts punctuation.definition.typeparameters.begin.ts
+//                       ^ entity.name.type.ts
+export default component App() {}
+// <------ keyword.control.export.owt
+//     ^^^^^^^ keyword.control.default.owt
+//             ^^^^^^^^^ storage.type.owt
+//                       ^^^ entity.name.type.component.owt
+const after = component
+// <----- storage.type.ts
+//            ^^^^^^^^^ variable.other.readwrite.ts

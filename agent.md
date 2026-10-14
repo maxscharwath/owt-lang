@@ -1,103 +1,66 @@
 # OWT Codebase Guidelines
 
-These guidelines set clear conventions for this repo. They are intentionally minimal and opinionated to keep the codebase consistent and easy to maintain.
+Conventions for this repository. They are intentionally short and opinionated.
 
 ## Goals
 
-- Consistent TypeScript with zero explicit `any`.
-- Clean, extensionless local imports in source.
-- Prefer simple, readable code over clever abstractions.
-- **AVOID REGEX-BASED PARSING** - Regex makes code hacky, buggy, and hard to maintain. Use proper AST parsing instead.
+- Consistent TypeScript with zero explicit `any` (`unknown` + narrowing, generics, precise unions).
+- Clean, extensionless local imports in source (`./foo`, never `./foo.js`).
+- Simple, readable code over clever abstractions.
+- **No regex-based parsing.** OWT code is parsed by `@owt/parser` (markup) and Babel (TypeScript), CSS by the scoper's tokenizer. Small regexes for trivial string checks are fine in tests.
 
-## Compiler Architecture
+## Packages
 
-- Folder structure under `packages/owt-compiler/src`:
-  - `compile.ts`: orchestration only (parse, wire helpers, emit). Keep minimal.
-  - `codegen/ids.ts`: ID generation per component.
-  - `codegen/util.ts`: small helpers like `genExpr`, `genText`, `simpleVarFromExpr`.
-  - `codegen/state.ts`: current compile state (var names, val inits/deps, context).
-  - `codegen/svg.ts`: SVG-related attribute helpers.
-  - `codegen/attributes.ts`: props + attribute handling and event listener glue.
-  - `codegen/elements.ts`: element creation and child generation.
-  - `event-handlers.ts`: event analysis and codegen.
-  - `codegen-utils.ts`: lower-level codegen building blocks.
-- Principles:
-  - Single responsibility per module; no cross-cutting globals.
-  - Use explicit inputs (ctx, uid) where practical; shared state only when it improves ergonomics without ambiguity.
-  - Keep `compile.ts` short; push logic into the modules above.
+| Package | Role |
+|---|---|
+| `packages/owt` (`owt`) | Runtime: signals (`reactivity.ts`), deep proxies (`proxy.ts`), DOM layer (`dom/`), public API (`index.ts`), compiler target (`internal.ts`), editor typings (`elements.ts`, `language.ts`) |
+| `packages/owt-ast` (`@owt/ast`) | AST types, guards, `walkTemplate`, `LineMap`, `codeFrame` |
+| `packages/owt-parser` (`@owt/parser`) | Hand-written markup parser + JS-aware scanner; never throws, collects diagnostics |
+| `packages/owt-compiler` (`@owt/compiler`) | `compile()` → JS module + CSS + source map |
+| `packages/vite-plugin-owt` (`@owt/vite`) | Vite 7/8 plugin |
+| `packages/owt-language-core` (`@owt/language-core`) | Volar language plugin: `.owt` → virtual TypeScript; formatter |
+| `packages/owt-language-server` (`@owt/language-server`) | LSP server (Volar + TS + CSS + OWT services), bundled with TypeScript |
+| `packages/owt-typescript-plugin` (`@owt/typescript-plugin`) | tsserver plugin (types for `.owt` imports in `.ts`) |
+| `packages/owt-tsc` (`owt-tsc`) | `tsc` with `.owt` support |
+| `packages/owt-vscode` | VS Code extension (client, TextMate grammar, snippets) |
+| `packages/owt-jetbrains` | JetBrains plugin (Kotlin, LSP client) |
+| `benchmark/` | js-framework-benchmark style comparison with Vue, React and vanilla |
+| `examples/*` | runnable Vite apps (also used by `scripts/e2e.mjs`) |
+
+## Compiler architecture (`packages/owt-compiler/src`)
+
+- `compile.ts`: orchestration only (parse, analyze names, compile scripts/components, assemble output).
+- `component.ts`: props, `var`/`val`, statements → one function per component.
+- `template.ts`: markup → hoisted templates, node paths, grouped render effects, blocks.
+- `js.ts`: TypeScript fragments: type erasure + reactive rewriting (magic-string, per-fragment source maps).
+- `walk.ts`: scope-aware Babel walker (free reads/writes); `traverse.ts`: enumerate a component's JS.
+- `bindings.ts`: how each name compiles (`state`, `derived`, `prop`, `signal`, `path`, `plain`).
+- `css.ts`: scoped CSS; `html.ts`: HTML knowledge (namespaces, entities, whitespace, nesting rules).
+- `chunks.ts`: chunk trees + `CodeWriter` (source maps); `errors.ts`: `CompileError` (Vite overlay shape).
+
+Principles: single responsibility per module, explicit inputs (contexts are passed, not global), generated names come from `FileContext.name()` so they never clash with user code.
+
+## Runtime principles
+
+- Reads are tracked, writes push "maybe stale" marks; computeds validate by version before recomputing.
+- DOM work happens in render effects that compare with the previous value before touching the DOM.
+- Every rendered piece of content has a stable first and last node (blocks render before an anchor comment; templates starting with a block get a leading marker).
+- Hot paths avoid allocations (linked dependency lists, closure caches instead of objects).
 
 ## TypeScript
 
-- No explicit `any`: Do not use `any` in production or test code. Prefer:
-  - `unknown` for values whose shape is not yet known, with explicit narrowing.
-  - Generics with constraints to model intent.
-  - Precise union/intersection types over broad catch-alls.
-  - `never` where something should be impossible.
-- Keep `strict` mode on (already enabled) and do not relax compiler checks.
-- Avoid `as` type assertions; prefer type-safe refinements. When unavoidable, prefer `satisfies` or narrow earlier.
-
-## Imports
-
-- Omit file extensions for local TS imports and re-exports:
-  - Good: `import x from './foo'`
-  - Bad: `import x from './foo.js'`
-- Keep relative paths simple; prefer `./foo` over `./foo/index`.
-- Do not reach across packages with deep relative paths; export from the package entrypoints instead.
-
-## Linting (recommended)
-
-- ESLint with flat config (see `eslint.config.mjs`) enforces:
-  - No explicit `any` via `@typescript-eslint/no-explicit-any`.
-  - No relative imports ending with `.js` via `no-restricted-imports` patterns.
-- Suggested install (run once in repo root):
-  - `pnpm add -D eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin`
-  - Then run `pnpm run lint`.
+- `strict`, `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess` stay on.
+- Avoid `as`; prefer narrowing and `satisfies`. Generated virtual code may use whatever TypeScript needs.
 
 ## Tests
 
-- Runner: Use Vitest for all tests.
-- Location & naming: Colocate tests next to source, using `filename.spec.ts`.
-- Single behavior: Each `it`/`test` verifies one behavior. If you feel the need to split assertions by concern, create another test.
-- Short and focused: Keep tests tight; favor clarity over setup indirection. Aim for < ~15 lines per test.
-- AAA blocks without comments: Structure code into three blocks separated by one blank line: declarations, execution, assertions. Do not add comments like `// Arrange`.
-- No `any`, no assertions: Use exported type guards from `@owt/ast` (e.g., `isComponent`, `isElement`, `isIfBlock`) to narrow types. Avoid `as`.
-- Deterministic inputs: Prefer inlined literals or local factories; avoid hidden fixture files.
-- Descriptive names: Use behavior-focused titles, e.g., `parses if/else into branches`.
+- Vitest everywhere: `pnpm test`. Colocate unit tests (`*.spec.ts`) or put integration tests in `test/`.
+- Runtime/DOM tests use `// @vitest-environment happy-dom`.
+- Compiler behaviour is tested end to end: compile real `.owt` source, import it, mount it, interact (`packages/owt-compiler/test/helpers.ts`).
+- Browser checks: `pnpm test:e2e` builds the examples and drives them in Chromium (Playwright).
+- One behaviour per test, AAA layout (declarations / execution / assertions separated by a blank line), no comments like `// Arrange`, descriptive names.
 
-Example (good):
+## Build
 
-```
-it('parses var/val and if/else', () => {
-  const src = `export component App(){ var c=1; val d=c*2; if (c>0){<p/>} else {<span/>} }`;
-
-  const ast = parse(src);
-
-  const comp = ast.body.find(isComponent);
-  const ifBlock = comp?.body.find(isIfBlock);
-  expect(comp?.type).toBe('Component');
-  expect(ifBlock?.branches?.[0]?.consequent?.[0]?.type).toBe('Element');
-});
-```
-
-Anti-example (avoid):
-
-```
-it('does many things at once', () => {
-  // Arrange
-  const src = makeHugeFixture(); const ast: any = parse(src); const comp = ast.body[0] as any;
-  // Act
-  const el = comp.body.find((x: any) => x.type==='Element' && x.name==='ul');
-  // Assert
-  expect(comp).toBeTruthy(); expect(el).toBeTruthy();
-});
-```
-
-## Exceptions
-
-- Generated code may include `/* eslint-disable */` in emitted output. Do not mirror those patterns in source.
-- If a rule blocks clear progress, open a PR to discuss rather than adding inline disables.
-
-## Migration Notes
-
-- Existing files have been updated to remove `.js` from local imports.
-- Banning explicit `any` is enforced by linting; refactor progressively if violations remain.
+- `pnpm build` builds every package in dependency order (tsdown for libraries, esbuild bundles for the server/plugin/CLI).
+- Workspace packages consumed by Node (compiler, parser, plugin, tooling) must be built before running the examples or the benchmark; the runtime (`owt`) is consumed from source in the workspace.

@@ -1,0 +1,9 @@
+import { getContext } from 'owt'
+import { UserContext } from './store'
+
+// Reads a value provided by an ancestor with setContext().
+export component Greeting() {
+  const user = getContext(UserContext)
+
+  <p>Hello from the modal, <strong>{user?.name ?? 'stranger'}</strong>! Press Escape to close.</p>
+}

@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "owt-vscode: build",
+      "type": "shell",
+      "command": "pnpm build",
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "owt-vscode: test grammar",
+      "type": "shell",
+      "command": "pnpm test:grammar",
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
+}

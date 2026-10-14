@@ -1,0 +1,28 @@
+import { Portal } from 'owt'
+
+// Portal renders into document.body; <window> listens to global events.
+export component Modal(open: boolean, onClose: () => void) {
+  if (open) {
+    <Portal>
+      <div class="backdrop" onClick={onClose}>
+        <div class="modal" role="dialog" onClick={(e) => e.stopPropagation()}>
+          <slot />
+          <button class="close" onClick={onClose}>Close</button>
+        </div>
+      </div>
+    </Portal>
+  }
+  <window onKeyDown={(e) => e.key === 'Escape' && onClose()} />
+
+  <style>
+    .backdrop {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: rgb(0 0 0 / 0.4);
+    }
+    .modal { background: white; padding: 1.5rem; border-radius: 12px; min-width: 18rem; }
+    .close { margin-top: 1rem; }
+  </style>
+}

@@ -1,0 +1,928 @@
+>import { Button } from './Button.owt'
+#^^^^^^ source.owt meta.import.ts keyword.control.import.ts
+#      ^ source.owt meta.import.ts
+#       ^ source.owt meta.import.ts meta.block.ts punctuation.definition.block.ts
+#        ^ source.owt meta.import.ts meta.block.ts
+#         ^^^^^^ source.owt meta.import.ts meta.block.ts variable.other.readwrite.alias.ts
+#               ^ source.owt meta.import.ts meta.block.ts
+#                ^ source.owt meta.import.ts meta.block.ts punctuation.definition.block.ts
+#                 ^ source.owt meta.import.ts
+#                  ^^^^ source.owt meta.import.ts keyword.control.from.ts
+#                      ^ source.owt meta.import.ts
+#                       ^ source.owt meta.import.ts string.quoted.single.ts punctuation.definition.string.begin.ts
+#                        ^^^^^^^^^^^^ source.owt meta.import.ts string.quoted.single.ts
+#                                    ^ source.owt meta.import.ts string.quoted.single.ts punctuation.definition.string.end.ts
+>type Todo = { id: number; text: string; done: boolean }
+#^^^^ source.owt meta.type.declaration.ts storage.type.type.ts
+#    ^ source.owt meta.type.declaration.ts
+#     ^^^^ source.owt meta.type.declaration.ts entity.name.type.alias.ts
+#         ^ source.owt meta.type.declaration.ts
+#          ^ source.owt meta.type.declaration.ts keyword.operator.assignment.ts
+#           ^ source.owt meta.type.declaration.ts
+#            ^ source.owt meta.type.declaration.ts meta.object.type.ts punctuation.definition.block.ts
+#             ^ source.owt meta.type.declaration.ts meta.object.type.ts meta.field.declaration.ts
+#              ^^ source.owt meta.type.declaration.ts meta.object.type.ts meta.field.declaration.ts meta.definition.property.ts variable.object.property.ts
+#                ^ source.owt meta.type.declaration.ts meta.object.type.ts meta.field.declaration.ts meta.type.annotation.ts keyword.operator.type.annotation.ts
+#                 ^ source.owt meta.type.declaration.ts meta.object.type.ts meta.field.declaration.ts meta.type.annotation.ts
+#                  ^^^^^^ source.owt meta.type.declaration.ts meta.object.type.ts meta.field.declaration.ts meta.type.annotation.ts support.type.primitive.ts
+#                        ^ source.owt meta.type.declaration.ts meta.object.type.ts punctuation.terminator.statement.ts
+#                         ^ source.owt meta.type.declaration.ts meta.object.type.ts meta.field.declaration.ts
+#                          ^^^^ source.owt meta.type.declaration.ts meta.object.type.ts meta.field.declaration.ts meta.definition.property.ts variable.object.property.ts
+#                              ^ source.owt meta.type.declaration.ts meta.object.type.ts meta.field.declaration.ts meta.type.annotation.ts keyword.operator.type.annotation.ts
+#                               ^ source.owt meta.type.declaration.ts meta.object.type.ts meta.field.declaration.ts meta.type.annotation.ts
+#                                ^^^^^^ source.owt meta.type.declaration.ts meta.object.type.ts meta.field.declaration.ts meta.type.annotation.ts support.type.primitive.ts
+#                                      ^ source.owt meta.type.declaration.ts meta.object.type.ts punctuation.terminator.statement.ts
+#                                       ^ source.owt meta.type.declaration.ts meta.object.type.ts meta.field.declaration.ts
+#                                        ^^^^ source.owt meta.type.declaration.ts meta.object.type.ts meta.field.declaration.ts meta.definition.property.ts variable.object.property.ts
+#                                            ^ source.owt meta.type.declaration.ts meta.object.type.ts meta.field.declaration.ts meta.type.annotation.ts keyword.operator.type.annotation.ts
+#                                             ^ source.owt meta.type.declaration.ts meta.object.type.ts meta.field.declaration.ts meta.type.annotation.ts
+#                                              ^^^^^^^ source.owt meta.type.declaration.ts meta.object.type.ts meta.field.declaration.ts meta.type.annotation.ts support.type.primitive.ts
+#                                                     ^ source.owt meta.type.declaration.ts meta.object.type.ts meta.field.declaration.ts meta.type.annotation.ts
+#                                                      ^ source.owt meta.type.declaration.ts meta.object.type.ts punctuation.definition.block.ts
+>
+>export component TodoApp(props: { title: string }) {
+#^^^^^^ source.owt meta.component.owt keyword.control.export.owt
+#      ^ source.owt meta.component.owt
+#       ^^^^^^^^^ source.owt meta.component.owt storage.type.owt
+#                ^ source.owt meta.component.owt
+#                 ^^^^^^^ source.owt meta.component.owt entity.name.type.component.owt
+#                        ^ source.owt meta.component.owt meta.parameters.ts punctuation.definition.parameters.begin.ts
+#                         ^^^^^ source.owt meta.component.owt meta.parameters.ts variable.parameter.ts
+#                              ^ source.owt meta.component.owt meta.parameters.ts meta.type.annotation.ts keyword.operator.type.annotation.ts
+#                               ^ source.owt meta.component.owt meta.parameters.ts meta.type.annotation.ts
+#                                ^ source.owt meta.component.owt meta.parameters.ts meta.type.annotation.ts meta.object.type.ts punctuation.definition.block.ts
+#                                 ^ source.owt meta.component.owt meta.parameters.ts meta.type.annotation.ts meta.object.type.ts meta.field.declaration.ts
+#                                  ^^^^^ source.owt meta.component.owt meta.parameters.ts meta.type.annotation.ts meta.object.type.ts meta.field.declaration.ts meta.definition.property.ts variable.object.property.ts
+#                                       ^ source.owt meta.component.owt meta.parameters.ts meta.type.annotation.ts meta.object.type.ts meta.field.declaration.ts meta.type.annotation.ts keyword.operator.type.annotation.ts
+#                                        ^ source.owt meta.component.owt meta.parameters.ts meta.type.annotation.ts meta.object.type.ts meta.field.declaration.ts meta.type.annotation.ts
+#                                         ^^^^^^ source.owt meta.component.owt meta.parameters.ts meta.type.annotation.ts meta.object.type.ts meta.field.declaration.ts meta.type.annotation.ts support.type.primitive.ts
+#                                               ^ source.owt meta.component.owt meta.parameters.ts meta.type.annotation.ts meta.object.type.ts meta.field.declaration.ts meta.type.annotation.ts
+#                                                ^ source.owt meta.component.owt meta.parameters.ts meta.type.annotation.ts meta.object.type.ts punctuation.definition.block.ts
+#                                                 ^ source.owt meta.component.owt meta.parameters.ts punctuation.definition.parameters.end.ts
+#                                                  ^ source.owt meta.component.owt
+#                                                   ^ source.owt meta.component.owt meta.component.body.owt punctuation.definition.block.owt
+>  var todos: Todo[] = []
+#^^ source.owt meta.component.owt meta.component.body.owt
+#  ^^^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt storage.type.owt
+#     ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt
+#      ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.definition.variable.ts variable.other.readwrite.ts
+#           ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.type.annotation.ts keyword.operator.type.annotation.ts
+#            ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.type.annotation.ts
+#             ^^^^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.type.annotation.ts entity.name.type.ts
+#                 ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.type.annotation.ts meta.type.tuple.ts meta.brace.square.ts
+#                  ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.type.annotation.ts meta.type.tuple.ts meta.brace.square.ts
+#                   ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.type.annotation.ts
+#                    ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt keyword.operator.assignment.ts
+#                     ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.array.literal.ts
+#                      ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.array.literal.ts meta.brace.square.ts
+#                       ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.array.literal.ts meta.brace.square.ts
+>  var draft = ''
+#^^ source.owt meta.component.owt meta.component.body.owt
+#  ^^^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt storage.type.owt
+#     ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt
+#      ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.definition.variable.ts variable.other.readwrite.ts
+#           ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts
+#            ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt keyword.operator.assignment.ts
+#             ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt
+#              ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt string.quoted.single.ts punctuation.definition.string.begin.ts
+#               ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt string.quoted.single.ts punctuation.definition.string.end.ts
+>  var filter: 'all' | 'done' | 'active' = 'all'
+#^^ source.owt meta.component.owt meta.component.body.owt
+#  ^^^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt storage.type.owt
+#     ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt
+#      ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.definition.variable.ts variable.other.readwrite.ts
+#            ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.type.annotation.ts keyword.operator.type.annotation.ts
+#             ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.type.annotation.ts
+#              ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.type.annotation.ts string.quoted.single.ts punctuation.definition.string.begin.ts
+#               ^^^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.type.annotation.ts string.quoted.single.ts
+#                  ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.type.annotation.ts string.quoted.single.ts punctuation.definition.string.end.ts
+#                   ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.type.annotation.ts
+#                    ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.type.annotation.ts keyword.operator.type.ts
+#                     ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.type.annotation.ts
+#                      ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.type.annotation.ts string.quoted.single.ts punctuation.definition.string.begin.ts
+#                       ^^^^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.type.annotation.ts string.quoted.single.ts
+#                           ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.type.annotation.ts string.quoted.single.ts punctuation.definition.string.end.ts
+#                            ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.type.annotation.ts
+#                             ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.type.annotation.ts keyword.operator.type.ts
+#                              ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.type.annotation.ts
+#                               ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.type.annotation.ts string.quoted.single.ts punctuation.definition.string.begin.ts
+#                                ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.type.annotation.ts string.quoted.single.ts
+#                                      ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.type.annotation.ts string.quoted.single.ts punctuation.definition.string.end.ts
+#                                       ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.type.annotation.ts
+#                                        ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt keyword.operator.assignment.ts
+#                                         ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt
+#                                          ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt string.quoted.single.ts punctuation.definition.string.begin.ts
+#                                           ^^^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt string.quoted.single.ts
+#                                              ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt string.quoted.single.ts punctuation.definition.string.end.ts
+>  var ok = true
+#^^ source.owt meta.component.owt meta.component.body.owt
+#  ^^^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt storage.type.owt
+#     ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt
+#      ^^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.definition.variable.ts variable.other.readwrite.ts
+#        ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts
+#         ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt keyword.operator.assignment.ts
+#          ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt
+#           ^^^^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt constant.language.boolean.true.ts
+>  var userId = 1
+#^^ source.owt meta.component.owt meta.component.body.owt
+#  ^^^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt storage.type.owt
+#     ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt
+#      ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.definition.variable.ts variable.other.readwrite.ts
+#            ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts
+#             ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt keyword.operator.assignment.ts
+#              ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt
+#               ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt constant.numeric.decimal.ts
+>  val remaining = todos.filter(t => !t.done).length
+#^^ source.owt meta.component.owt meta.component.body.owt
+#  ^^^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt storage.type.owt
+#     ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt
+#      ^^^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.definition.variable.ts variable.other.readwrite.ts
+#               ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts
+#                ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt keyword.operator.assignment.ts
+#                 ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt
+#                  ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.function-call.ts variable.other.object.ts
+#                       ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.function-call.ts punctuation.accessor.ts
+#                        ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.function-call.ts entity.name.function.ts
+#                              ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.brace.round.ts
+#                               ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.arrow.ts variable.parameter.ts
+#                                ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.arrow.ts
+#                                 ^^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.arrow.ts storage.type.function.arrow.ts
+#                                   ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.arrow.ts
+#                                    ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt keyword.operator.logical.ts
+#                                     ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt variable.other.object.ts
+#                                      ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt punctuation.accessor.ts
+#                                       ^^^^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt variable.other.property.ts
+#                                           ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.brace.round.ts
+#                                            ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt punctuation.accessor.ts
+#                                             ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt support.variable.property.ts
+>  const id = 1
+#^^ source.owt meta.component.owt meta.component.body.owt
+#  ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.ts storage.type.ts
+#       ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.ts
+#        ^^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.ts meta.var-single-variable.expr.ts meta.definition.variable.ts variable.other.constant.ts
+#          ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.ts meta.var-single-variable.expr.ts
+#           ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.ts keyword.operator.assignment.ts
+#            ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.ts
+#             ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.ts constant.numeric.decimal.ts
+>  function add() { todos.push({ id: Date.now(), text: draft, done: false }); draft = '' }
+#^^ source.owt meta.component.owt meta.component.body.owt
+#  ^^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.function.ts storage.type.function.ts
+#          ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts
+#           ^^^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.definition.function.ts entity.name.function.ts
+#              ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.parameters.ts punctuation.definition.parameters.begin.ts
+#               ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.parameters.ts punctuation.definition.parameters.end.ts
+#                ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts
+#                 ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts punctuation.definition.block.ts
+#                  ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts
+#                   ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.function-call.ts variable.other.object.ts
+#                        ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.function-call.ts punctuation.accessor.ts
+#                         ^^^^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.function-call.ts entity.name.function.ts
+#                             ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.brace.round.ts
+#                              ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.objectliteral.ts punctuation.definition.block.ts
+#                               ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.objectliteral.ts
+#                                ^^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.objectliteral.ts meta.object.member.ts meta.object-literal.key.ts
+#                                  ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.objectliteral.ts meta.object.member.ts meta.object-literal.key.ts punctuation.separator.key-value.ts
+#                                   ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.objectliteral.ts meta.object.member.ts
+#                                    ^^^^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.objectliteral.ts meta.object.member.ts meta.function-call.ts variable.other.object.ts
+#                                        ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.objectliteral.ts meta.object.member.ts meta.function-call.ts punctuation.accessor.ts
+#                                         ^^^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.objectliteral.ts meta.object.member.ts meta.function-call.ts entity.name.function.ts
+#                                            ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.objectliteral.ts meta.object.member.ts meta.brace.round.ts
+#                                             ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.objectliteral.ts meta.object.member.ts meta.brace.round.ts
+#                                              ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.objectliteral.ts punctuation.separator.comma.ts
+#                                               ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.objectliteral.ts
+#                                                ^^^^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.objectliteral.ts meta.object.member.ts meta.object-literal.key.ts
+#                                                    ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.objectliteral.ts meta.object.member.ts meta.object-literal.key.ts punctuation.separator.key-value.ts
+#                                                     ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.objectliteral.ts meta.object.member.ts
+#                                                      ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.objectliteral.ts meta.object.member.ts variable.other.readwrite.ts
+#                                                           ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.objectliteral.ts punctuation.separator.comma.ts
+#                                                            ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.objectliteral.ts
+#                                                             ^^^^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.objectliteral.ts meta.object.member.ts meta.object-literal.key.ts
+#                                                                 ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.objectliteral.ts meta.object.member.ts meta.object-literal.key.ts punctuation.separator.key-value.ts
+#                                                                  ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.objectliteral.ts meta.object.member.ts
+#                                                                   ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.objectliteral.ts meta.object.member.ts constant.language.boolean.false.ts
+#                                                                        ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.objectliteral.ts meta.object.member.ts
+#                                                                         ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.objectliteral.ts punctuation.definition.block.ts
+#                                                                          ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts meta.brace.round.ts
+#                                                                           ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts punctuation.terminator.statement.ts
+#                                                                            ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts
+#                                                                             ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts variable.other.readwrite.ts
+#                                                                                  ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts
+#                                                                                   ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts keyword.operator.assignment.ts
+#                                                                                    ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts
+#                                                                                     ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts string.quoted.single.ts punctuation.definition.string.begin.ts
+#                                                                                      ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts string.quoted.single.ts punctuation.definition.string.end.ts
+#                                                                                       ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts
+#                                                                                        ^ source.owt meta.component.owt meta.component.body.owt meta.function.ts meta.block.ts punctuation.definition.block.ts
+>
+>  <section class="app">
+#^^ source.owt meta.component.owt meta.component.body.owt
+#  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#   ^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.start.owt entity.name.tag.owt
+#          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.start.owt
+#           ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.start.owt entity.other.attribute-name.owt
+#                ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.start.owt punctuation.separator.key-value.owt
+#                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.start.owt string.quoted.double.owt punctuation.definition.string.begin.owt
+#                  ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.start.owt string.quoted.double.owt
+#                     ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.start.owt string.quoted.double.owt punctuation.definition.string.end.owt
+#                      ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+>    <h1>{props.title} ({remaining})</h1>
+#^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt
+#    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#     ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt entity.name.tag.owt
+#       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.end.owt
+#        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.embedded.expression.owt punctuation.section.embedded.begin.owt
+#         ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.embedded.expression.owt source.ts variable.other.object.ts
+#              ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.embedded.expression.owt source.ts punctuation.accessor.ts
+#               ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.embedded.expression.owt source.ts variable.other.property.ts
+#                    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.embedded.expression.owt punctuation.section.embedded.end.owt
+#                     ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt
+#                       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.embedded.expression.owt punctuation.section.embedded.begin.owt
+#                        ^^^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.embedded.expression.owt source.ts variable.other.readwrite.ts
+#                                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.embedded.expression.owt punctuation.section.embedded.end.owt
+#                                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt
+#                                   ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.begin.owt
+#                                     ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt entity.name.tag.owt
+#                                       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.end.owt
+>    <input bind:value={draft} onKeyDown={(e) => e.key === 'Enter' && add()} placeholder="New todo" />
+#^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt
+#    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt punctuation.definition.tag.begin.owt
+#     ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt entity.name.tag.owt
+#          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt
+#           ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt keyword.control.directive.owt
+#               ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt punctuation.separator.directive.owt
+#                ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt entity.other.attribute-name.owt
+#                     ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt punctuation.separator.key-value.owt
+#                      ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt punctuation.section.embedded.begin.owt
+#                       ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt source.ts variable.other.readwrite.ts
+#                            ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt punctuation.section.embedded.end.owt
+#                             ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt
+#                              ^^^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt entity.other.attribute-name.event.owt
+#                                       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt punctuation.separator.key-value.owt
+#                                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt punctuation.section.embedded.begin.owt
+#                                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt source.ts meta.arrow.ts meta.parameters.ts punctuation.definition.parameters.begin.ts
+#                                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt source.ts meta.arrow.ts meta.parameters.ts variable.parameter.ts
+#                                           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt source.ts meta.arrow.ts meta.parameters.ts punctuation.definition.parameters.end.ts
+#                                            ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt source.ts meta.arrow.ts
+#                                             ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt source.ts meta.arrow.ts storage.type.function.arrow.ts
+#                                               ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt source.ts meta.arrow.ts
+#                                                ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt source.ts variable.other.object.ts
+#                                                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt source.ts punctuation.accessor.ts
+#                                                  ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt source.ts variable.other.property.ts
+#                                                     ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt source.ts
+#                                                      ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt source.ts keyword.operator.comparison.ts
+#                                                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt source.ts
+#                                                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt source.ts string.quoted.single.ts punctuation.definition.string.begin.ts
+#                                                           ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt source.ts string.quoted.single.ts
+#                                                                ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt source.ts string.quoted.single.ts punctuation.definition.string.end.ts
+#                                                                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt source.ts
+#                                                                  ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt source.ts keyword.operator.logical.ts
+#                                                                    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt source.ts
+#                                                                     ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt source.ts meta.function-call.ts entity.name.function.ts
+#                                                                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt source.ts meta.brace.round.ts
+#                                                                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt source.ts meta.brace.round.ts
+#                                                                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt punctuation.section.embedded.end.owt
+#                                                                           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt
+#                                                                            ^^^^^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt entity.other.attribute-name.owt
+#                                                                                       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt punctuation.separator.key-value.owt
+#                                                                                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt string.quoted.double.owt punctuation.definition.string.begin.owt
+#                                                                                         ^^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt string.quoted.double.owt
+#                                                                                                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt string.quoted.double.owt punctuation.definition.string.end.owt
+#                                                                                                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt
+#                                                                                                   ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt punctuation.definition.tag.end.owt
+>    <button onClick={add} disabled={!draft}>Add</button>
+#^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt
+#    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#     ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt entity.name.tag.owt
+#           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt
+#            ^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt entity.other.attribute-name.event.owt
+#                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.separator.key-value.owt
+#                    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt punctuation.section.embedded.begin.owt
+#                     ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts variable.other.readwrite.ts
+#                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt punctuation.section.embedded.end.owt
+#                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt
+#                          ^^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt entity.other.attribute-name.owt
+#                                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.separator.key-value.owt
+#                                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt punctuation.section.embedded.begin.owt
+#                                    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts keyword.operator.logical.ts
+#                                     ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts variable.other.readwrite.ts
+#                                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt punctuation.section.embedded.end.owt
+#                                           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                            ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt
+#                                               ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.begin.owt
+#                                                 ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt entity.name.tag.owt
+#                                                       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.end.owt
+>    <ul>
+#^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt
+#    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#     ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt entity.name.tag.owt
+#       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.end.owt
+>      for (todo of todos, { index, last }; track todo.id) {
+#^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt
+#      ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt keyword.control.owt
+#         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt
+#          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.header.owt meta.brace.round.owt
+#           ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.header.owt variable.other.readwrite.ts
+#               ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.header.owt
+#                ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.header.owt keyword.operator.expression.of.owt
+#                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.header.owt
+#                   ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.header.owt variable.other.readwrite.ts
+#                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.header.owt punctuation.separator.comma.ts
+#                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.header.owt
+#                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.header.owt punctuation.definition.binding-pattern.object.ts
+#                           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.header.owt
+#                            ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.header.owt meta.definition.variable.ts variable.other.readwrite.ts
+#                                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.header.owt punctuation.separator.comma.ts
+#                                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.header.owt
+#                                   ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.header.owt meta.definition.variable.ts variable.other.readwrite.ts
+#                                       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.header.owt
+#                                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.header.owt punctuation.definition.binding-pattern.object.ts
+#                                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.header.owt punctuation.separator.track.owt
+#                                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.header.owt
+#                                           ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.header.owt keyword.other.track.owt
+#                                                ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.header.owt
+#                                                 ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.header.owt variable.other.object.ts
+#                                                     ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.header.owt punctuation.accessor.ts
+#                                                      ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.header.owt variable.other.property.ts
+#                                                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.header.owt meta.brace.round.owt
+#                                                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt
+#                                                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt punctuation.definition.block.owt
+>        <li class:done={todo.done} style:color={todo.done ? 'gray' : null}>{index + 1}. {todo.text}</li>
+#^^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt
+#        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#         ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt entity.name.tag.owt
+#           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt
+#            ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt keyword.control.directive.owt
+#                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt punctuation.separator.directive.owt
+#                  ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt entity.other.attribute-name.owt
+#                      ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt punctuation.separator.key-value.owt
+#                       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt punctuation.section.embedded.begin.owt
+#                        ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts variable.other.object.ts
+#                            ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts punctuation.accessor.ts
+#                             ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts variable.other.property.ts
+#                                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt punctuation.section.embedded.end.owt
+#                                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt
+#                                   ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt keyword.control.directive.owt
+#                                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt punctuation.separator.directive.owt
+#                                         ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt entity.other.attribute-name.owt
+#                                              ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt punctuation.separator.key-value.owt
+#                                               ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt punctuation.section.embedded.begin.owt
+#                                                ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts variable.other.object.ts
+#                                                    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts punctuation.accessor.ts
+#                                                     ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts variable.other.property.ts
+#                                                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts
+#                                                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts keyword.operator.ternary.ts
+#                                                           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts
+#                                                            ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts string.quoted.single.ts punctuation.definition.string.begin.ts
+#                                                             ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts string.quoted.single.ts
+#                                                                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts string.quoted.single.ts punctuation.definition.string.end.ts
+#                                                                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts
+#                                                                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts keyword.operator.ternary.ts
+#                                                                    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts
+#                                                                     ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts constant.language.null.ts
+#                                                                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt punctuation.section.embedded.end.owt
+#                                                                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                                                           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt punctuation.section.embedded.begin.owt
+#                                                                            ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt source.ts variable.other.readwrite.ts
+#                                                                                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt source.ts
+#                                                                                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt source.ts keyword.operator.arithmetic.ts
+#                                                                                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt source.ts
+#                                                                                    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt source.ts constant.numeric.decimal.ts
+#                                                                                     ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt punctuation.section.embedded.end.owt
+#                                                                                      ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt
+#                                                                                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt punctuation.section.embedded.begin.owt
+#                                                                                         ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt source.ts variable.other.object.ts
+#                                                                                             ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt source.ts punctuation.accessor.ts
+#                                                                                              ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt source.ts variable.other.property.ts
+#                                                                                                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt punctuation.section.embedded.end.owt
+#                                                                                                   ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.begin.owt
+#                                                                                                     ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt entity.name.tag.owt
+#                                                                                                       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+>      } empty {
+#^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt
+#      ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt punctuation.definition.block.owt
+#       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt
+#        ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt keyword.control.owt
+#             ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt
+#              ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt punctuation.definition.block.owt
+>        <li>Nothing to do</li>
+#^^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt
+#        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#         ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt entity.name.tag.owt
+#           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+#            ^^^^^^^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt
+#                         ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.begin.owt
+#                           ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt entity.name.tag.owt
+#                             ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+>      }
+#^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt
+#      ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.block.for.owt meta.block.body.owt punctuation.definition.block.owt
+>    </ul>
+#^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt
+#    ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.begin.owt
+#      ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt entity.name.tag.owt
+#        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.end.owt
+>    for (i of rev 1..10) { <span>{i}</span> }
+#^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.for.owt
+#    ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.for.owt keyword.control.owt
+#       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.for.owt
+#        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.for.owt meta.block.header.owt meta.brace.round.owt
+#         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.for.owt meta.block.header.owt variable.other.readwrite.ts
+#          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.for.owt meta.block.header.owt
+#           ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.for.owt meta.block.header.owt keyword.operator.expression.of.owt
+#             ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.for.owt meta.block.header.owt
+#              ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.for.owt meta.block.header.owt storage.modifier.rev.owt
+#                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.for.owt meta.block.header.owt
+#                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.for.owt meta.block.header.owt constant.numeric.decimal.owt
+#                   ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.for.owt meta.block.header.owt keyword.operator.range.owt
+#                     ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.for.owt meta.block.header.owt constant.numeric.decimal.ts
+#                       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.for.owt meta.block.header.owt meta.brace.round.owt
+#                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.for.owt
+#                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.for.owt meta.block.body.owt punctuation.definition.block.owt
+#                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.for.owt meta.block.body.owt
+#                           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#                            ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt entity.name.tag.owt
+#                                ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt punctuation.section.embedded.begin.owt
+#                                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt source.ts variable.other.readwrite.ts
+#                                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt punctuation.section.embedded.end.owt
+#                                    ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.begin.owt
+#                                      ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt entity.name.tag.owt
+#                                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.for.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.for.owt meta.block.body.owt
+#                                            ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.for.owt meta.block.body.owt punctuation.definition.block.owt
+>    if (remaining > 0) { <p>{remaining} left</p> } else if (todos.length) { <p>All done</p> } else { <p>Empty</p> }
+#^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt
+#    ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt keyword.control.owt
+#      ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt
+#       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.header.owt meta.brace.round.owt
+#        ^^^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.header.owt variable.other.readwrite.ts
+#                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.header.owt
+#                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.header.owt keyword.operator.relational.ts
+#                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.header.owt
+#                    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.header.owt constant.numeric.decimal.ts
+#                     ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.header.owt meta.brace.round.owt
+#                      ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt
+#                       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt punctuation.definition.block.owt
+#                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt
+#                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt entity.name.tag.owt
+#                           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                            ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt punctuation.section.embedded.begin.owt
+#                             ^^^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt source.ts variable.other.readwrite.ts
+#                                      ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt punctuation.section.embedded.end.owt
+#                                       ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt meta.tag.owt
+#                                            ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.begin.owt
+#                                              ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt meta.tag.owt entity.name.tag.owt
+#                                               ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                                ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt
+#                                                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt punctuation.definition.block.owt
+#                                                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt
+#                                                   ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt keyword.control.owt
+#                                                       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt
+#                                                        ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt keyword.control.owt
+#                                                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt
+#                                                           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.header.owt meta.brace.round.owt
+#                                                            ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.header.owt variable.other.object.ts
+#                                                                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.header.owt punctuation.accessor.ts
+#                                                                  ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.header.owt support.variable.property.ts
+#                                                                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.header.owt meta.brace.round.owt
+#                                                                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt
+#                                                                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt punctuation.definition.block.owt
+#                                                                           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt
+#                                                                            ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#                                                                             ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt entity.name.tag.owt
+#                                                                              ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                                                               ^^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt meta.tag.owt
+#                                                                                       ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.begin.owt
+#                                                                                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt meta.tag.owt entity.name.tag.owt
+#                                                                                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                                                                           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt
+#                                                                                            ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt punctuation.definition.block.owt
+#                                                                                             ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt
+#                                                                                              ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt keyword.control.owt
+#                                                                                                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt
+#                                                                                                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt punctuation.definition.block.owt
+#                                                                                                    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt
+#                                                                                                     ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#                                                                                                      ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt entity.name.tag.owt
+#                                                                                                       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                                                                                        ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt meta.tag.owt
+#                                                                                                             ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.begin.owt
+#                                                                                                               ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt meta.tag.owt entity.name.tag.owt
+#                                                                                                                ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                                                                                                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt
+#                                                                                                                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.if.owt meta.block.body.owt punctuation.definition.block.owt
+>    switch (filter) { case 'all' { <All/> } case 'done', 'active' if (ok) { <Some/> } default { <None/> } }
+#^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt
+#    ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt keyword.control.owt
+#          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt
+#           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.header.owt meta.brace.round.owt
+#            ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.header.owt variable.other.readwrite.ts
+#                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.header.owt meta.brace.round.owt
+#                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt
+#                    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt punctuation.definition.block.owt
+#                     ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt
+#                      ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt keyword.control.owt
+#                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt
+#                           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt string.quoted.single.ts punctuation.definition.string.begin.ts
+#                            ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt string.quoted.single.ts
+#                               ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt string.quoted.single.ts punctuation.definition.string.end.ts
+#                                ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt
+#                                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt meta.block.body.owt punctuation.definition.block.owt
+#                                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt meta.block.body.owt
+#                                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#                                    ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt support.class.component.owt
+#                                       ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt meta.block.body.owt
+#                                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt meta.block.body.owt punctuation.definition.block.owt
+#                                           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt
+#                                            ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt keyword.control.owt
+#                                                ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt
+#                                                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt string.quoted.single.ts punctuation.definition.string.begin.ts
+#                                                  ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt string.quoted.single.ts
+#                                                      ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt string.quoted.single.ts punctuation.definition.string.end.ts
+#                                                       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt punctuation.separator.comma.ts
+#                                                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt
+#                                                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt string.quoted.single.ts punctuation.definition.string.begin.ts
+#                                                          ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt string.quoted.single.ts
+#                                                                ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt string.quoted.single.ts punctuation.definition.string.end.ts
+#                                                                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt
+#                                                                  ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt keyword.control.owt
+#                                                                    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt
+#                                                                     ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt meta.block.header.owt meta.brace.round.owt
+#                                                                      ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt meta.block.header.owt variable.other.readwrite.ts
+#                                                                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt meta.block.header.owt meta.brace.round.owt
+#                                                                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt
+#                                                                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt meta.block.body.owt punctuation.definition.block.owt
+#                                                                           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt meta.block.body.owt
+#                                                                            ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#                                                                             ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt support.class.component.owt
+#                                                                                 ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                                                                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt meta.block.body.owt
+#                                                                                    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.case.owt meta.block.body.owt punctuation.definition.block.owt
+#                                                                                     ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt
+#                                                                                      ^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.default.owt keyword.control.owt
+#                                                                                             ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.default.owt
+#                                                                                              ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.default.owt meta.block.body.owt punctuation.definition.block.owt
+#                                                                                               ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.default.owt meta.block.body.owt
+#                                                                                                ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.default.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#                                                                                                 ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.default.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt support.class.component.owt
+#                                                                                                     ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.default.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                                                                                       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.default.owt meta.block.body.owt
+#                                                                                                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt meta.block.default.owt meta.block.body.owt punctuation.definition.block.owt
+#                                                                                                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt
+#                                                                                                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.switch.owt meta.block.switch.body.owt punctuation.definition.block.owt
+>    await (loadUser(id)) { <Spinner/> } then (user) { <p>{user.name}</p> } catch (err) { <p>{err.message}</p> }
+#^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt
+#    ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt keyword.control.owt
+#         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt
+#          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.header.owt meta.brace.round.owt
+#           ^^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.header.owt meta.function-call.ts entity.name.function.ts
+#                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.header.owt meta.brace.round.ts
+#                    ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.header.owt variable.other.readwrite.ts
+#                      ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.header.owt meta.brace.round.ts
+#                       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.header.owt meta.brace.round.owt
+#                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt
+#                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt punctuation.definition.block.owt
+#                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt
+#                           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#                            ^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt support.class.component.owt
+#                                   ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                     ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt
+#                                      ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt punctuation.definition.block.owt
+#                                       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt
+#                                        ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt keyword.control.owt
+#                                            ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt
+#                                             ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.header.owt meta.brace.round.owt
+#                                              ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.header.owt variable.other.readwrite.ts
+#                                                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.header.owt meta.brace.round.owt
+#                                                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt
+#                                                    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt punctuation.definition.block.owt
+#                                                     ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt
+#                                                      ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#                                                       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt entity.name.tag.owt
+#                                                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt punctuation.section.embedded.begin.owt
+#                                                          ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt source.ts variable.other.object.ts
+#                                                              ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt source.ts punctuation.accessor.ts
+#                                                               ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt source.ts variable.other.property.ts
+#                                                                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt punctuation.section.embedded.end.owt
+#                                                                    ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.begin.owt
+#                                                                      ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt meta.tag.owt entity.name.tag.owt
+#                                                                       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                                                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt
+#                                                                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt punctuation.definition.block.owt
+#                                                                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt
+#                                                                           ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt keyword.control.owt
+#                                                                                ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt
+#                                                                                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.header.owt meta.brace.round.owt
+#                                                                                  ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.header.owt variable.other.readwrite.ts
+#                                                                                     ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.header.owt meta.brace.round.owt
+#                                                                                      ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt
+#                                                                                       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt punctuation.definition.block.owt
+#                                                                                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt
+#                                                                                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#                                                                                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt entity.name.tag.owt
+#                                                                                           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                                                                            ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt punctuation.section.embedded.begin.owt
+#                                                                                             ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt source.ts variable.other.object.ts
+#                                                                                                ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt source.ts punctuation.accessor.ts
+#                                                                                                 ^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt source.ts variable.other.property.ts
+#                                                                                                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt punctuation.section.embedded.end.owt
+#                                                                                                         ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.begin.owt
+#                                                                                                           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt meta.tag.owt entity.name.tag.owt
+#                                                                                                            ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                                                                                             ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt
+#                                                                                                              ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.await.owt meta.block.body.owt punctuation.definition.block.owt
+>    try { <Risky/> } catch (error, reset) { <button onClick={reset}>Retry</button> }
+#^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt
+#    ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt keyword.control.owt
+#       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt
+#        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.body.owt punctuation.definition.block.owt
+#         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.body.owt
+#          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#           ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt support.class.component.owt
+#                ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.body.owt
+#                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.body.owt punctuation.definition.block.owt
+#                    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt
+#                     ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt keyword.control.owt
+#                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt
+#                           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.header.owt meta.brace.round.owt
+#                            ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.header.owt variable.other.readwrite.ts
+#                                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.header.owt punctuation.separator.comma.ts
+#                                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.header.owt
+#                                   ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.header.owt variable.other.readwrite.ts
+#                                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.header.owt meta.brace.round.owt
+#                                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt
+#                                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.body.owt punctuation.definition.block.owt
+#                                           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.body.owt
+#                                            ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#                                             ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt entity.name.tag.owt
+#                                                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt
+#                                                    ^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt entity.other.attribute-name.event.owt
+#                                                           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt punctuation.separator.key-value.owt
+#                                                            ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt punctuation.section.embedded.begin.owt
+#                                                             ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts variable.other.readwrite.ts
+#                                                                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt punctuation.section.embedded.end.owt
+#                                                                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                                                    ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.body.owt meta.tag.owt
+#                                                                         ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.begin.owt
+#                                                                           ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.body.owt meta.tag.owt entity.name.tag.owt
+#                                                                                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                                                                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.body.owt
+#                                                                                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.try.owt meta.block.body.owt punctuation.definition.block.owt
+>    key (userId) { <Profile id={userId}/> }
+#^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.key.owt
+#    ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.key.owt keyword.control.owt
+#       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.key.owt
+#        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.key.owt meta.block.header.owt meta.brace.round.owt
+#         ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.key.owt meta.block.header.owt variable.other.readwrite.ts
+#               ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.key.owt meta.block.header.owt meta.brace.round.owt
+#                ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.key.owt
+#                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.key.owt meta.block.body.owt punctuation.definition.block.owt
+#                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.key.owt meta.block.body.owt
+#                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.key.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#                    ^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.key.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt support.class.component.owt
+#                           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.key.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt
+#                            ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.key.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt entity.other.attribute-name.owt
+#                              ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.key.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt punctuation.separator.key-value.owt
+#                               ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.key.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt punctuation.section.embedded.begin.owt
+#                                ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.key.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts variable.other.readwrite.ts
+#                                      ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.key.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt punctuation.section.embedded.end.owt
+#                                       ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.key.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.key.owt meta.block.body.owt
+#                                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.block.key.owt meta.block.body.owt punctuation.definition.block.owt
+>    <Card title="x">
+#^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt
+#    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#     ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt support.class.component.owt
+#         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt
+#          ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt entity.other.attribute-name.owt
+#               ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.separator.key-value.owt
+#                ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt string.quoted.double.owt punctuation.definition.string.begin.owt
+#                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt string.quoted.double.owt
+#                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt string.quoted.double.owt punctuation.definition.string.end.owt
+#                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.end.owt
+>      slot header({ title }) { <h2>{title}</h2> }
+#^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.slot.definition.owt
+#      ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.slot.definition.owt storage.type.slot.owt
+#          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.slot.definition.owt
+#           ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.slot.definition.owt entity.name.function.slot.owt
+#                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.slot.definition.owt meta.parameters.ts punctuation.definition.parameters.begin.ts
+#                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.slot.definition.owt meta.parameters.ts meta.parameter.object-binding-pattern.ts punctuation.definition.binding-pattern.object.ts
+#                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.slot.definition.owt meta.parameters.ts meta.parameter.object-binding-pattern.ts
+#                    ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.slot.definition.owt meta.parameters.ts meta.parameter.object-binding-pattern.ts variable.parameter.ts
+#                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.slot.definition.owt meta.parameters.ts meta.parameter.object-binding-pattern.ts
+#                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.slot.definition.owt meta.parameters.ts meta.parameter.object-binding-pattern.ts punctuation.definition.binding-pattern.object.ts
+#                           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.slot.definition.owt meta.parameters.ts punctuation.definition.parameters.end.ts
+#                            ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.slot.definition.owt
+#                             ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.slot.definition.owt meta.block.body.owt punctuation.definition.block.owt
+#                              ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.slot.definition.owt meta.block.body.owt
+#                               ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.slot.definition.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#                                ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.slot.definition.owt meta.block.body.owt meta.tag.owt meta.tag.start.owt entity.name.tag.owt
+#                                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.slot.definition.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.slot.definition.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt punctuation.section.embedded.begin.owt
+#                                    ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.slot.definition.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt source.ts variable.other.readwrite.ts
+#                                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.slot.definition.owt meta.block.body.owt meta.tag.owt meta.embedded.expression.owt punctuation.section.embedded.end.owt
+#                                          ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.slot.definition.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.begin.owt
+#                                            ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.slot.definition.owt meta.block.body.owt meta.tag.owt entity.name.tag.owt
+#                                              ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.slot.definition.owt meta.block.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                               ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.slot.definition.owt meta.block.body.owt
+#                                                ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.slot.definition.owt meta.block.body.owt punctuation.definition.block.owt
+>      <p>default content</p>
+#^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt
+#      ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.owt meta.tag.start.owt entity.name.tag.owt
+#        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.end.owt
+#         ^^^^^^^^^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.owt
+#                        ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.begin.owt
+#                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.owt entity.name.tag.owt
+#                           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.end.owt
+>    </Card>
+#^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt
+#    ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.begin.owt
+#      ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt support.class.component.owt
+#          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.end.owt
+>    <slot />  <slot name="header" title={draft}>fallback</slot>
+#^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt
+#    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#     ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt entity.name.tag.special.owt
+#         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt
+#          ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.end.owt
+#            ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt
+#              ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#               ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt entity.name.tag.special.owt
+#                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt
+#                    ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt entity.other.attribute-name.owt
+#                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.separator.key-value.owt
+#                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt string.quoted.double.owt punctuation.definition.string.begin.owt
+#                          ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt string.quoted.double.owt
+#                                ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt string.quoted.double.owt punctuation.definition.string.end.owt
+#                                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt
+#                                  ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt entity.other.attribute-name.owt
+#                                       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.separator.key-value.owt
+#                                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt punctuation.section.embedded.begin.owt
+#                                         ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts variable.other.readwrite.ts
+#                                              ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt punctuation.section.embedded.end.owt
+#                                               ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                                ^^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt
+#                                                        ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.begin.owt
+#                                                          ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt entity.name.tag.special.owt
+#                                                              ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.end.owt
+>    <input {...rest} {disabled} />  <Child bind:value={count} />  <div use:tooltip={text} bind:this={el} ref={el} />
+#^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt
+#    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt punctuation.definition.tag.begin.owt
+#     ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt entity.name.tag.owt
+#          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt
+#           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt punctuation.section.embedded.begin.owt
+#            ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt source.ts keyword.operator.spread.ts
+#               ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt source.ts variable.other.readwrite.ts
+#                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt punctuation.section.embedded.end.owt
+#                    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt
+#                     ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt punctuation.section.embedded.begin.owt
+#                      ^^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt source.ts variable.other.readwrite.ts
+#                              ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt meta.embedded.expression.owt punctuation.section.embedded.end.owt
+#                               ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt
+#                                ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.void.owt punctuation.definition.tag.end.owt
+#                                  ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt
+#                                    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#                                     ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt support.class.component.owt
+#                                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt
+#                                           ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt keyword.control.directive.owt
+#                                               ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.separator.directive.owt
+#                                                ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt entity.other.attribute-name.owt
+#                                                     ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.separator.key-value.owt
+#                                                      ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt punctuation.section.embedded.begin.owt
+#                                                       ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts variable.other.readwrite.ts
+#                                                            ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt punctuation.section.embedded.end.owt
+#                                                             ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt
+#                                                              ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                                                ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt
+#                                                                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#                                                                   ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt entity.name.tag.owt
+#                                                                      ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt
+#                                                                       ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt keyword.control.directive.owt
+#                                                                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.separator.directive.owt
+#                                                                           ^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt entity.other.attribute-name.owt
+#                                                                                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.separator.key-value.owt
+#                                                                                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt punctuation.section.embedded.begin.owt
+#                                                                                    ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts variable.other.readwrite.ts
+#                                                                                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt punctuation.section.embedded.end.owt
+#                                                                                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt
+#                                                                                          ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt keyword.control.directive.owt
+#                                                                                              ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.separator.directive.owt
+#                                                                                               ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt entity.other.attribute-name.owt
+#                                                                                                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.separator.key-value.owt
+#                                                                                                    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt punctuation.section.embedded.begin.owt
+#                                                                                                     ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts variable.other.readwrite.ts
+#                                                                                                       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt punctuation.section.embedded.end.owt
+#                                                                                                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt
+#                                                                                                         ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt entity.other.attribute-name.owt
+#                                                                                                            ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.separator.key-value.owt
+#                                                                                                             ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt punctuation.section.embedded.begin.owt
+#                                                                                                              ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts variable.other.readwrite.ts
+#                                                                                                                ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt punctuation.section.embedded.end.owt
+#                                                                                                                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt
+#                                                                                                                  ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.end.owt
+>    <window onResize={onResize} />  <document onKeyDown={onKey} />  <head><title>{props.title}</title></head>
+#^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt
+#    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#     ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt entity.name.tag.special.owt
+#           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt
+#            ^^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt entity.other.attribute-name.event.owt
+#                    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.separator.key-value.owt
+#                     ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt punctuation.section.embedded.begin.owt
+#                      ^^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts variable.other.readwrite.ts
+#                              ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt punctuation.section.embedded.end.owt
+#                               ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt
+#                                ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                  ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt
+#                                    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#                                     ^^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt entity.name.tag.special.owt
+#                                             ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt
+#                                              ^^^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt entity.other.attribute-name.event.owt
+#                                                       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.separator.key-value.owt
+#                                                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt punctuation.section.embedded.begin.owt
+#                                                         ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts variable.other.readwrite.ts
+#                                                              ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt punctuation.section.embedded.end.owt
+#                                                               ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt
+#                                                                ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                                                  ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt
+#                                                                    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#                                                                     ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt entity.name.tag.special.owt
+#                                                                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                                                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#                                                                           ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.owt meta.tag.start.owt entity.name.tag.owt
+#                                                                                ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                                                                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.owt meta.embedded.expression.owt punctuation.section.embedded.begin.owt
+#                                                                                  ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.owt meta.embedded.expression.owt source.ts variable.other.object.ts
+#                                                                                       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.owt meta.embedded.expression.owt source.ts punctuation.accessor.ts
+#                                                                                        ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.owt meta.embedded.expression.owt source.ts variable.other.property.ts
+#                                                                                             ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.owt meta.embedded.expression.owt punctuation.section.embedded.end.owt
+#                                                                                              ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.begin.owt
+#                                                                                                ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.owt entity.name.tag.owt
+#                                                                                                     ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                                                                                      ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.begin.owt
+#                                                                                                        ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt entity.name.tag.special.owt
+#                                                                                                            ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.end.owt
+>    <!-- html comment -->
+#^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt
+#    ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt comment.block.html.owt punctuation.definition.comment.begin.owt
+#        ^^^^^^^^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt comment.block.html.owt
+#                      ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt comment.block.html.owt punctuation.definition.comment.end.owt
+>    <Icons.Plus />
+#^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt
+#    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#     ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt support.class.component.owt
+#          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt punctuation.accessor.owt
+#           ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt support.class.component.owt
+#               ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt meta.tag.start.owt
+#                ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.owt punctuation.definition.tag.end.owt
+>  </section>
+#^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt
+#  ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt punctuation.definition.tag.begin.owt
+#    ^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt entity.name.tag.owt
+#           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+>
+>  <style>
+#^^ source.owt meta.component.owt meta.component.body.owt
+#  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#   ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.tag.start.owt entity.name.tag.owt
+#        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt punctuation.definition.tag.end.owt
+>    .app { color: red }
+#^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css
+#    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.selector.css entity.other.attribute-name.class.css punctuation.definition.entity.css
+#     ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.selector.css entity.other.attribute-name.class.css
+#        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css
+#         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css punctuation.section.property-list.begin.bracket.curly.css
+#          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css
+#           ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css meta.property-name.css support.type.property-name.css
+#                ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css punctuation.separator.key-value.css
+#                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css
+#                  ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css meta.property-value.css support.constant.color.w3c-standard-color-name.css
+#                     ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css
+#                      ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css punctuation.section.property-list.end.bracket.curly.css
+>    :global(body) { margin: 0 }
+#^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css
+#    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.selector.css entity.other.attribute-name.pseudo-class.css punctuation.definition.entity.css
+#     ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.selector.css entity.other.attribute-name.pseudo-class.css support.function.global.owt
+#           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.selector.css
+#            ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.selector.css entity.name.tag.css
+#                ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css
+#                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css punctuation.section.property-list.begin.bracket.curly.css
+#                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css
+#                    ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css meta.property-name.css support.type.property-name.css
+#                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css punctuation.separator.key-value.css
+#                           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css
+#                            ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css meta.property-value.css constant.numeric.css
+#                             ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css
+#                              ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css punctuation.section.property-list.end.bracket.curly.css
+>  </style>
+#^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css
+#  ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt punctuation.definition.tag.begin.owt
+#    ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt entity.name.tag.owt
+#         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt punctuation.definition.tag.end.owt
+>}
+#^ source.owt meta.component.owt meta.component.body.owt punctuation.definition.block.owt
+>

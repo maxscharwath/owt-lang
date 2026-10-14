@@ -1,0 +1,41 @@
+// Module level: plain TypeScript around component declarations.
+import { onMount } from 'owt'
+import type { LoopMeta } from 'owt'
+import { Button } from './Button.owt'
+
+/** A todo item. */
+type Todo = { id: number; text: string; done: boolean }
+type Props = { title: string }
+component Hidden(props: Props) {
+  <p>{props.title}</p>
+}
+
+const STORAGE_KEY = 'todos'
+
+export function load(): Todo[] {
+  return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]')
+}
+
+export component TodoApp(props: { title: string }) {
+  <h1>{props.title}</h1>
+}
+
+export component Badge({ label, tone = 'info' }: { label: string; tone?: 'info' | 'warn' }) {
+  <span class={tone}>{label}</span>
+}
+
+export component Icon(name: string, size = 16, class: string = "w-4 h-4") {
+  <svg {class} width={size} height={size}><use href={`#${name}`} /></svg>
+}
+
+export component List<T extends { id: number }>(items: T[], render: (item: T) => string) {
+  for (item of items; track item.id) { <li>{render(item)}</li> }
+}
+
+export default component App(): void {
+  <TodoApp title="Todos" />
+}
+
+<style>
+  :global(body) { margin: 0 }
+</style>

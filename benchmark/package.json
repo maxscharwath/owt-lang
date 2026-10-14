@@ -1,0 +1,27 @@
+{
+  "name": "owt-benchmark",
+  "private": true,
+  "version": "0.0.0",
+  "description": "js-framework-benchmark style comparison of OWT vs Vue 3.5, React 19 and vanilla JS",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "bench": "node scripts/run.mjs",
+    "serve": "node scripts/serve.mjs"
+  },
+  "dependencies": {
+    "@owt/vite": "workspace:*",
+    "owt": "workspace:*",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "vue": "^3.5.44"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "@vitejs/plugin-vue": "^6.0.10",
+    "playwright": "^1.64.0",
+    "vite": "^8.3.4"
+  }
+}

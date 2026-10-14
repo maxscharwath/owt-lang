@@ -1,0 +1,25 @@
+export component Styled() {
+  var active = true
+
+  <div class="app" class:active={active}>Styled</div>
+
+  <style>
+    /* scoped CSS */
+    .app {
+      color: red;
+      padding: 1rem 2rem;
+    }
+    .app.active > span::before { content: "<b>{x}</b>"; }
+    :global(body) { margin: 0 }
+    @media (max-width: 600px) {
+      .app { display: none }
+    }
+  </style>
+}
+
+export component GlobalStyled() {
+  <p>Global</p>
+  <style global lang="css">
+    p { font-family: system-ui, sans-serif }
+  </style>
+}

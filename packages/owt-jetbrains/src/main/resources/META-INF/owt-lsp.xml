@@ -1,0 +1,19 @@
+<!-- Loaded only in IDEs that provide the LSP API (com.intellij.modules.lsp, 2025.2.1+). -->
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <platform.lsp.serverSupportProvider implementation="dev.owt.ide.lsp.OwtLspServerSupportProvider"/>
+    </extensions>
+
+    <applicationListeners>
+        <listener class="dev.owt.ide.lsp.OwtLspSettingsListener"
+                  topic="dev.owt.ide.settings.OwtSettingsListener"/>
+    </applicationListeners>
+
+    <actions resource-bundle="messages.OwtBundle">
+        <action id="dev.owt.ide.RestartLanguageServer"
+                class="dev.owt.ide.lsp.OwtRestartLanguageServerAction"
+                icon="AllIcons.Actions.Restart">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+    </actions>
+</idea-plugin>

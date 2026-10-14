@@ -1,0 +1,36 @@
+export component Counter(props: { start?: number }) {
+  // reactive state
+  var count = props.start ?? 0
+  var todos: { text: string; done: boolean }[] = [
+    { text: 'Learn OWT', done: false },
+    { text: 'Ship it', done: true },
+  ]
+  var draft: string
+  val doubled = count * 2
+  val remaining: number = todos.filter((t) => !t.done).length
+  val label = count > 10
+    ? 'many'
+    : 'few'
+  const step = 1
+  let timer: ReturnType<typeof setInterval> | undefined
+  type Mode = 'idle' | 'busy'
+  <p>{count}</p>
+  /* block comment */
+  function increment(by = step) {
+    count += by
+    if (count > 100) {
+      count = 0
+    }
+  }
+  const reset = () => { count = 0 }
+  onMount(() => {
+    timer = setInterval(increment, 1000)
+    return () => clearInterval(timer)
+  })
+  console.log(`count is ${count}`)
+
+  {count > 0 ? 'positive' : 'zero'}
+  <button onClick={increment}>+{step}</button>
+  <button onClick={() => count--} disabled={count <= 0}>-</button>
+  <p>Doubled: {doubled}, remaining: {remaining}, {label}</p>
+}

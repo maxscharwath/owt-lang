@@ -1,0 +1,25 @@
+import type { Snippet } from 'owt'
+
+// A generic component: T is inferred from `items` at each use site.
+export component DataList<T>(
+  items: readonly T[],
+  key: (item: T) => string | number,
+  row?: Snippet<{ item: T; index: number }>,
+) {
+  <ul class="list">
+    for (item of items, { index }; track key(item)) {
+      <li class:odd={index % 2 === 1}>
+        <slot name="row" item={item} index={index}>{String(item)}</slot>
+      </li>
+    } empty {
+      <li class="empty"><slot name="empty">Nothing here</slot></li>
+    }
+  </ul>
+
+  <style>
+    .list { list-style: none; padding: 0; margin: 0.5rem 0; }
+    li { display: flex; gap: 0.5rem; align-items: center; padding: 0.35rem 0.5rem; border-radius: 6px; }
+    .odd { background: #f3f4f6; }
+    .empty { color: #9ca3af; }
+  </style>
+}

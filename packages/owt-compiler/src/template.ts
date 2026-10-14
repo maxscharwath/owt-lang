@@ -127,6 +127,14 @@ class Ops {
   readonly post: (() => Chunk)[] = [];
 }
 
+/** JSX-style names accepted for a few attributes. */
+const ATTRIBUTE_ALIASES: Record<string, string> = { htmlFor: 'for', className: 'class', acceptCharset: 'accept-charset', httpEquiv: 'http-equiv' };
+
+/** Attributes whose boolean values are the strings "true" / "false". */
+function stringBoolean(name: string): boolean {
+  return name.startsWith('aria-') || name.startsWith('data-') || name === 'draggable' || name === 'spellcheck' || name === 'contenteditable';
+}
+
 function isLiteral(node: t.Node): boolean {
   switch (node.type) {
     case 'StringLiteral':
@@ -174,7 +182,7 @@ function eventInfo(name: string): { type: string; capture: boolean } | null {
   if (name.length > 2 && name.startsWith('on') && name.charCodeAt(2) >= 65 && name.charCodeAt(2) <= 90) {
     let base = name.slice(2);
     let capture = false;
-    if (base.length > 7 && base.endsWith('Capture')) {
+    if (base.length > 7 && base.endsWith('Capture') && base !== 'GotPointerCapture' && base !== 'LostPointerCapture') {
       base = base.slice(0, -7);
       capture = true;
     }
@@ -564,7 +572,7 @@ export class TemplateCompiler {
         if (attr.expression !== null) spreadEntries.push(['...', this.c.expr(attr.expression, scope)]);
         continue;
       }
-      const name = attr.name;
+      const name = ATTRIBUTE_ALIASES[attr.name] ?? attr.name;
       const value = attr.value;
       if (attr.directive !== null) {
         this.directive(el, attr, node, scope, ops);
@@ -601,6 +609,10 @@ export class TemplateCompiler {
       }
       if (isLiteral(expr) && name !== 'value' && !DOM_PROPERTIES.has(name)) {
         const lit = literalValue(expr);
+        if (typeof lit === 'boolean' && stringBoolean(name)) {
+          html += ` ${name}="${lit}"`;
+          continue;
+        }
         if (lit === null || lit === false) continue;
         if (name === 'class') {
           staticClass = lit === true ? '' : String(lit);
@@ -1038,6 +1050,7 @@ export class TemplateCompiler {
       const track = block.track;
       const isIndex =
         (track.type === 'Identifier' && metaNames.has(track.name) && inner.lookup(track.name)?.read.endsWith('.index') === true) ||
+        (track.type === 'Identifier' && track.name === 'index' && inner.lookup('index') === undefined) ||
         (track.type === 'MemberExpression' &&
           track.object.type === 'Identifier' &&
           block.meta?.type === 'Identifier' &&

@@ -1,0 +1,6 @@
+{
+  "name": "owt-jetbrains-bundled-language-server",
+  "private": true,
+  "description": "Marks the bundled @owt/language-server copy (index.js) as CommonJS, whatever package.json exists in parent directories.",
+  "type": "commonjs"
+}

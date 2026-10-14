@@ -1,0 +1,20 @@
+# Gradle
+.gradle/
+build/
+.kotlin/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IntelliJ Platform Gradle Plugin: downloaded IDEs, plugin verifier, sandboxes
+.intellijPlatform/
+
+# Manual copies of the language server / TextMate bundle (the build puts them in build/ only)
+/server/
+/textmate/
+
+# IDE
+.idea/
+*.iml
+out/
+
+# OS
+.DS_Store

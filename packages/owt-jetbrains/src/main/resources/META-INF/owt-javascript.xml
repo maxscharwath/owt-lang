@@ -1,0 +1,6 @@
+<!-- Loaded only when the JavaScript and TypeScript plugin is enabled. -->
+<idea-plugin>
+    <extensions defaultExtensionNs="dev.owt.lang">
+        <nodeInterpreterProvider implementation="dev.owt.ide.node.javascript.OwtJsNodeInterpreterProvider"/>
+    </extensions>
+</idea-plugin>

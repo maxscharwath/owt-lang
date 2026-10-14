@@ -1,0 +1,45 @@
+import type { Snippet } from 'owt'
+
+// Named props, a default value, and three slots (one with arguments, two with fallbacks).
+export component Card(
+  title: string,
+  tone: 'info' | 'warn' = 'info',
+  header?: Snippet<{ title: string; open: boolean }>,
+) {
+  var open = true
+
+  <section class="card" class:warn={tone === 'warn'}>
+    <header onClick={() => open = !open}>
+      <slot name="header" title={title} open={open}>
+        <h2>{title}</h2>
+      </slot>
+      <span class="chevron">{open ? '▾' : '▸'}</span>
+    </header>
+    if (open) {
+      <div class="body"><slot /></div>
+    }
+    <footer><slot name="footer">Made with OWT</slot></footer>
+  </section>
+
+  <style>
+    .card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      margin: 1rem 0;
+      overflow: hidden;
+    }
+    .card.warn { border-color: #f59e0b; }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      background: #f9fafb;
+      cursor: pointer;
+    }
+    header :global(h2) { margin: 0; font-size: 1.05rem; }
+    .body { padding: 1rem; }
+    footer { padding: 0.5rem 1rem; color: #9ca3af; font-size: 0.8rem; }
+  </style>
+}

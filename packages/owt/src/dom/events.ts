@@ -95,7 +95,7 @@ export function eventType(attribute: string): { type: string; capture: boolean }
   if (attribute.startsWith('on:')) return { type: attribute.slice(3), capture: false };
   let name = attribute.slice(2);
   let capture = false;
-  if (name.length > 7 && name.endsWith('Capture')) {
+  if (name.length > 7 && name.endsWith('Capture') && name !== 'GotPointerCapture' && name !== 'LostPointerCapture') {
     name = name.slice(0, -7);
     capture = true;
   }

@@ -1,0 +1,213 @@
+>export component Styled() {
+#^^^^^^ source.owt meta.component.owt keyword.control.export.owt
+#      ^ source.owt meta.component.owt
+#       ^^^^^^^^^ source.owt meta.component.owt storage.type.owt
+#                ^ source.owt meta.component.owt
+#                 ^^^^^^ source.owt meta.component.owt entity.name.type.component.owt
+#                       ^ source.owt meta.component.owt meta.parameters.ts punctuation.definition.parameters.begin.ts
+#                        ^ source.owt meta.component.owt meta.parameters.ts punctuation.definition.parameters.end.ts
+#                         ^ source.owt meta.component.owt
+#                          ^ source.owt meta.component.owt meta.component.body.owt punctuation.definition.block.owt
+>  var active = true
+#^^ source.owt meta.component.owt meta.component.body.owt
+#  ^^^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt storage.type.owt
+#     ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt
+#      ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts meta.definition.variable.ts variable.other.readwrite.ts
+#            ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt meta.var-single-variable.expr.ts
+#             ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt keyword.operator.assignment.ts
+#              ^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt
+#               ^^^^ source.owt meta.component.owt meta.component.body.owt meta.var.expr.owt constant.language.boolean.true.ts
+>
+>  <div class="app" class:active={active}>Styled</div>
+#^^ source.owt meta.component.owt meta.component.body.owt
+#  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#   ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.start.owt entity.name.tag.owt
+#      ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.start.owt
+#       ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.start.owt entity.other.attribute-name.owt
+#            ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.start.owt punctuation.separator.key-value.owt
+#             ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.start.owt string.quoted.double.owt punctuation.definition.string.begin.owt
+#              ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.start.owt string.quoted.double.owt
+#                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.start.owt string.quoted.double.owt punctuation.definition.string.end.owt
+#                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.start.owt
+#                   ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.start.owt keyword.control.directive.owt
+#                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.start.owt punctuation.separator.directive.owt
+#                         ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.start.owt entity.other.attribute-name.owt
+#                               ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.start.owt punctuation.separator.key-value.owt
+#                                ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt punctuation.section.embedded.begin.owt
+#                                 ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt source.ts variable.other.readwrite.ts
+#                                       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.start.owt meta.embedded.expression.owt punctuation.section.embedded.end.owt
+#                                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+#                                         ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt
+#                                               ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt punctuation.definition.tag.begin.owt
+#                                                 ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt entity.name.tag.owt
+#                                                    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+>
+>  <style>
+#^^ source.owt meta.component.owt meta.component.body.owt
+#  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#   ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.tag.start.owt entity.name.tag.owt
+#        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt punctuation.definition.tag.end.owt
+>    /* scoped CSS */
+#^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css
+#    ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css comment.block.css punctuation.definition.comment.begin.css
+#      ^^^^^^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css comment.block.css
+#                  ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css comment.block.css punctuation.definition.comment.end.css
+>    .app {
+#^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css
+#    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.selector.css entity.other.attribute-name.class.css punctuation.definition.entity.css
+#     ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.selector.css entity.other.attribute-name.class.css
+#        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css
+#         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css punctuation.section.property-list.begin.bracket.curly.css
+>      color: red;
+#^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css
+#      ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css meta.property-name.css support.type.property-name.css
+#           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css punctuation.separator.key-value.css
+#            ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css
+#             ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css meta.property-value.css support.constant.color.w3c-standard-color-name.css
+#                ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css punctuation.terminator.rule.css
+>      padding: 1rem 2rem;
+#^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css
+#      ^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css meta.property-name.css support.type.property-name.css
+#             ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css punctuation.separator.key-value.css
+#              ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css
+#               ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css meta.property-value.css constant.numeric.css
+#                ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css meta.property-value.css constant.numeric.css keyword.other.unit.rem.css
+#                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css meta.property-value.css
+#                    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css meta.property-value.css constant.numeric.css
+#                     ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css meta.property-value.css constant.numeric.css keyword.other.unit.rem.css
+#                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css punctuation.terminator.rule.css
+>    }
+#^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css
+#    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css punctuation.section.property-list.end.bracket.curly.css
+>    .app.active > span::before { content: "<b>{x}</b>"; }
+#^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css
+#    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.selector.css entity.other.attribute-name.class.css punctuation.definition.entity.css
+#     ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.selector.css entity.other.attribute-name.class.css
+#        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.selector.css entity.other.attribute-name.class.css punctuation.definition.entity.css
+#         ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.selector.css entity.other.attribute-name.class.css
+#               ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.selector.css
+#                ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.selector.css keyword.operator.combinator.css
+#                 ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.selector.css
+#                  ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.selector.css entity.name.tag.css
+#                      ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.selector.css entity.other.attribute-name.pseudo-element.css punctuation.definition.entity.css
+#                        ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.selector.css entity.other.attribute-name.pseudo-element.css
+#                              ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css
+#                               ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css punctuation.section.property-list.begin.bracket.curly.css
+#                                ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css
+#                                 ^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css meta.property-name.css support.type.property-name.css
+#                                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css punctuation.separator.key-value.css
+#                                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css
+#                                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css meta.property-value.css string.quoted.double.css punctuation.definition.string.begin.css
+#                                           ^^^^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css meta.property-value.css string.quoted.double.css
+#                                                     ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css meta.property-value.css string.quoted.double.css punctuation.definition.string.end.css
+#                                                      ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css punctuation.terminator.rule.css
+#                                                       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css
+#                                                        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css punctuation.section.property-list.end.bracket.curly.css
+>    :global(body) { margin: 0 }
+#^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css
+#    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.selector.css entity.other.attribute-name.pseudo-class.css punctuation.definition.entity.css
+#     ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.selector.css entity.other.attribute-name.pseudo-class.css support.function.global.owt
+#           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.selector.css
+#            ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.selector.css entity.name.tag.css
+#                ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css
+#                  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css punctuation.section.property-list.begin.bracket.curly.css
+#                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css
+#                    ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css meta.property-name.css support.type.property-name.css
+#                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css punctuation.separator.key-value.css
+#                           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css
+#                            ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css meta.property-value.css constant.numeric.css
+#                             ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css
+#                              ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css punctuation.section.property-list.end.bracket.curly.css
+>    @media (max-width: 600px) {
+#^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css
+#    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.at-rule.media.header.css keyword.control.at-rule.media.css punctuation.definition.keyword.css
+#     ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.at-rule.media.header.css keyword.control.at-rule.media.css
+#          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.at-rule.media.header.css
+#           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.at-rule.media.header.css punctuation.definition.parameters.begin.bracket.round.css
+#            ^^^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.at-rule.media.header.css support.type.property-name.media.css
+#                     ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.at-rule.media.header.css punctuation.separator.key-value.css
+#                      ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.at-rule.media.header.css
+#                       ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.at-rule.media.header.css constant.numeric.css
+#                          ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.at-rule.media.header.css constant.numeric.css keyword.other.unit.px.css
+#                            ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.at-rule.media.header.css punctuation.definition.parameters.end.bracket.round.css
+#                             ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css
+#                              ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.at-rule.media.body.css punctuation.section.media.begin.bracket.curly.css
+>      .app { display: none }
+#^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.at-rule.media.body.css
+#      ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.at-rule.media.body.css meta.selector.css entity.other.attribute-name.class.css punctuation.definition.entity.css
+#       ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.at-rule.media.body.css meta.selector.css entity.other.attribute-name.class.css
+#          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.at-rule.media.body.css
+#           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.at-rule.media.body.css meta.property-list.css punctuation.section.property-list.begin.bracket.curly.css
+#            ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.at-rule.media.body.css meta.property-list.css
+#             ^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.at-rule.media.body.css meta.property-list.css meta.property-name.css support.type.property-name.css
+#                    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.at-rule.media.body.css meta.property-list.css punctuation.separator.key-value.css
+#                     ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.at-rule.media.body.css meta.property-list.css
+#                      ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.at-rule.media.body.css meta.property-list.css meta.property-value.css support.constant.property-value.css
+#                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.at-rule.media.body.css meta.property-list.css
+#                           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.at-rule.media.body.css meta.property-list.css punctuation.section.property-list.end.bracket.curly.css
+>    }
+#^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.at-rule.media.body.css
+#    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.at-rule.media.body.css punctuation.section.media.end.bracket.curly.css
+>  </style>
+#^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css
+#  ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt punctuation.definition.tag.begin.owt
+#    ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt entity.name.tag.owt
+#         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt punctuation.definition.tag.end.owt
+>}
+#^ source.owt meta.component.owt meta.component.body.owt punctuation.definition.block.owt
+>
+>export component GlobalStyled() {
+#^^^^^^ source.owt meta.component.owt keyword.control.export.owt
+#      ^ source.owt meta.component.owt
+#       ^^^^^^^^^ source.owt meta.component.owt storage.type.owt
+#                ^ source.owt meta.component.owt
+#                 ^^^^^^^^^^^^ source.owt meta.component.owt entity.name.type.component.owt
+#                             ^ source.owt meta.component.owt meta.parameters.ts punctuation.definition.parameters.begin.ts
+#                              ^ source.owt meta.component.owt meta.parameters.ts punctuation.definition.parameters.end.ts
+#                               ^ source.owt meta.component.owt
+#                                ^ source.owt meta.component.owt meta.component.body.owt punctuation.definition.block.owt
+>  <p>Global</p>
+#^^ source.owt meta.component.owt meta.component.body.owt
+#  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt meta.tag.start.owt entity.name.tag.owt
+#    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+#     ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt
+#           ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt punctuation.definition.tag.begin.owt
+#             ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt entity.name.tag.owt
+#              ^ source.owt meta.component.owt meta.component.body.owt meta.tag.owt punctuation.definition.tag.end.owt
+>  <style global lang="css">
+#^^ source.owt meta.component.owt meta.component.body.owt
+#  ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.tag.start.owt punctuation.definition.tag.begin.owt
+#   ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.tag.start.owt entity.name.tag.owt
+#        ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.tag.start.owt
+#         ^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.tag.start.owt entity.other.attribute-name.owt
+#               ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.tag.start.owt
+#                ^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.tag.start.owt entity.other.attribute-name.owt
+#                    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.tag.start.owt punctuation.separator.key-value.owt
+#                     ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.tag.start.owt string.quoted.double.owt punctuation.definition.string.begin.owt
+#                      ^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.tag.start.owt string.quoted.double.owt
+#                         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.tag.start.owt string.quoted.double.owt punctuation.definition.string.end.owt
+#                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt punctuation.definition.tag.end.owt
+>    p { font-family: system-ui, sans-serif }
+#^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css
+#    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.selector.css entity.name.tag.css
+#     ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css
+#      ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css punctuation.section.property-list.begin.bracket.curly.css
+#       ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css
+#        ^^^^^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css meta.property-name.css support.type.property-name.css
+#                   ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css punctuation.separator.key-value.css
+#                    ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css
+#                     ^^^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css meta.property-value.css support.constant.font-name.css
+#                              ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css meta.property-value.css punctuation.separator.list.comma.css
+#                               ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css meta.property-value.css
+#                                ^^^^^^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css meta.property-value.css support.constant.font-name.css
+#                                          ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css
+#                                           ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css meta.property-list.css punctuation.section.property-list.end.bracket.curly.css
+>  </style>
+#^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt meta.embedded.block.css.owt source.css
+#  ^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt punctuation.definition.tag.begin.owt
+#    ^^^^^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt entity.name.tag.owt
+#         ^ source.owt meta.component.owt meta.component.body.owt meta.tag.style.owt punctuation.definition.tag.end.owt
+>}
+#^ source.owt meta.component.owt meta.component.body.owt punctuation.definition.block.owt
+>

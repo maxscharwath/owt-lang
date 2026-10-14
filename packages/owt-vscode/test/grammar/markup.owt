@@ -1,0 +1,43 @@
+import * as Icons from './icons'
+
+export component Markup(props: { user: { name: string }; items: string[] }) {
+  var value = ''
+  var el: HTMLElement | undefined
+  var rest = { id: 'main' }
+  var disabled = false
+
+  <section class="app" id=main data-count={props.items.length} aria-label='Main'>
+    <!-- an html comment -->
+    <h1 class:active={value !== ''} style:color={value ? 'red' : null} style:font-size="12px">
+      Hello, {props.user.name}! &amp; welcome &#169;
+    </h1>
+    <input {...rest} {disabled} bind:value={value} placeholder="Type here" />
+    <input type="checkbox" checked>
+    <br>
+    <img src="/logo.png" alt="Logo" />
+    <div use:tooltip={value} bind:this={el} ref={el} on:click={() => console.log('clicked')}></div>
+    <div style="color: red; margin: 0 auto">styled</div>
+    <Icons.Plus size={16} />
+    <ui.button variant="primary" onClick={() => { value = '' }}>Clear</ui.button>
+    <Card
+      title="Multi-line"
+      onClose={() => {
+        value = 'closed'
+      }}
+      items={props.items.map((item, i) => ({ item, i }))}
+    >
+      <p>Text with a < b comparison and a > c, "quotes" and 'apostrophes'.</p>
+      <p>{`template ${value} with {braces}`} and {{ nested: { object: true } }.nested.object}</p>
+    </Card>
+    <>
+      <span>fragment child</span>
+    </>
+    <my-element some-attr="x"></my-element>
+    <svg viewBox="0 0 24 24"><path d="M12 4v16" stroke-width="2" /></svg>
+  </section>
+
+  <window onResize={() => console.log(innerWidth)} />
+  <document onKeyDown={(e: KeyboardEvent) => e.key === 'Escape' && (value = '')} />
+  <head><title>{value || 'OWT'}</title></head>
+  <body class:dark={true} />
+}

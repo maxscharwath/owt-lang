@@ -1,0 +1,19 @@
+import { fetchUser } from './store'
+
+// await blocks re-run when their expression changes (here: the id prop).
+export component UserCard(id: number) {
+  <div class="user">
+    await (fetchUser(id)) {
+      <p class="muted">Loading user {id}…</p>
+    } then (user) {
+      <p><strong>{user.name}</strong> · {user.email}</p>
+    } catch (error) {
+      <p class="error">{(error as Error).message}</p>
+    }
+  </div>
+
+  <style>
+    .muted { color: #9ca3af; }
+    .error { color: #dc2626; }
+  </style>
+}

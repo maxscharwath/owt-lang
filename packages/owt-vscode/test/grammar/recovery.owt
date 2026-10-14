@@ -1,0 +1,16 @@
+export component Unclosed() {
+  var open = true
+  <div class="never-closed">
+    <p>Missing closing tag for the div
+}
+
+export component StillHighlighted(props: { label: string }) {
+  <span>{props.label}</span>
+}
+
+export component TextEdgeCases() {
+  <p>
+    Text mentioning if and for (not blocks) and else, a<b and x=>y.
+    Another line: switch (mode) is just text {here}.
+  </p>
+}

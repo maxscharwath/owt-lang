@@ -1,0 +1,32 @@
+{
+  "name": "owt",
+  "displayName": "OWT",
+  "description": "TextMate bundle for OWT (.owt) single-file components, used by the OWT JetBrains plugin.",
+  "version": "0.1.0",
+  "publisher": "owt",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.89.0"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "owt",
+        "aliases": ["OWT", "owt"],
+        "extensions": [".owt"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "owt",
+        "scopeName": "source.owt",
+        "path": "./syntaxes/owt.tmLanguage.json",
+        "embeddedLanguages": {
+          "source.ts": "typescript",
+          "source.css": "css"
+        }
+      }
+    ]
+  }
+}

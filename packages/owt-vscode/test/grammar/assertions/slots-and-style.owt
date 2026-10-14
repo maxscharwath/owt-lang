@@ -1,0 +1,34 @@
+// SYNTAX TEST "source.owt" "slots and style blocks"
+export component Page() {
+  <Card title="x">
+    slot header({ title }) { <h2>{title}</h2> }
+//  ^^^^ storage.type.slot.owt
+//       ^^^^^^ entity.name.function.slot.owt
+//                ^^^^^ variable.parameter.ts
+//                            ^^ entity.name.tag.owt
+    slot footer {
+//  ^^^^ storage.type.slot.owt
+//       ^^^^^^ entity.name.function.slot.owt
+      <small>footer</small>
+    }
+//  ^ punctuation.definition.block.owt
+  </Card>
+  <style>
+// ^^^^^ entity.name.tag.owt
+    .app { color: red }
+//  ^^^^ meta.embedded.block.css.owt source.css meta.selector.css entity.other.attribute-name.class.css
+//         ^^^^^ source.css support.type.property-name.css
+    :global(body) { margin: 0 }
+//   ^^^^^^ source.css entity.other.attribute-name.pseudo-class.css
+//          ^^^^ source.css entity.name.tag.css
+  </style>
+//^^ punctuation.definition.tag.begin.owt
+//  ^^^^^ entity.name.tag.owt
+}
+// <- punctuation.definition.block.owt
+<style global lang="css">
+//     ^^^^^^ entity.other.attribute-name.owt
+//            ^^^^ entity.other.attribute-name.owt
+  p { margin: 0 }
+//    ^^^^^^ source.css support.type.property-name.css
+</style>

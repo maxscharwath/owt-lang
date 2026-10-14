@@ -1,0 +1,282 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "OWT",
+  "scopeName": "source.owt",
+  "fileTypes": ["owt"],
+  "comment": "Minimal fallback grammar bundled with the OWT JetBrains plugin. It is replaced at build time by packages/owt-vscode/syntaxes/owt.tmLanguage.json when that file exists.",
+  "patterns": [{ "include": "#main" }],
+  "repository": {
+    "main": {
+      "patterns": [
+        { "include": "#comments" },
+        { "include": "#style-block" },
+        { "include": "#tags" },
+        { "include": "#strings" },
+        { "include": "#declarations" },
+        { "include": "#keywords" },
+        { "include": "#constants" },
+        { "include": "#numbers" },
+        { "include": "#types" },
+        { "include": "#function-calls" },
+        { "include": "#braces" },
+        { "include": "#operators" },
+        { "include": "#punctuation" }
+      ]
+    },
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.block.html.owt",
+          "begin": "<!--",
+          "end": "-->",
+          "beginCaptures": { "0": { "name": "punctuation.definition.comment.owt" } },
+          "endCaptures": { "0": { "name": "punctuation.definition.comment.owt" } }
+        },
+        {
+          "name": "comment.block.owt",
+          "begin": "/\\*",
+          "end": "\\*/",
+          "beginCaptures": { "0": { "name": "punctuation.definition.comment.owt" } },
+          "endCaptures": { "0": { "name": "punctuation.definition.comment.owt" } }
+        },
+        {
+          "name": "comment.line.double-slash.owt",
+          "match": "(//).*$",
+          "captures": { "1": { "name": "punctuation.definition.comment.owt" } }
+        }
+      ]
+    },
+    "style-block": {
+      "name": "meta.embedded.block.style.owt",
+      "begin": "(<)(style)\\b([^>]*)(>)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.tag.begin.owt" },
+        "2": { "name": "entity.name.tag.style.owt" },
+        "3": { "patterns": [{ "include": "#attribute-names" }, { "include": "#strings" }] },
+        "4": { "name": "punctuation.definition.tag.end.owt" }
+      },
+      "end": "(</)(style)\\s*(>)",
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.tag.begin.owt" },
+        "2": { "name": "entity.name.tag.style.owt" },
+        "3": { "name": "punctuation.definition.tag.end.owt" }
+      },
+      "contentName": "source.css.embedded.owt",
+      "patterns": [{ "include": "source.css" }]
+    },
+    "tags": {
+      "patterns": [
+        {
+          "name": "meta.tag.end.owt",
+          "match": "(</)([A-Za-z][\\w.:-]*)\\s*(>)",
+          "captures": {
+            "1": { "name": "punctuation.definition.tag.begin.owt" },
+            "2": { "patterns": [{ "include": "#tag-name" }] },
+            "3": { "name": "punctuation.definition.tag.end.owt" }
+          }
+        },
+        {
+          "name": "meta.tag.start.owt",
+          "begin": "(<)([A-Za-z][\\w.:-]*)(?=[\\s/>])",
+          "beginCaptures": {
+            "1": { "name": "punctuation.definition.tag.begin.owt" },
+            "2": { "patterns": [{ "include": "#tag-name" }] }
+          },
+          "end": "(/?>)",
+          "endCaptures": { "1": { "name": "punctuation.definition.tag.end.owt" } },
+          "patterns": [
+            { "include": "#comments" },
+            { "include": "#attribute-names" },
+            { "match": "=", "name": "punctuation.separator.key-value.owt" },
+            { "include": "#strings" },
+            { "include": "#braces" }
+          ]
+        }
+      ]
+    },
+    "tag-name": {
+      "patterns": [
+        { "match": "^[A-Z][\\w.]*$", "name": "support.class.component.owt" },
+        { "match": "^.*$", "name": "entity.name.tag.owt" }
+      ]
+    },
+    "attribute-names": {
+      "patterns": [
+        {
+          "match": "\\b(bind|class|style|on|use|transition|in|out|animate|let)(:)([\\w$-]+)",
+          "captures": {
+            "1": { "name": "keyword.control.directive.owt" },
+            "2": { "name": "punctuation.separator.directive.owt" },
+            "3": { "name": "entity.other.attribute-name.owt" }
+          }
+        },
+        {
+          "match": "\\b(on[A-Z][\\w$]*)",
+          "captures": { "1": { "name": "entity.other.attribute-name.event.owt" } }
+        },
+        {
+          "match": "[A-Za-z_@][\\w.:$-]*",
+          "name": "entity.other.attribute-name.owt"
+        }
+      ]
+    },
+    "braces": {
+      "name": "meta.block.owt",
+      "begin": "\\{",
+      "end": "\\}",
+      "beginCaptures": { "0": { "name": "punctuation.section.block.begin.owt" } },
+      "endCaptures": { "0": { "name": "punctuation.section.block.end.owt" } },
+      "patterns": [{ "include": "#main" }]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.owt",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [{ "include": "#string-escapes" }]
+        },
+        {
+          "name": "string.quoted.single.owt",
+          "begin": "'",
+          "end": "'",
+          "patterns": [{ "include": "#string-escapes" }]
+        },
+        {
+          "name": "string.template.owt",
+          "begin": "`",
+          "end": "`",
+          "patterns": [
+            { "include": "#string-escapes" },
+            {
+              "name": "meta.template.expression.owt",
+              "begin": "\\$\\{",
+              "end": "\\}",
+              "beginCaptures": { "0": { "name": "punctuation.definition.template-expression.begin.owt" } },
+              "endCaptures": { "0": { "name": "punctuation.definition.template-expression.end.owt" } },
+              "patterns": [{ "include": "#main" }]
+            }
+          ]
+        }
+      ]
+    },
+    "string-escapes": {
+      "name": "constant.character.escape.owt",
+      "match": "\\\\(x[0-9A-Fa-f]{2}|u\\{[0-9A-Fa-f]+\\}|u[0-9A-Fa-f]{4}|.)"
+    },
+    "declarations": {
+      "patterns": [
+        {
+          "match": "\\b(component)\\s+([A-Za-z_$][\\w$]*)",
+          "captures": {
+            "1": { "name": "storage.type.component.owt" },
+            "2": { "name": "entity.name.type.component.owt" }
+          }
+        },
+        {
+          "match": "\\b(var)\\s+([A-Za-z_$][\\w$]*)",
+          "captures": {
+            "1": { "name": "storage.type.var.owt" },
+            "2": { "name": "variable.other.readwrite.owt" }
+          }
+        },
+        {
+          "match": "\\b(val)\\s+([A-Za-z_$][\\w$]*)",
+          "captures": {
+            "1": { "name": "storage.type.val.owt" },
+            "2": { "name": "variable.other.constant.owt" }
+          }
+        },
+        {
+          "match": "\\b(slot)\\s+([A-Za-z_$][\\w$]*)",
+          "captures": {
+            "1": { "name": "keyword.control.slot.owt" },
+            "2": { "name": "entity.name.function.slot.owt" }
+          }
+        },
+        {
+          "match": "\\b(function)\\s*(\\*?)\\s*([A-Za-z_$][\\w$]*)?",
+          "captures": {
+            "1": { "name": "storage.type.function.owt" },
+            "2": { "name": "keyword.generator.asterisk.owt" },
+            "3": { "name": "entity.name.function.owt" }
+          }
+        },
+        {
+          "match": "\\b(type|interface|enum|class)\\s+([A-Za-z_$][\\w$]*)",
+          "captures": {
+            "1": { "name": "storage.type.owt" },
+            "2": { "name": "entity.name.type.owt" }
+          }
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.import.owt",
+          "match": "(?<![\\w$.])(import|export|from|as)(?![\\w$])"
+        },
+        {
+          "name": "keyword.control.flow.owt",
+          "match": "(?<![\\w$.])(if|else|for|of|rev|track|empty|switch|case|default|await|then|catch|try|finally|key|return|break|continue|while|do|throw)(?![\\w$])"
+        },
+        {
+          "name": "storage.type.owt",
+          "match": "(?<![\\w$.])(component|var|val|slot|let|const|function|async|type|interface|enum|class|extends|implements|declare|readonly|public|private|protected|static)(?![\\w$])"
+        },
+        {
+          "name": "keyword.operator.expression.owt",
+          "match": "(?<![\\w$.])(new|in|instanceof|typeof|keyof|void|delete|yield|satisfies|is)(?![\\w$])"
+        }
+      ]
+    },
+    "constants": {
+      "patterns": [
+        {
+          "name": "constant.language.owt",
+          "match": "(?<![\\w$.])(true|false|null|undefined|NaN|Infinity)(?![\\w$])"
+        },
+        {
+          "name": "variable.language.owt",
+          "match": "(?<![\\w$.])(this|super|props)(?![\\w$])"
+        }
+      ]
+    },
+    "numbers": {
+      "name": "constant.numeric.owt",
+      "match": "(?<![\\w$])(0[xX][0-9A-Fa-f_]+n?|0[bB][01_]+n?|0[oO][0-7_]+n?|(?:\\d[\\d_]*)?\\.?\\d[\\d_]*(?:[eE][+-]?\\d+)?n?)(?![\\w$])"
+    },
+    "types": {
+      "name": "support.type.primitive.owt",
+      "match": "(?<![\\w$.])(string|number|boolean|any|unknown|never|object|symbol|bigint)(?![\\w$])"
+    },
+    "function-calls": {
+      "match": "([A-Za-z_$][\\w$]*)\\s*(?=\\()",
+      "captures": { "1": { "name": "entity.name.function.call.owt" } }
+    },
+    "operators": {
+      "patterns": [
+        { "name": "storage.type.function.arrow.owt", "match": "=>" },
+        { "name": "keyword.operator.spread.owt", "match": "\\.\\.\\." },
+        { "name": "keyword.operator.range.owt", "match": "\\.\\." },
+        { "name": "keyword.operator.comparison.owt", "match": "===|!==|==|!=|<=|>=" },
+        { "name": "keyword.operator.logical.owt", "match": "&&|\\|\\||\\?\\?|!" },
+        { "name": "keyword.operator.optional.owt", "match": "\\?\\." },
+        { "name": "keyword.operator.assignment.owt", "match": "(?:[-+*/%&|^]|\\*\\*|<<|>>>?|&&|\\|\\||\\?\\?)?=" },
+        { "name": "keyword.operator.arithmetic.owt", "match": "\\*\\*|[-+*/%]" },
+        { "name": "keyword.operator.relational.owt", "match": "[<>]" },
+        { "name": "keyword.operator.ternary.owt", "match": "[?:]" }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        { "name": "punctuation.separator.comma.owt", "match": "," },
+        { "name": "punctuation.terminator.statement.owt", "match": ";" },
+        { "name": "punctuation.accessor.owt", "match": "\\." },
+        { "name": "meta.brace.round.owt", "match": "[()]" },
+        { "name": "meta.brace.square.owt", "match": "[\\[\\]]" }
+      ]
+    }
+  }
+}

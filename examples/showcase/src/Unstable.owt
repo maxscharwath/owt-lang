@@ -1,0 +1,10 @@
+// Throws while rendering when `explode` is true: caught by a try { } catch { } boundary.
+export component Unstable(explode: boolean) {
+  function fail(): never {
+    throw new Error('Kaboom! The component threw while rendering.')
+  }
+
+  val status = explode ? fail() : 'Everything is fine'
+
+  <p>{status}</p>
+}

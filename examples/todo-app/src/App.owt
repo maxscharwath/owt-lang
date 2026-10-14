@@ -1,136 +1,150 @@
-import { PlusIcon } from './Icon.owt';
-import { TodoItem } from './TodoItem.owt';
+import { effect } from 'owt'
+import { PlusIcon } from './Icon.owt'
+import { TodoItem } from './TodoItem.owt'
+import { FILTERS, type Filter, type Todo } from './types'
 
-type Todo = {
-  id: string;
-  text: string;
-  completed: boolean;
+const STORAGE_KEY = 'owt-todos'
+
+const DEFAULT_TODOS: Todo[] = [
+  { id: '1', text: 'Learn OWT language', completed: false },
+  { id: '2', text: 'Build a todo app', completed: false },
+  { id: '3', text: 'Style with Tailwind CSS', completed: true },
+]
+
+function load(): Todo[] {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    return saved ? (JSON.parse(saved) as Todo[]) : DEFAULT_TODOS
+  } catch {
+    return DEFAULT_TODOS
+  }
 }
 
 export component App() {
-  var todos: Todo[] = [
-    { id: '1', text: 'Learn OWT language', completed: false },
-    { id: '2', text: 'Build a todo app', completed: false },
-    { id: '3', text: 'Style with Tailwind CSS', completed: true }
-  ];
-  var newTodoText: string = '';
+  var todos: Todo[] = load()
+  var draft = ''
+  var filter: Filter = 'all'
 
-  val completedCount = todos.filter(todo => todo.completed).length;
+  val completedCount = todos.filter((t) => t.completed).length
+  val remaining = todos.length - completedCount
+  val visible = filter === 'all' ? todos : todos.filter((t) => t.completed === (filter === 'completed'))
+
+  // persist every change (deep reactivity: JSON.stringify reads everything)
+  effect(() => localStorage.setItem(STORAGE_KEY, JSON.stringify(todos)))
 
   function addTodo() {
-    console.log('addTodo', newTodoText);
-    if (newTodoText.trim()) {
-      todos = [...todos, {
-        id: Date.now().toString(36) + Math.random().toString(36).substr(2),
-        text: newTodoText.trim(),
-        completed: false
-      }];
-      newTodoText = '';
-    }
+    const text = draft.trim()
+    if (!text) return
+    todos.push({ id: crypto.randomUUID(), text, completed: false })
+    draft = ''
   }
 
-  function toggleTodo(todoId) {
-    todos = todos.map(t => 
-      t.id === todoId ? { ...t, completed: !t.completed } : t
-    );
+  function remove(todo: Todo) {
+    todos = todos.filter((t) => t.id !== todo.id)
   }
 
-  function deleteTodo(todoId) {
-    todos = todos.filter(t => t.id !== todoId);
+  function move(todo: Todo, delta: number) {
+    const from = todos.indexOf(todo)
+    const to = from + delta
+    if (from < 0 || to < 0 || to >= todos.length) return
+    const [item] = todos.splice(from, 1)
+    todos.splice(to, 0, item!)
   }
 
   function clearCompleted() {
-    todos = todos.filter(todo => !todo.completed);
+    todos = todos.filter((t) => !t.completed)
   }
 
-  function moveTodoUp(index) {
-    if (index > 0) {
-      const newTodos = [...todos];
-      const temp = newTodos[index];
-      newTodos[index] = newTodos[index - 1];
-      newTodos[index - 1] = temp;
-      todos = newTodos;
-    }
-  }
-
-  function moveTodoDown(index) {
-    if (index < todos.length - 1) {
-      const newTodos = [...todos];
-      const temp = newTodos[index];
-      newTodos[index] = newTodos[index + 1];
-      newTodos[index + 1] = temp;
-      todos = newTodos;
-    }
-  }
+  <head>
+    <title>({remaining}) OWT Todos</title>
+  </head>
 
   <div class="min-h-screen bg-gray-100 py-8 px-4">
     <div class="max-w-2xl mx-auto">
-      <div class="text-center mb-8">
+      <header class="text-center mb-8">
         <h1 class="text-4xl font-bold text-gray-900 mb-2">OWT Todo App</h1>
-        <p class="text-gray-600">Built with OWT language and Tailwind CSS 4.1</p>
+        <p class="text-gray-600">Built with OWT and Tailwind CSS</p>
         <p class="text-sm text-gray-500 mt-2">
-{todos.length} total todos - {completedCount} completed - {todos.length - completedCount} remaining
+          {todos.length} total todos - {completedCount} completed - {remaining} remaining
         </p>
-      </div>
+      </header>
 
       <div class="bg-white rounded-lg shadow-lg p-6">
-        <div class="mb-6">
-          <div class="flex gap-2">
-            <input
-              type="text"
-              placeholder="What needs to be done?"
-              class="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
-              value={newTodoText}
-              onInput={(e) => { newTodoText = e.target.value }}
-              onKeyDown={(e) => e.key === 'Enter' && addTodo()}
-            />
-            <button
-              onClick={addTodo}
-              class="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors"
-              title="Add Todo"
-            >
-              <PlusIcon class="w-4 h-4" />
-              <span class="text-sm">Add</span>
-            </button>
-          </div>
+        <div class="flex gap-2 mb-6">
+          <input
+            type="text"
+            placeholder="What needs to be done?"
+            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
+            bind:value={draft}
+            onKeyDown={(e) => e.key === 'Enter' && addTodo()}
+          />
+          <button
+            onClick={addTodo}
+            disabled={!draft.trim()}
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            title="Add Todo"
+          >
+            <PlusIcon class="w-4 h-4" />
+            <span class="text-sm">Add</span>
+          </button>
         </div>
-        
+
+        <nav class="flex gap-2 mb-4">
+          for (f of FILTERS) {
+            <button class="filter" class:active={filter === f} onClick={() => filter = f}>{f}</button>
+          }
+        </nav>
+
         <div class="space-y-2">
-          for (todo of todos, meta) {
+          for (todo of visible; track todo.id) {
             <TodoItem
-              meta={meta}
-              todo={todo}
-              onToggle={() => toggleTodo(todo.id)}
-              onDelete={() => deleteTodo(todo.id)}
-              onMoveUp={() => moveTodoUp(meta.index)}
-              onMoveDown={() => moveTodoDown(meta.index)}
+              {todo}
+              first={todos[0] === todo}
+              last={todos[todos.length - 1] === todo}
+              position={todos.indexOf(todo) + 1}
+              onToggle={() => todo.completed = !todo.completed}
+              onRename={(text) => todo.text = text}
+              onDelete={() => remove(todo)}
+              onMoveUp={() => move(todo, -1)}
+              onMoveDown={() => move(todo, 1)}
             />
           } empty {
             <div class="text-center py-8 text-gray-500">
-              <p>No todos yet! Add one above to get started!</p>
+              switch (filter) {
+                case 'active' { <p>Nothing left to do!</p> }
+                case 'completed' { <p>Nothing completed yet.</p> }
+                default { <p>No todos yet! Add one above to get started!</p> }
+              }
             </div>
           }
         </div>
 
         if (completedCount > 0) {
           <div class="mt-6 pt-4 border-t">
-            <button
-              onClick={clearCompleted}
-              class="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded"
-            >
+            <button onClick={clearCompleted} class="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded">
               Clear Completed ({completedCount})
             </button>
           </div>
         }
       </div>
 
-      <div class="mt-8 text-center text-sm text-gray-500">
-        <p>Type in the input field and click Add Todo</p>
-        <p>Click checkbox to toggle completion</p>
-        <p>Use Up/Dn buttons to reorder todos</p>
-        <p>Click X to delete todos</p>
-        <p class="mt-2 text-xs">Meta object provides 'index', 'first', 'last', 'even', 'odd' properties</p>
-      </div>
+      <footer class="mt-8 text-center text-sm text-gray-500">
+        <p>Double-click a todo to edit it · Your todos are saved in this browser</p>
+      </footer>
     </div>
   </div>
+
+  <style>
+    .filter {
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      text-transform: capitalize;
+      color: #4b5563;
+    }
+    .filter.active {
+      background: #2563eb;
+      color: white;
+    }
+  </style>
 }

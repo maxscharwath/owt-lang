@@ -2,22 +2,53 @@
  * Type-only helpers used by the virtual TypeScript that editor tooling
  * generates from `.owt` files (never imported at runtime).
  */
-import type { OwtElements, OwtElementInstance } from './elements';
+import type { DOMAttributes, OwtElements, OwtElementInstance } from './elements';
 import type { LoopMeta, Snippet } from './dom/blocks';
 import type { Action } from './dom/bindings';
 
 type Iterated<T> = T extends readonly (infer U)[] ? U : T extends Iterable<infer U> ? U : T extends ArrayLike<infer U> ? U : T extends number ? number : unknown;
 
-/** Event handler attributes accepted by `<window>`, `<document>` and `<body>`. */
-export type GlobalTargetAttributes = {
-  [key: `on${string}`]: ((event: Event) => unknown) | null | undefined;
+/** Events only dispatched on `window` (and mirrored on `<body>`). */
+type WindowOnlyEvents = {
+  onAfterPrint: Event;
+  onBeforePrint: Event;
+  onBeforeUnload: BeforeUnloadEvent;
+  onDeviceMotion: DeviceMotionEvent;
+  onDeviceOrientation: DeviceOrientationEvent;
+  onHashChange: HashChangeEvent;
+  onLanguageChange: Event;
+  onMessage: MessageEvent;
+  onMessageError: MessageEvent;
+  onOffline: Event;
+  onOnline: Event;
+  onPageHide: PageTransitionEvent;
+  onPageShow: PageTransitionEvent;
+  onPopState: PopStateEvent;
+  onRejectionHandled: PromiseRejectionEvent;
+  onStorage: StorageEvent;
+  onUnhandledRejection: PromiseRejectionEvent;
+  onUnload: Event;
+};
+
+/** Events only dispatched on `document`. */
+type DocumentOnlyEvents = {
+  onDOMContentLoaded: Event;
+  onFullscreenChange: Event;
+  onFullscreenError: Event;
+  onPointerLockChange: Event;
+  onPointerLockError: Event;
+  onReadyStateChange: Event;
+  onVisibilityChange: Event;
+};
+
+/** Event attributes of `<window>`, `<document>` and `<body>`. */
+export type TargetAttributes<T extends EventTarget, Extra> = DOMAttributes<T> & {
+  [K in Exclude<keyof Extra, keyof DOMAttributes<T>>]?: ((event: Extra[K] & { currentTarget: T }) => unknown) | null | undefined;
 };
 
 export interface Helpers {
   /** an HTML / SVG element with its attributes */
   el<K extends keyof OwtElements>(tag: K, attrs: OwtElements[K]): OwtElementInstance<K>;
-  /** a component with its props */
-  component<P>(component: (props: P) => unknown, props: NoInfer<P>): void;
   /** `{expr}` text interpolation */
   text(value?: unknown): void;
   /** `for (x of value)` */
@@ -35,7 +66,7 @@ export interface Helpers {
   /** `<slot name="x" ...args>` */
   slot<A>(snippet: Snippet<A> | null | undefined, args: A): void;
   /** `use:action={params}` */
-  action<E extends Element, P>(action: Action<E, P>, el: E, ...params: P extends undefined ? [params?: P] : [params: P]): void;
+  action<E extends Element, P>(action: Action<E, P>, el: E, ...params: undefined extends P ? [params?: P] : [params: P]): void;
   /** `on:event={handler}` */
   on(el: EventTarget, type: string, handler: ((event: CustomEvent) => unknown) | null | undefined): void;
   /** `ref={callback}` */
@@ -45,7 +76,9 @@ export interface Helpers {
   /** `style:prop={value}` */
   styleValue(value: string | number | boolean | null | undefined): void;
   /** `<window>` / `<document>` / `<body>` events */
-  target(kind: 'window' | 'document' | 'body', attrs: GlobalTargetAttributes): void;
+  target(kind: 'window', attrs: TargetAttributes<Window, WindowOnlyEvents>): void;
+  target(kind: 'document', attrs: TargetAttributes<Document, DocumentOnlyEvents>): void;
+  target(kind: 'body', attrs: TargetAttributes<HTMLBodyElement, WindowOnlyEvents>): void;
   /** value produced by two-way bindings (`bind:value`): assignable to anything */
   readonly bound: never;
   /** what component functions return */

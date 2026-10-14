@@ -4,7 +4,7 @@ import { parse } from '@owt/parser';
 import type { CodeInformation, CodeMapping, IScriptSnapshot, VirtualCode } from '@volar/language-core';
 import { generate } from './codegen';
 
-const ALL: CodeInformation = { verification: true, completion: true, semantic: true, navigation: true, structure: true, format: true };
+const ALL: CodeInformation = { verification: true, completion: true, semantic: true, navigation: true, structure: true, format: false };
 
 function snapshot(text: string): IScriptSnapshot {
   return {

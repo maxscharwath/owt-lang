@@ -1,0 +1,23 @@
+export component Card(props: { title: string }) {
+  <article class="card">
+    <header>
+      <slot name="header" title={props.title}>
+        <h2>{props.title}</h2>
+      </slot>
+    </header>
+    <slot />
+    <footer><slot name="footer">Default footer</slot></footer>
+  </article>
+}
+
+export component Page() {
+  <Card title="Hello">
+    slot header({ title }) {
+      <h2 class="fancy">{title}</h2>
+    }
+    slot footer {
+      <small>Custom footer</small>
+    }
+    <p>Default slot content</p>
+  </Card>
+}

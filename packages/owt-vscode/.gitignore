@@ -1,0 +1,5 @@
+# Build output (scripts/build.mjs)
+dist/
+server/
+*.vsix
+*.vsix.tmp

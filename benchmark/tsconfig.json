@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "declaration": false,
+    "jsx": "react-jsx",
+    "types": ["node"]
+  },
+  "include": ["apps/*/src", "apps/*/vite.config.ts", "shared"]
+}

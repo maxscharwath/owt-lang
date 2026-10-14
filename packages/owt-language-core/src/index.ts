@@ -9,6 +9,7 @@ import { OwtVirtualCode } from './virtual-code';
 
 export { OwtVirtualCode } from './virtual-code';
 export { generate, type Generated } from './codegen';
+export { format, type FormatEdit, type FormatOptions } from './format';
 
 type UriLike = string | { path: string };
 

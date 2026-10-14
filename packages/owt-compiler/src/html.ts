@@ -157,7 +157,6 @@ export const PROPERTY_BINDINGS: Record<string, string> = {
   volume: 'volumechange',
   muted: 'volumechange',
   playbackRate: 'ratechange',
-  paused: 'play',
   indeterminate: 'change',
 };
 
