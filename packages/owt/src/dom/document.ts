@@ -24,14 +24,30 @@ export function title(get: () => string): void {
   });
 }
 
-const injected = new Set<string>();
+/** CSS added by `injectCss`, by id (shadow roots of custom elements adopt it too). */
+const injected = new Map<string, string>();
+let cssListeners: Set<(added: readonly string[]) => void> | null = null;
 
 /** Add a component's CSS once (used when compiling with `css: 'injected'`). */
 export function injectCss(id: string, css: string): void {
   if (typeof document === 'undefined' || injected.has(id)) return;
-  injected.add(id);
+  injected.set(id, css);
   const style = document.createElement('style');
   style.setAttribute('data-owt', id);
   style.textContent = css;
   document.head.appendChild(style);
+  if (cssListeners !== null) for (const listener of cssListeners) listener([css]);
+}
+
+/**
+ * Call `listener` with every CSS text added by `injectCss` so far, then with
+ * each one added later. Returns a function that stops listening.
+ */
+export function watchInjectedCss(listener: (added: readonly string[]) => void): () => void {
+  listener([...injected.values()]);
+  const listeners = (cssListeners ??= new Set());
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
 }

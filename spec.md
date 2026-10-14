@@ -13,6 +13,7 @@ OWT is a typed UI language: TypeScript for logic, HTML for markup, two keywords 
 - [Using components](#using-components)
 - [Special elements](#special-elements)
 - [Styles](#styles)
+- [Custom elements](#custom-elements)
 - [Runtime API](#runtime-api)
 - [TypeScript](#typescript)
 - [Tooling](#tooling)
@@ -527,6 +528,73 @@ export component Card() {
 - With Vite, component CSS goes through the normal CSS pipeline (PostCSS, Tailwind, minification, extraction, HMR).
 - Selectors that can never match are reported at compile time (`css-unused-selector` warning, in the editor and in Vite). This covers a class, id or tag that no element of the component renders, such as `.card h3` without an `h3`. The check counts `class:` directives and the string literals of `class={...}` expressions. When a class comes from something it cannot read (a variable, a spread), it assumes any class can be present. Elements of child components are never matched by scoped styles: use `:global(...)` for them.
 
+## Custom elements
+
+`defineElement` registers any component as a custom element (a Web Component), usable from plain HTML or from any framework:
+
+```ts
+import { defineElement } from 'owt'
+import { Counter } from './Counter.owt'
+
+defineElement('owt-counter', Counter, {
+  props: { value: Number, step: Number, label: String, disabled: Boolean, onChange: 'event' },
+  shadow: true,                                 // default: render into an open shadow root
+  styles: ':host { display: inline-block }',    // extra CSS for the shadow root
+})
+```
+
+```html
+<owt-counter value="3" step="2"></owt-counter>
+<script>
+  const counter = document.querySelector('owt-counter')
+  counter.value = 10                                                  // updates the component, no re-mount
+  counter.addEventListener('change', (event) => console.log(event.detail))
+</script>
+```
+
+| Option | Default | Description |
+|---|---|---|
+| `props` | none | props exposed by the element: `name: String \| Number \| Boolean \| Object \| Array`, a parser `(attribute: string \| null) => value`, or `'event'` for a callback prop |
+| `shadow` | `true` | render into an open shadow root; `false` renders into the element itself |
+| `styles` | none | CSS added to the shadow root after the component CSS |
+
+**Properties and attributes**
+
+- A declared prop is a reactive property of the element: `el.value = 10` updates what depends on `value` through signals; the component is not re-mounted. Props that are not declared are `undefined`, so the component defaults apply.
+- It is also set from an observed attribute, named in kebab-case (`maxValue` ↔ `max-value`), with a coercion: `Number` → `Number(attr)`, `Boolean` → present and not `"false"`, `String` → as is, `Object` / `Array` → `JSON.parse(attr)`, a parser function → its result. Removing the attribute sets the prop to `undefined` (`false` for `Boolean`). Properties are not reflected back to attributes.
+- When the component assigns a declared prop (`value = 3`, as with `bind:`), the element property follows.
+- Properties set before the element was defined (by a framework, or a script that ran before the definition) are applied when the element upgrades.
+- The keys of `props` must be props of the component (a type error otherwise), and the returned class types them. To type `document.querySelector('owt-counter')`, add it to `HTMLElementTagNameMap`:
+
+```ts
+export const CounterElement = defineElement('owt-counter', Counter, { props: { value: Number } })
+
+declare global {
+  interface HTMLElementTagNameMap { 'owt-counter': InstanceType<typeof CounterElement> }
+}
+```
+
+**Events**
+
+- A callback prop declared as `'event'` dispatches a DOM event on the element when the component calls it: `onChange(5)` dispatches `new CustomEvent('change', { detail: 5, bubbles: true, composed: true })`. The event name is the prop name without `on`, in lowercase (`onValueChange` → `valuechange`), which is what `onValueChange={...}` listens to in OWT markup. A name without `on` is used as is.
+
+**Children and slots**
+
+- With a shadow root, the element's children are projected through native slots: the component's `<slot />` renders a `<slot>` element and `<slot name="header">` a `<slot name="header">`, which shows the children with `slot="header"`. The component's fallback content renders while no child targets the slot (whitespace-only text does not count). This is checked again when children are added or removed; changing the `slot` attribute of an existing child is not tracked.
+- Slot arguments (`<slot name="row" item={x}>`) cannot reach light-DOM content: they are ignored.
+- With `shadow: false`, children are not projected: they stay where they are, the component renders after them and its slots show their fallback.
+
+**Lifecycle**
+
+- The component is mounted when the element is connected and destroyed (`onDestroy` runs, effects are disposed) when it is removed. The destroy waits for a microtask, so moving the element (removed and inserted again in the same task) keeps its state. An element connected again later mounts a new instance with the current props.
+- The component runs in its own root: the context of an enclosing OWT app is not visible (`getContext` returns `undefined`).
+- `defineElement` returns the element class. Calling it again with the same tag and component returns the existing class (a module re-run by HMR); a different component for a defined tag throws. Hot updates of the component itself reach live elements like any other instance.
+
+**Styles**
+
+- Document styles do not apply inside a shadow root. The CSS that OWT components inject at runtime (compiled with `css: 'injected'`, which is `owt({ emitCss: false })` with Vite) is added to every OWT shadow root: as shared constructable stylesheets (`adoptedStyleSheets`) where supported, as `<style>` elements otherwise. This includes the CSS of child components and of components loaded later (`lazy`). `styles` comes last.
+- With the Vite plugin's default `emitCss`, component CSS is emitted as CSS files that Vite adds to the document, so shadow roots never see it. For custom elements, compile with `owt({ emitCss: false })`, import other CSS with `?inline` and pass it as `styles` (`import css from './counter.css?inline'`), or use `shadow: false`.
+
 ## Runtime API
 
 Everything is exported from `owt`, except the built-in transitions (`owt/transition`).
@@ -545,13 +613,14 @@ Everything is exported from `owt`, except the built-in transitions (`owt/transit
 | `tick()` / `flushSync()` | wait for / force pending DOM updates (updates are applied in a microtask) |
 | `createContext<T>()`, `setContext(key, value)`, `getContext(key)` | values provided to descendants |
 | `Portal` | render children elsewhere |
+| `defineElement(tag, Component, { props?, shadow?, styles? })` | register the component as a custom element, returns its class (see [Custom elements](#custom-elements)) |
 | `Defer` | render children later: `on="idle"` (default), `"viewport"`, `"interaction"`, `"hover"`, a delay in ms or a condition; `slot placeholder { }` meanwhile |
 | `selector(() => selectedId)` | `isSelected(key)` checks that only update the keys that changed (large lists) |
 | `uid(prefix?)` | unique id for `id` / `for` / `aria-*` attributes |
 | `resource(fetcher)`, `resource(source, fetcher, { initialValue? })` | reactive async data: `value`, `loading`, `error`, `state`, `refetch()`, `mutate(value)` |
 | `lazy(() => import('./Chart.owt'), 'Chart')` | code-split component, loaded the first time it renders (`Chart.preload()` starts loading early) |
 | `range(a, b)`, `rev(list)` | helpers behind `a..b` and `rev` |
-| types | `Component<P>`, `Snippet<A>`, `LoopMeta`, `Action<E, P>`, `Transition<E, P>`, `TransitionConfig` |
+| types | `Component<P>`, `Snippet<A>`, `LoopMeta`, `Action<E, P>`, `Transition<E, P>`, `TransitionConfig`, `ElementOptions<P>` |
 
 ### Async data and code splitting
 
