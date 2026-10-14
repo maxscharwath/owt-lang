@@ -139,6 +139,8 @@ importers:
         specifier: ^8.3.4
         version: 8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.20.5)(yaml@2.8.1)
 
+  packages/create-owt: {}
+
   packages/owt: {}
 
   packages/owt-ast:

@@ -35,6 +35,7 @@ A rewrite of the whole toolchain. Migration notes from 0.x are in [spec.md](spec
 - `mount`, `effect`, `watch`, `onMount`, `onDestroy`, `batch`, `tick`, `flushSync`, context, `reactive` stores.
 - `resource()` for async data (it aborts outdated requests), `lazy()` components, `<Defer on="viewport">`, `selector()`, `uid()`.
 - `defineElement()`: OWT components as Web Components (typed properties, attributes, events, slots, shadow DOM styles).
+- `@owt/router`: typed client-side router (params typed from patterns, typed `Link` / `navigate` / `href`, nested layouts, lazy routes and preloading, async guards, history / hash mode, scroll restoration, View Transitions).
 
 ### Compiler (`@owt/compiler`)
 

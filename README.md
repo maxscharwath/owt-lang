@@ -69,6 +69,7 @@ You won't find hooks, dependency arrays, `$` prefixes or a virtual DOM here. A c
   - async data with `resource()` (aborts outdated requests), code-split `lazy()` components and `<Defer on="viewport">` blocks;
   - `selector()` for O(1) selection in large lists, `uid()` for accessible ids;
   - Web Components: `defineElement('my-counter', Counter, { props: { value: Number } })` makes any component usable from plain HTML or other frameworks;
+  - a typed router, [`@owt/router`](docs/router.md) (about 4 KB). Params are inferred from patterns (`'/users/:id'` gives `{ id: string }`). `<Link to params>` and `navigate()` only accept existing routes with the right params. It also has lazy routes, layouts, guards and View Transitions;
   - scoped CSS with `:global`, and compile-time warnings for selectors that match nothing.
 - **Compile-time checks**: 12 accessibility rules (missing `alt`, click handlers without keyboard access, unknown ARIA attributes and roles with "did you mean"…), unused CSS selectors and unreachable `match` cases. They show up in the editor and in Vite, and `<!-- owt-ignore code -->` silences one.
 - **First-class tooling**:
@@ -295,6 +296,7 @@ Where the speed comes from:
 | [`@owt/typescript-plugin`](packages/owt-typescript-plugin) | Typed `.owt` imports in `.ts` files |
 | [`owt-tsc`](packages/owt-tsc) | `tsc` with `.owt` support for CI |
 | [`create-owt`](packages/create-owt) | `npm create owt@latest`: new app from a template |
+| [`@owt/router`](packages/owt-router) | Typed client-side router ([guide](docs/router.md)) |
 | [VS Code extension](packages/owt-vscode) | Language client, TextMate grammar, snippets, compiled-output and virtual-code previews |
 | [JetBrains plugin](packages/owt-jetbrains) | File type, highlighting and LSP integration for IntelliJ IDEA, WebStorm and other JetBrains IDEs 2025.2+ |
 
