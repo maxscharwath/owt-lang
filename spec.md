@@ -737,7 +737,7 @@ OWT is null-safe when the project uses `"strict": true`, or at least `"strictNul
 
 | Package | Purpose |
 |---|---|
-| `owt` | runtime (≈7 KB gzipped for a typical app) |
+| `owt` | runtime (≈7.5 KB gzipped for a typical app) |
 | `@owt/vite` | Vite 7/8 plugin: compilation, scoped CSS modules, HMR that keeps state of unaffected components, error overlay with code frames |
 | `@owt/router` | typed client-side router: typed params and links, nested layouts, lazy routes, guards, history/hash modes ([guide](docs/router.md)) |
 | `@owt/compiler` | `compile(source, { filename, dev, hmr, css })` for other build tools |

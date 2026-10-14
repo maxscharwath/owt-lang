@@ -59,4 +59,4 @@ A rewrite of the whole toolchain. Migration notes from 0.x are in [spec.md](spec
 
 ### Performance
 
-A js-framework-benchmark style comparison is in [`benchmark/`](benchmark). OWT is faster than Vue 3.5 and React 19 overall, with a runtime of about 7 KB gzipped. Numbers are in the [README](README.md#performance).
+A js-framework-benchmark style comparison is in [`benchmark/`](benchmark). OWT is faster than Vue 3.5 and React 19 overall, with a runtime of about 7.5 KB gzipped. Numbers are in the [README](README.md#performance).

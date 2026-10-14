@@ -42,7 +42,7 @@ You won't find hooks, dependency arrays, `$` prefixes or a virtual DOM here. A c
 
 ## Highlights
 
-- **Fast**: in a js-framework-benchmark style suite, OWT is faster than Vue 3.5 on every operation and faster than React 19 overall. It spends the least JavaScript time of the three on every operation. A typical app's runtime is about **7 KB gzipped**. See [Performance](#performance).
+- **Fast**: in a js-framework-benchmark style suite, OWT is faster than Vue 3.5 on every operation and faster than React 19 on all but one, which is a tie. Its geometric mean is 1.15× vanilla JS, against 1.33× for Vue and 1.64× for React. A typical app's runtime is about **7.5 KB gzipped**. See [Performance](#performance).
 - **Typed end to end and null-safe**:
   - Props, generics, slots, events and bindings are type-checked, in markup too. Editors flag a wrong prop type, an unknown attribute or an assignment to a `val`, and `owt-tsc` reports the same errors in CI.
   - `null` and `undefined` must be handled before use: `if (val user = find(id))` renders only with a value, and an uninitialized `var` must allow `undefined`.
@@ -255,21 +255,22 @@ export const total = computed(() => cart.items.reduce((sum, i) => sum + i.price,
 <!-- benchmark:start -->
 | Benchmark | vanilla | Vue 3.5 | React 19 | **OWT** |
 |:---|---:|---:|---:|---:|
-| create 1,000 rows | 112.7 | 144.3 (1.28) | 146.8 (1.30) | **121.5 (1.08)** |
-| replace all 1,000 rows | 118.0 | 159.5 (1.35) | 172.3 (1.46) | **139.8 (1.19)** |
-| partial update (every 10th row, 4x CPU slowdown) | 85.6 | 112.1 (1.31) | 100.8 (1.18) | **97.2 (1.13)** |
-| select row (4x CPU slowdown) | 33.6 | 60.0 (1.78) | **41.7 (1.24)** | 42.5 (1.26) |
-| swap rows (4x CPU slowdown) | 86.4 | 109.2 (1.26) | 722.0 (8.36) | **90.7 (1.05)** |
-| remove row (4x CPU slowdown) | 138.9 | 161.4 (1.16) | **147.3 (1.06)** | 150.5 (1.08) |
-| create 10,000 rows | 1121.8 | 1276.5 (1.14) | 1479.9 (1.32) | **1209.0 (1.08)** |
-| append 1,000 rows to 1,000 | 143.4 | 176.3 (1.23) | 170.6 (1.19) | **160.8 (1.12)** |
-| clear 1,000 rows | 10.4 | 13.1 (1.26) | 17.6 (1.69) | **12.2 (1.17)** |
-| **geometric mean** | 1.00 | 1.30 | 1.59 | **1.13** |
-| memory after creating 1,000 rows (MB) | 2.12 | 4.12 | 4.36 | **2.95** |
-| JS bundle, gzip | 1.2 KiB | 24.8 KiB | 67.0 KiB | **6.9 KiB** |
+| create 1,000 rows | 102.6 | 130.0 (1.27) | 129.0 (1.26) | **125.7 (1.23)** |
+| replace all 1,000 rows | 112.6 | 157.8 (1.40) | 161.2 (1.43) | **132.5 (1.18)** |
+| partial update (every 10th row, 4x CPU slowdown) | 74.5 | 102.3 (1.37) | 88.5 (1.19) | **87.6 (1.18)** |
+| select row (4x CPU slowdown) | 32.7 | 56.5 (1.73) | 40.8 (1.25) | **33.8 (1.03)** |
+| swap rows (4x CPU slowdown) | 70.7 | 89.3 (1.26) | 656.8 (9.29) | **73.6 (1.04)** |
+| remove row (4x CPU slowdown) | 124.1 | 152.7 (1.23) | 147.2 (1.19) | **145.1 (1.17)** |
+| create 10,000 rows | 1091.9 | 1269.1 (1.16) | 1432.1 (1.31) | **1200.5 (1.10)** |
+| append 1,000 rows to 1,000 | 120.6 | 161.9 (1.34) | **151.8 (1.26)** | 151.9 (1.26) |
+| clear 1,000 rows | 9.7 | 12.0 (1.24) | 17.0 (1.76) | **11.1 (1.15)** |
+| **geometric mean** | 1.00 | 1.33 | 1.64 | **1.15** |
+| JS time, select row (ms) | 1.5 | 23.0 | 10.9 | **2.5** |
+| memory after creating 1,000 rows (MB) | 2.12 | 4.13 | 4.36 | **3.12** |
+| JS bundle, gzip | 1.2 KiB | 24.8 KiB | 67.0 KiB | **7.5 KiB** |
 <!-- benchmark:end -->
 
-Headless Chromium 141 on 4 Xeon cores. Select and remove are within run-to-run noise of React: their standard deviation is 7 to 15 ms. On every operation, OWT spends less time in JavaScript than Vue and React; the rest of each duration is the browser's style, layout and paint. Run it yourself with `pnpm bench`. The full report, with every sample and the machine details, is in [`benchmark/results/latest.md`](benchmark/results/latest.md).
+Headless Chromium 141 on 4 Xeon cores. OWT is faster than Vue on every operation and faster than React on all but one: "append rows" is a tie (0.1 ms, well within run-to-run noise). On every operation OWT also spends the least time in JavaScript of the three; the rest of each duration is the browser's style, layout and paint. Run it yourself with `pnpm bench`. The full report, with every sample and the machine details, is in [`benchmark/results/latest.md`](benchmark/results/latest.md).
 
 Where the speed comes from:
 
@@ -282,6 +283,7 @@ Where the speed comes from:
   - Reactive arrays are tracked with one dependency, not one per item.
 - **Event delegation.** One document listener per event type, so thousands of rows cost no listeners.
 - **No component re-execution.** Props are lazy getters, so a child only updates the nodes that read a changed prop.
+- **Compile-time selection.** `class:selected={row.id === selectedId}` in a list compiles to a selector, so changing the selection updates two rows instead of all of them.
 
 ## Tooling
 
