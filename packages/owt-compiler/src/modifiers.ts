@@ -68,6 +68,21 @@ function isAlphanumeric(s: string): boolean {
   return s.length === 1 && ((c >= 48 && c <= 57) || (c >= 97 && c <= 122));
 }
 
+/** Event of an `onX` attribute name: `onKeyDown` → keydown, `onClickCapture` → click (capture phase). */
+export function eventInfo(name: string): { type: string; capture: boolean } | null {
+  if (name.length > 2 && name.startsWith('on') && name.charCodeAt(2) >= 65 && name.charCodeAt(2) <= 90) {
+    let base = name.slice(2);
+    let capture = false;
+    if (base.length > 7 && base.endsWith('Capture') && base !== 'GotPointerCapture' && base !== 'LostPointerCapture') {
+      base = base.slice(0, -7);
+      capture = true;
+    }
+    const type = base.toLowerCase();
+    return { type: type === 'doubleclick' ? 'dblclick' : type, capture };
+  }
+  return null;
+}
+
 /** Split `onClick|once|preventDefault` into the attribute name and its modifiers. */
 export function splitModifiers(name: string): { name: string; modifiers: string[] } {
   const parts = name.split('|');

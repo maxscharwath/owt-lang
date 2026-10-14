@@ -1,4 +1,5 @@
 import { LineMap, codeFrame, type Diagnostic } from '@owt/ast';
+import type { IgnoreRange } from './ignore';
 
 /** Error thrown by `compile()`; shaped for Vite's error overlay (`loc`, `frame`). */
 export class CompileError extends Error {
@@ -28,6 +29,8 @@ export class Reporter {
   constructor(
     private readonly source: string,
     private readonly filename: string,
+    /** where `<!-- owt-ignore code -->` comments silence warnings */
+    private readonly ignores: readonly IgnoreRange[] = [],
   ) {}
 
   error(code: string, message: string, start: number, end = start + 1): never {
@@ -35,6 +38,7 @@ export class Reporter {
   }
 
   warn(code: string, message: string, start: number, end = start + 1): void {
+    if (this.ignores.some((r) => start >= r.start && start < r.end && r.codes.includes(code))) return;
     this.warnings.push({ code, message, start, end, severity: 'warning' });
   }
 }

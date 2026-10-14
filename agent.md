@@ -36,6 +36,7 @@ Conventions for this repository. They are intentionally short and opinionated.
 - `walk.ts`: scope-aware Babel walker (free reads/writes); `traverse.ts`: enumerate a component's JS.
 - `bindings.ts`: how each name compiles (`state`, `derived`, `prop`, `signal`, `path`, `plain`).
 - `css.ts`: scoped CSS; `html.ts`: HTML knowledge (namespaces, entities, whitespace, nesting rules).
+- `a11y.ts`: accessibility warnings, checked once per HTML element; `ignore.ts`: `<!-- owt-ignore code -->` comments that silence warnings.
 - `chunks.ts`: chunk trees + `CodeWriter` (source maps); `errors.ts`: `CompileError` (Vite overlay shape).
 
 Principles: single responsibility per module, explicit inputs (contexts are passed, not global), generated names come from `FileContext.name()` so they never clash with user code.

@@ -13,6 +13,7 @@ OWT is a typed UI language: TypeScript for logic, HTML for markup, two keywords 
 - [Using components](#using-components)
 - [Special elements](#special-elements)
 - [Styles](#styles)
+- [Accessibility checks](#accessibility-checks)
 - [Runtime API](#runtime-api)
 - [TypeScript](#typescript)
 - [Tooling](#tooling)
@@ -495,6 +496,34 @@ export component Card() {
 - `:global(...)` (or `:global` followed by a selector) opts out; `<style global>` makes the whole block global.
 - Nesting (`&`), `@media`, `@supports`, `@container`, `@layer` are supported; `@keyframes` and `@font-face` are left untouched.
 - With Vite, component CSS goes through the normal CSS pipeline (PostCSS, Tailwind, minification, extraction, HMR).
+
+## Accessibility checks
+
+The compiler warns about common accessibility mistakes in markup. These are warnings, never errors: Vite prints them and the language server shows them in the editor. Only HTML elements are checked (components are not), and only what is known at compile time: an attribute written as an expression (`alt={caption}`, `href={url}`, `role={kind}`) is assumed to be correct, and a spread (`{...attrs}`) turns off the checks for missing attributes, since it may provide them.
+
+| Code | Warns about | Satisfied by |
+|---|---|---|
+| `a11y-missing-alt` | `<img>`, `<area>` and `<input type="image">` without `alt` | `alt="Red bicycle"`, or `alt=""` for a decorative image; `aria-label` also works on `<area>` and `<input type="image">` |
+| `a11y-missing-content` | `<a>`, `<button>` and `<h1>`–`<h6>` without content | text, `{expressions}`, child elements, components or blocks; `aria-label` / `aria-labelledby` (and `title` on `<a>` / `<button>`) |
+| `a11y-invalid-href` | `<a>` without `href`, or with `href="#"`, `href=""` or `href="javascript:…"` | a real URL or `#id`; `id` / `name` for a scroll target; a `<button>` for actions |
+| `a11y-click-without-key` | `onClick` (with or without modifiers) on a non-interactive element such as `<div>`, `<span>` or `<li>`, without a keyboard handler | `onKeyDown` / `onKeyUp` / `onKeyPress` (modifiers allowed: `onKeyDown\|enter={open}`), or a `<button>` |
+| `a11y-interactive-without-role` | `onClick` on a non-interactive element without `role` and `tabindex` | `role="button" tabindex="0"`, or a `<button>` |
+| `a11y-autofocus` | `autofocus` | nothing: avoid it, except inside a `<dialog>` where it is accepted |
+| `a11y-positive-tabindex` | a `tabindex` above 0 | `tabindex="0"` or `tabindex="-1"` |
+| `a11y-unknown-aria` | an `aria-*` attribute that WAI-ARIA 1.2 does not define (with a "Did you mean" hint) | a valid name: `aria-labelledby`, not `aria-labeledby` |
+| `a11y-unknown-role` | a `role` value that WAI-ARIA 1.2 (or DPUB-ARIA / Graphics-ARIA) does not define, or an abstract role such as `widget` | a concrete role |
+| `a11y-label-without-control` | `<label>` without `for` and without a control inside | `for="email"` (or `htmlFor`), or an `<input>`, `<select>`, `<textarea>`, `<button>`, `<meter>`, `<output>`, `<progress>`, component or `<slot>` inside |
+| `a11y-media-captions` | `<video>` without captions | `<track kind="captions" src="…">` inside, or `muted` |
+| `a11y-distracting` | `<marquee>`, `<blink>` | removing them |
+
+Interactive elements are `<button>`, `<input>`, `<select>`, `<textarea>`, `<label>`, `<option>`, `<summary>`, `<details>`, `<a>` / `<area>` with an `href`, `<audio>` / `<video>` with `controls`, `contenteditable` elements and custom elements (`<my-toggle>`). The click checks also skip elements with `role="presentation"`, `role="none"` or `aria-hidden="true"` (a modal backdrop that closes on click while keyboard users press Escape), and listeners without a handler such as `onClick|stopPropagation`.
+
+A comment starting with `owt-ignore` silences the listed warnings (codes separated by spaces or commas) for the next element, its content included. It works for every compiler warning, not only accessibility ones:
+
+```owt
+<!-- owt-ignore a11y-autofocus -->
+<input type="search" placeholder="Search the docs" autofocus />
+```
 
 ## Runtime API
 
