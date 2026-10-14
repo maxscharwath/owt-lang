@@ -80,3 +80,4 @@ dist
 packages/owt-compiler/test/.tmp/
 *.vsix
 examples/showcase/src/__docs/
+.claude/worktrees/
