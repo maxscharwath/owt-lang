@@ -64,6 +64,10 @@ export interface Helpers {
   await<T>(value: T, pending: () => void, then: (value: Awaited<T>) => void, caught: (error: unknown) => void): void;
   /** `reset` parameter of `catch (error, reset)` */
   readonly reset: () => void;
+  /** element of an array pattern (`[first, second]`): the pattern checked the length */
+  at<T extends readonly unknown[], I extends number>(array: T, index: I): number extends T['length'] ? T[number] : T[I];
+  /** end of a `match` without `default`: fails to type-check when a case is missing */
+  exhaustive(value: never): void;
   /** `<slot name="x" ...args>` */
   slot<A>(snippet: Snippet<A> | null | undefined, args: A): void;
   /** `use:action={params}` */

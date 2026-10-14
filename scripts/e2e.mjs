@@ -70,6 +70,17 @@ const scenarios = {
     });
     assert(leaving.connected && leaving.animations === 1, 'removed fruit stays while its outro plays');
     await page.waitForFunction(() => document.querySelectorAll('.list li').length === 3);
+    // pattern matching + null-safe if (val ...)
+    const shape = async (id) => {
+      await page.click(`#shape-${id}`);
+      return (await text('#shape')).replace(/\s+/g, ' ').trim();
+    };
+    assert((await text('#shape')).includes('Circle of area 28.3'), 'match binds radius');
+    assert((await shape('square')) === 'Square of side 4', 'match guard');
+    assert((await shape('rect')) === 'Rectangle 6×2', 'match falls through a failed guard');
+    assert((await shape('group')) === 'Group: a circle and 1 more', 'array pattern with rest');
+    assert((await shape('empty')) === 'Empty group', 'broader case after a partial one');
+    assert((await shape('none')) === 'No shape called “none”', 'if (val ...) else branch');
     // async data
     await page.waitForSelector('.user strong');
     assert((await text('.user strong')) === 'User #1', 'await then branch');

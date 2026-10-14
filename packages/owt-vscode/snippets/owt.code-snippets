@@ -204,6 +204,21 @@
     "description": "Toggle a class",
     "body": ["class:${1:active}={${2:condition}}$0"]
   },
+  "match block": {
+    "prefix": "match",
+    "description": "Pattern matching (exhaustive without default)",
+    "body": [
+      "match (${1:value}) {",
+      "\tcase { ${2:kind}: '${3:a}', ${4:field} } { $0 }",
+      "\tcase _ { }",
+      "}"
+    ]
+  },
+  "if val block": {
+    "prefix": ["ifval", "if-val"],
+    "description": "Render when a value is not null/undefined, with the value bound",
+    "body": ["if (val ${1:name} = ${2:value}) {", "\t$0", "}"]
+  },
   "transition directive": {
     "prefix": ["transition", "transition:"],
     "description": "Animate an element in and out (import from 'owt/transition')",

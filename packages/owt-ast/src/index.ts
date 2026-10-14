@@ -124,6 +124,7 @@ export type TemplateNode =
   | IfBlock
   | ForBlock
   | SwitchBlock
+  | MatchBlock
   | AwaitBlock
   | TryBlock
   | KeyBlock
@@ -201,6 +202,8 @@ export type IfBlock = Span & {
 export type IfBranch = Span & {
   test: t.Expression | null;
   testSpan: Span;
+  /** `if (val user = findUser(id))`: the branch renders when the value is not null/undefined */
+  binding: { name: string; span: Span } | null;
   body: Body;
 };
 
@@ -235,6 +238,27 @@ export type SwitchBlock = Span & {
 
 export type SwitchCase = Span & {
   tests: t.Expression[];
+  guard: t.Expression | null;
+  body: Body;
+};
+
+/**
+ * `match (value) { case { kind: 'circle', radius } { ... } case _ { ... } }`:
+ * patterns are parsed as expressions (object / array literals, literals,
+ * identifiers) and interpreted as destructuring patterns with literal checks.
+ */
+export type MatchBlock = Span & {
+  type: 'MatchBlock';
+  subject: t.Expression | null;
+  subjectSpan: Span;
+  cases: MatchCase[];
+  /** `default { }` */
+  fallback: Body | null;
+};
+
+export type MatchCase = Span & {
+  patterns: t.Expression[];
+  patternsSpan: Span;
   guard: t.Expression | null;
   body: Body;
 };
@@ -297,6 +321,7 @@ export const isStatement = (n: { type: string }): n is Statement => n.type === '
 export const isIfBlock = (n: { type: string }): n is IfBlock => n.type === 'IfBlock';
 export const isForBlock = (n: { type: string }): n is ForBlock => n.type === 'ForBlock';
 export const isSwitchBlock = (n: { type: string }): n is SwitchBlock => n.type === 'SwitchBlock';
+export const isMatchBlock = (n: { type: string }): n is MatchBlock => n.type === 'MatchBlock';
 export const isAwaitBlock = (n: { type: string }): n is AwaitBlock => n.type === 'AwaitBlock';
 export const isTryBlock = (n: { type: string }): n is TryBlock => n.type === 'TryBlock';
 export const isKeyBlock = (n: { type: string }): n is KeyBlock => n.type === 'KeyBlock';
@@ -311,6 +336,7 @@ const TEMPLATE_TYPES = new Set([
   'IfBlock',
   'ForBlock',
   'SwitchBlock',
+  'MatchBlock',
   'AwaitBlock',
   'TryBlock',
   'KeyBlock',
@@ -330,6 +356,7 @@ export function childBodies(node: TemplateNode): TemplateNode[][] {
     case 'ForBlock':
       return [node.body.children, ...(node.empty ? [node.empty.children] : [])];
     case 'SwitchBlock':
+    case 'MatchBlock':
       return [...node.cases.map((c) => c.body.children), ...(node.fallback ? [node.fallback.children] : [])];
     case 'AwaitBlock':
       return [
@@ -415,3 +442,5 @@ export function codeFrame(source: string, start: number, end = start, context = 
   }
   return out.join('\n');
 }
+
+export { analyzePattern, isPathKey, renderPatternPath, type PatternBinding, type PatternCheck, type PatternError, type PatternInfo, type PatternKeys, type PatternPath } from './patterns';

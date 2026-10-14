@@ -14,6 +14,7 @@ beforeAll(async () => {
   await server.initialize(URI.file(fixture).toString(), {});
   await server.openTextDocument(resolve(fixture, 'src/App.owt'), 'owt');
   await server.openTextDocument(resolve(fixture, 'src/Errors.owt'), 'owt');
+  await server.openTextDocument(resolve(fixture, 'src/Patterns.owt'), 'owt');
 }, 60000);
 
 afterAll(async () => {
@@ -46,6 +47,24 @@ describe('language server', () => {
     const errors = await messages('src/Errors.owt');
 
     expect(errors).toContain('Missing closing tag </span>');
+  }, 30000);
+
+  it('reports match blocks that miss a case', async () => {
+    const errors = await messages('src/Patterns.owt');
+
+    expect(errors.some((m) => m.includes(`'{ kind: "square"; size: number; }' is not assignable to parameter of type 'never'`))).toBe(true);
+  }, 30000);
+
+  it('reports state that starts undefined but whose type does not allow it', async () => {
+    const errors = await messages('src/Patterns.owt');
+
+    expect(errors).toContain("Type 'undefined' is not assignable to type 'HTMLElement'.");
+  }, 30000);
+
+  it('narrows pattern bindings and if (val ...) bindings', async () => {
+    const errors = await messages('src/Patterns.owt');
+
+    expect(errors).toHaveLength(2);
   }, 30000);
 
   it('completes object members inside expressions', async () => {

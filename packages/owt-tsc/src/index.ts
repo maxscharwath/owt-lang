@@ -14,5 +14,15 @@ export function run(): void {
   } catch {
     tscPath = createRequire(__filename).resolve('typescript/lib/tsc');
   }
-  runTsc(tscPath, ['.owt'], (ts) => [createOwtLanguagePlugin<string>(ts)]);
+  let warned = false;
+  runTsc(tscPath, ['.owt'], (ts, options) => {
+    const compilerOptions = options.options;
+    if (!warned && !(compilerOptions.strictNullChecks ?? compilerOptions.strict ?? false)) {
+      warned = true;
+      process.stderr.write(
+        'owt-tsc: warning: `strictNullChecks` is off. OWT code is only null-safe with "strict": true (or "strictNullChecks": true) in tsconfig.json.\n',
+      );
+    }
+    return [createOwtLanguagePlugin<string>(ts)];
+  });
 }

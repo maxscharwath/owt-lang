@@ -15,13 +15,15 @@ const KEYWORDS: Record<string, string> = {
   component: 'Declares a component: `export component Name(props: Props) { ... }`. Parameters can be the whole `props` object, a destructuring pattern, or named props `(title: string, size = 16)`.',
   var: 'Reactive state. Assigning (`count = 1`, `count++`) or mutating (`todos.push(x)`) updates everything that reads it.',
   val: 'Derived value, recomputed lazily when the `var`s / props it reads change. Read-only.',
-  if: 'Conditional markup: `if (cond) { ... } else if (other) { ... } else { ... }`. Must start a line.',
+  if: 'Conditional markup: `if (cond) { ... } else if (other) { ... } else { ... }`. `if (val user = find(id)) { ... }` renders when the value is not null/undefined and binds it, narrowed. Must start a line.',
   for: 'List rendering: `for (item of items, { index, first, last }; track item.id) { ... } empty { ... }`. Supports ranges `1..10` and `rev`.',
   empty: 'Rendered when the `for` list is empty.',
   track: 'Key used to match list items between updates: `for (todo of todos; track todo.id)`.',
   rev: 'Iterate in reverse: `for (i of rev 1..10)`.',
   switch: 'Markup switch: `switch (value) { case "a", "b" { ... } case "c" if (cond) { ... } default { ... } }`.',
-  case: 'A `switch` branch matching one or more values, with an optional `if (guard)`.',
+  case: 'A `switch` / `match` branch: one or more values or patterns, with an optional `if (guard)`.',
+  match: 'Pattern matching: `match (shape) { case { kind: "circle", radius } { ... } case [first, ...rest] { ... } case _ { ... } }`. Without `default`, every possible value must be handled (checked by TypeScript).',
+  default: 'Rendered when no `case` of a `switch` / `match` applies.',
   await: 'Async markup: `await (promise) { pending } then (value) { ... } catch (error) { ... }`.',
   then: 'Rendered with the resolved value of an `await` block.',
   catch: 'Rendered with the error of an `await` block, or as the fallback of a `try` error boundary: `catch (error, reset)`.',
@@ -59,6 +61,20 @@ function wordAt(text: string, offset: number): string {
   return text.slice(start, end);
 }
 
+/** `strictNullChecks` of the TypeScript project (null when unknown). */
+function strictNullChecks(project: object): boolean | null {
+  if (!('typescript' in project)) return null;
+  const ts = project.typescript;
+  if (typeof ts !== 'object' || ts === null || !('languageServiceHost' in ts)) return null;
+  const host = ts.languageServiceHost;
+  if (typeof host !== 'object' || host === null || !('getCompilationSettings' in host) || typeof host.getCompilationSettings !== 'function') return null;
+  const options: unknown = host.getCompilationSettings();
+  if (typeof options !== 'object' || options === null) return null;
+  const explicit = 'strictNullChecks' in options ? options.strictNullChecks : undefined;
+  const strict = 'strict' in options ? options.strict : undefined;
+  return explicit === true || (explicit === undefined && strict === true);
+}
+
 export function createOwtService(): LanguageServicePlugin {
   return {
     name: 'owt',
@@ -71,7 +87,7 @@ export function createOwtService(): LanguageServicePlugin {
       documentFormattingProvider: true,
       autoInsertionProvider: { triggerCharacters: ['>'] },
     },
-    create(): LanguageServicePluginInstance {
+    create(context): LanguageServicePluginInstance {
       const cache = new WeakMap<TextDocument, { version: number; program: Program }>();
       const programOf = (doc: TextDocument): Program | null => {
         if (doc.languageId !== 'owt') return null;
@@ -88,13 +104,26 @@ export function createOwtService(): LanguageServicePlugin {
           const program = programOf(doc);
           if (program === null) return null;
           const out: vscode.Diagnostic[] = [];
+          if (strictNullChecks(context.project) === false) {
+            const first = components(program)[0];
+            const at = first === undefined ? 0 : first.nameSpan.start;
+            out.push({
+              range: range(doc, at, first === undefined ? 0 : first.nameSpan.end),
+              message: 'strictNullChecks is off: OWT code is only null-safe with "strict": true (or "strictNullChecks": true) in tsconfig.json.',
+              severity: 2,
+              source: 'owt',
+              code: 'not-null-safe',
+            });
+          }
+          let syntaxErrors = 0;
           for (const d of program.diagnostics) {
             // Babel syntax errors inside expressions are reported by TypeScript itself
             if (d.code.includes('-') || d.code === d.code.toLowerCase()) {
+              syntaxErrors++;
               out.push({ range: range(doc, d.start, d.end), message: d.message, severity: d.severity === 'error' ? 1 : 2, source: 'owt', code: d.code });
             }
           }
-          if (out.length === 0) {
+          if (syntaxErrors === 0) {
             try {
               const result = compile(doc.getText(), { filename: doc.uri, sourcemap: false });
               for (const w of result.warnings) out.push({ range: range(doc, w.start, w.end), message: w.message, severity: 2, source: 'owt', code: w.code });

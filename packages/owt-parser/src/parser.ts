@@ -29,6 +29,8 @@ import type {
   IfBlock,
   IfBranch,
   KeyBlock,
+  MatchBlock,
+  MatchCase,
   NamedParam,
   Program,
   Script,
@@ -94,7 +96,7 @@ const SPECIAL_ELEMENTS: Record<string, ElementKind> = {
   body: 'body',
   head: 'head',
 };
-const BLOCK_KEYWORDS = new Set(['if', 'for', 'switch', 'await', 'try', 'key']);
+const BLOCK_KEYWORDS = new Set(['if', 'for', 'switch', 'match', 'await', 'try', 'key']);
 const RESERVED_PARAM_ERRORS = ['Unexpected keyword', 'Unexpected reserved word', 'cannot be used as an identifier'];
 
 type ChildMode = 'element' | 'block' | 'code';
@@ -589,6 +591,8 @@ class Parser {
         return this.parseFor(pos, ctx);
       case 'switch':
         return this.parseSwitch(pos, ctx);
+      case 'match':
+        return this.parseMatch(pos, ctx);
       case 'await':
         return this.parseAwait(pos, ctx);
       case 'try':
@@ -645,9 +649,11 @@ class Parser {
     let p = skipTrivia(src, pos + 2);
     for (;;) {
       const { inner, after } = this.parens(p, 'if');
-      const test = this.expression(inner.start, inner.end);
+      const binding = this.ifBinding(inner);
+      const testSpan = binding === null ? inner : { start: binding.valueStart, end: inner.end };
+      const test = this.expression(testSpan.start, testSpan.end);
       const body = this.body(after, 'if', ctx);
-      branches.push({ test, testSpan: inner, body, start: branchStart, end: body.end });
+      branches.push({ test, testSpan, binding: binding === null ? null : { name: binding.name, span: binding.span }, body, start: branchStart, end: body.end });
       const elsePos = this.continuation(body.end, 'else');
       if (elsePos < 0) break;
       p = skipTrivia(src, elsePos + 4);
@@ -662,6 +668,22 @@ class Parser {
     }
     const last = alternate ?? branches[branches.length - 1]!.body;
     return { type: 'IfBlock', branches, alternate, start: pos, end: last.end };
+  }
+
+  /** `val name = ` at the start of an if condition (null-safe binding). */
+  private ifBinding(inner: Span): { name: string; span: Span; valueStart: number } | null {
+    const src = this.src;
+    const p = skipTrivia(src, inner.start, inner.end);
+    if (readIdentifier(src, p) !== 'val') return null;
+    const n = skipTrivia(src, p + 3, inner.end);
+    const name = readIdentifier(src, n);
+    if (name === '' || n === p + 3) return null;
+    const eq = skipTrivia(src, n + name.length, inner.end);
+    if (src[eq] !== '=' || src[eq + 1] === '=') {
+      this.error('expected-initializer', `Expected '=' after val ${name}: if (val ${name} = value) { ... }`, n, n + name.length);
+      return null;
+    }
+    return { name, span: { start: n, end: n + name.length }, valueStart: eq + 1 };
   }
 
   private parseFor(pos: number, ctx: ChildContext): ForBlock {
@@ -812,6 +834,93 @@ class Parser {
       }
     }
     return { type: 'SwitchBlock', discriminant, discriminantSpan: inner, cases, fallback, start: pos, end: p };
+  }
+
+  private parseMatch(pos: number, ctx: ChildContext): MatchBlock {
+    const src = this.src;
+    const { inner, after } = this.parens(skipTrivia(src, pos + 5), 'match');
+    const subject = this.expression(inner.start, inner.end);
+    const cases: MatchCase[] = [];
+    let fallback: Body | null = null;
+    const done = (end: number): MatchBlock => ({ type: 'MatchBlock', subject, subjectSpan: inner, cases, fallback, start: pos, end });
+    let p = skipTrivia(src, after);
+    if (src[p] !== '{') {
+      this.error('expected-brace', "Expected '{' after match (...)", p);
+      return done(p);
+    }
+    p++;
+    for (;;) {
+      p = skipTrivia(src, p);
+      if (p >= this.len) {
+        this.error('unclosed-block', "Missing '}' to close match", pos, pos + 5);
+        return done(p);
+      }
+      if (src[p] === '}') return done(p + 1);
+      const word = readIdentifier(src, p);
+      if (word === 'case') {
+        const header = this.matchCaseHeader(p + 4);
+        if (header === null) {
+          this.error('expected-brace', "Expected '{' after case pattern", p, p + 4);
+          return done(this.len);
+        }
+        const patternsSpan = { start: p + 4, end: header.patternsEnd };
+        const patterns = this.caseTests(patternsSpan.start, patternsSpan.end);
+        let guard: t.Expression | null = null;
+        if (header.guard !== null) guard = this.expression(header.guard.start, header.guard.end);
+        const body = this.body(header.body, 'case', ctx);
+        cases.push({ patterns, patternsSpan, guard, body, start: p, end: body.end });
+        p = body.end;
+      } else if (word === 'default') {
+        fallback = this.body(p + 7, 'default', ctx);
+        fallback.start = p;
+        p = fallback.end;
+      } else {
+        this.error('expected-case', "Expected 'case' or 'default' inside match", p);
+        const next = src.indexOf('\n', p);
+        p = next < 0 ? this.len : next + 1;
+      }
+    }
+  }
+
+  /**
+   * After `case`: find the end of the patterns, the optional `if (guard)` and
+   * the body brace. A `{` starts a pattern where an operand is expected (after
+   * `case`, `,` or an operator) and the body anywhere else.
+   */
+  private matchCaseHeader(pos: number): { patternsEnd: number; guard: Span | null; body: number } | null {
+    const scanner = new JsScanner(this.src, pos);
+    let operand = true;
+    let patternsEnd = -1;
+    let guard: Span | null = null;
+    for (;;) {
+      const tok = scanner.next();
+      if (tok.kind === 'eof') return null;
+      if (tok.kind === 'punct') {
+        if (tok.value === '{' && !operand) {
+          if (patternsEnd < 0) patternsEnd = tok.start;
+          return { patternsEnd, guard, body: tok.start };
+        }
+        if (tok.value === '(' || tok.value === '[' || tok.value === '{') {
+          const close = findClosing(this.src, tok.start);
+          if (close < 0) return null;
+          scanner.pos = close + 1;
+          operand = false;
+          continue;
+        }
+        operand = tok.value !== ')' && tok.value !== ']' && tok.value !== '}';
+        continue;
+      }
+      if (tok.kind === 'ident' && tok.value === 'if' && !operand && patternsEnd < 0) {
+        patternsEnd = tok.start;
+        const open = skipTrivia(this.src, tok.end);
+        const { inner, after } = this.parens(open, 'case ... if');
+        guard = inner;
+        scanner.pos = after;
+        operand = false;
+        continue;
+      }
+      operand = false;
+    }
   }
 
   private caseTests(start: number, end: number): t.Expression[] {

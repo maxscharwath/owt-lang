@@ -93,7 +93,7 @@
           "name": "entity.name.type.alias.ts"
         }
       },
-      "end": "(?=[;}]|^\\s*$|^\\s*(?:abstract|async|\\bawait\\s+\\busing(?=\\s+(?!in\\b|of\\b(?!\\s*(?:of\\b|=)))[$_[:alpha:]])\\b\\b|break|case|catch|class|const|continue|declare|do|else|enum|export|finally|function|for|goto|if|import|interface|let|module|namespace|switch|return|throw|try|type|\\busing(?=\\s+(?!in\\b|of\\b(?!\\s*(?:of\\b|=)))[$_[:alpha:]])\\b|var|while)\\b|^\\s*(?:component|val|key|await)\\b|^\\s*<[A-Za-z!>/])",
+      "end": "(?=[;}]|^\\s*$|^\\s*(?:abstract|async|\\bawait\\s+\\busing(?=\\s+(?!in\\b|of\\b(?!\\s*(?:of\\b|=)))[$_[:alpha:]])\\b\\b|break|case|catch|class|const|continue|declare|do|else|enum|export|finally|function|for|goto|if|import|interface|let|module|namespace|switch|return|throw|try|type|\\busing(?=\\s+(?!in\\b|of\\b(?!\\s*(?:of\\b|=)))[$_[:alpha:]])\\b|var|while)\\b|^\\s*(?:component|val|key|await|match)\\b|^\\s*<[A-Za-z!>/])",
       "patterns": [
         {
           "include": "source.ts#comment"
@@ -111,7 +111,7 @@
               "name": "keyword.control.intrinsic.ts"
             }
           },
-          "end": "(?=[;}]|^\\s*$|^\\s*(?:abstract|async|\\bawait\\s+\\busing(?=\\s+(?!in\\b|of\\b(?!\\s*(?:of\\b|=)))[$_[:alpha:]])\\b\\b|break|case|catch|class|const|continue|declare|do|else|enum|export|finally|function|for|goto|if|import|interface|let|module|namespace|switch|return|throw|try|type|\\busing(?=\\s+(?!in\\b|of\\b(?!\\s*(?:of\\b|=)))[$_[:alpha:]])\\b|var|while)\\b|^\\s*(?:component|val|key|await)\\b|^\\s*<[A-Za-z!>/])",
+          "end": "(?=[;}]|^\\s*$|^\\s*(?:abstract|async|\\bawait\\s+\\busing(?=\\s+(?!in\\b|of\\b(?!\\s*(?:of\\b|=)))[$_[:alpha:]])\\b\\b|break|case|catch|class|const|continue|declare|do|else|enum|export|finally|function|for|goto|if|import|interface|let|module|namespace|switch|return|throw|try|type|\\busing(?=\\s+(?!in\\b|of\\b(?!\\s*(?:of\\b|=)))[$_[:alpha:]])\\b|var|while)\\b|^\\s*(?:component|val|key|await|match)\\b|^\\s*<[A-Za-z!>/])",
           "patterns": [
             {
               "include": "source.ts#type"
@@ -125,7 +125,7 @@
               "name": "keyword.operator.assignment.ts"
             }
           },
-          "end": "(?=[;}]|^\\s*$|^\\s*(?:abstract|async|\\bawait\\s+\\busing(?=\\s+(?!in\\b|of\\b(?!\\s*(?:of\\b|=)))[$_[:alpha:]])\\b\\b|break|case|catch|class|const|continue|declare|do|else|enum|export|finally|function|for|goto|if|import|interface|let|module|namespace|switch|return|throw|try|type|\\busing(?=\\s+(?!in\\b|of\\b(?!\\s*(?:of\\b|=)))[$_[:alpha:]])\\b|var|while)\\b|^\\s*(?:component|val|key|await)\\b|^\\s*<[A-Za-z!>/])",
+          "end": "(?=[;}]|^\\s*$|^\\s*(?:abstract|async|\\bawait\\s+\\busing(?=\\s+(?!in\\b|of\\b(?!\\s*(?:of\\b|=)))[$_[:alpha:]])\\b\\b|break|case|catch|class|const|continue|declare|do|else|enum|export|finally|function|for|goto|if|import|interface|let|module|namespace|switch|return|throw|try|type|\\busing(?=\\s+(?!in\\b|of\\b(?!\\s*(?:of\\b|=)))[$_[:alpha:]])\\b|var|while)\\b|^\\s*(?:component|val|key|await|match)\\b|^\\s*<[A-Za-z!>/])",
           "patterns": [
             {
               "include": "source.ts#type"
@@ -658,6 +658,9 @@
           "include": "#switch-block"
         },
         {
+          "include": "#match-block"
+        },
+        {
           "include": "#await-block"
         },
         {
@@ -686,6 +689,17 @@
         }
       },
       "patterns": [
+        {
+          "match": "(?<=\\()\\s*(val)\\s+([$_[:alpha:]][$_[:alnum:]]*)(?=\\s*=[^=])",
+          "captures": {
+            "1": {
+              "name": "storage.type.val.owt"
+            },
+            "2": {
+              "name": "variable.other.constant.owt"
+            }
+          }
+        },
         {
           "include": "source.ts#expression"
         }
@@ -1020,7 +1034,7 @@
           "name": "keyword.control.owt"
         }
       },
-      "end": "(?<=\\})",
+      "end": "(?<=\\})(?!\\s*(?:\\{|,|if\\b))",
       "patterns": [
         {
           "include": "source.ts#comment"
@@ -1037,7 +1051,7 @@
           "include": "#block-header"
         },
         {
-          "begin": "(?=\\{[^{}]*\\}\\s*(?:,|if\\b|\\{))",
+          "begin": "(?=\\{(?:[^{}]|\\{[^{}]*\\})*\\}\\s*(?:,|if\\b|\\{))",
           "end": "(?<=\\})",
           "patterns": [
             {
@@ -1091,6 +1105,51 @@
         },
         {
           "include": "#block-body"
+        }
+      ]
+    },
+    "match-block": {
+      "name": "meta.block.match.owt",
+      "begin": "(?:^|(?<=[>{]))\\s*(match)\\s*(?=\\()",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.owt"
+        }
+      },
+      "end": "(?<=\\})|(?=[^\\s({])",
+      "applyEndPatternLast": 1,
+      "patterns": [
+        {
+          "include": "source.ts#comment"
+        },
+        {
+          "include": "#block-header"
+        },
+        {
+          "name": "meta.block.match.body.owt",
+          "begin": "\\{",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.block.owt"
+            }
+          },
+          "end": "\\}",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.block.owt"
+            }
+          },
+          "patterns": [
+            {
+              "include": "source.ts#comment"
+            },
+            {
+              "include": "#switch-case"
+            },
+            {
+              "include": "#switch-default"
+            }
+          ]
         }
       ]
     }

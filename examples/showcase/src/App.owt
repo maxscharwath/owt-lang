@@ -6,6 +6,7 @@ import { Modal } from './Modal.owt'
 import { Greeting } from './Greeting.owt'
 import { UserCard } from './UserCard.owt'
 import { Unstable } from './Unstable.owt'
+import { Shapes } from './Shapes.owt'
 import { settings, notify, UserContext } from './store'
 import { tooltip, autofocus } from './actions'
 
@@ -85,6 +86,10 @@ export component App() {
         }
         slot empty { <em>No fruit left. Add some!</em> }
       </DataList>
+    </Card>
+
+    <Card title="Pattern matching and null safety">
+      <Shapes />
     </Card>
 
     <Card title="Async data" tone="warn">

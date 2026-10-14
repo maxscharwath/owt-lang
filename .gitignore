@@ -79,3 +79,4 @@ dist
 # compiler test output
 packages/owt-compiler/test/.tmp/
 *.vsix
+examples/showcase/src/__docs/

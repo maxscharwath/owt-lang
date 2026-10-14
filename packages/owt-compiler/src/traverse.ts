@@ -72,6 +72,15 @@ export function visitTemplate(nodes: readonly TemplateNode[], v: JsVisitor): voi
         }
         if (node.fallback) visitTemplate(node.fallback.children, v);
         break;
+      case 'MatchBlock':
+        expr(node.subject);
+        for (const c of node.cases) {
+          for (const pattern of c.patterns) expr(pattern);
+          expr(c.guard);
+          visitTemplate(c.body.children, v);
+        }
+        if (node.fallback) visitTemplate(node.fallback.children, v);
+        break;
       case 'AwaitBlock':
         expr(node.expression);
         if (node.pending) visitTemplate(node.pending.children, v);

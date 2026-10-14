@@ -1,0 +1,13 @@
+type Shape = { kind: 'circle'; radius: number } | { kind: 'square'; size: number }
+type User = { name: string }
+
+export component Patterns(shape: Shape, find: (id: string) => User | undefined) {
+  var el: HTMLElement
+  match (shape) {
+    case { kind: 'circle', radius } { <p>{radius.toFixed(2)}</p> }
+  }
+  if (val user = find('ada')) {
+    <p>{user.name.toUpperCase()}</p>
+  }
+  <p>{el}</p>
+}

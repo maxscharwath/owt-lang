@@ -2,7 +2,7 @@
 
 **Make it happen.**
 
-OWT is a typed UI language that compiles to fast, direct DOM code. Logic is plain TypeScript, markup is HTML, and two keywords hold state: `var` for state and `val` for derived values. Control flow reads like code: `if`, `for`, `switch`, `await`, `try`.
+OWT is a typed UI language that compiles to fast, direct DOM code. Logic is plain TypeScript, markup is HTML, and two keywords hold state: `var` for state and `val` for derived values. Control flow reads like code: `if`, `for`, `switch`, `match`, `await`, `try`.
 
 ```owt
 import type { Todo } from './types'
@@ -43,12 +43,17 @@ You won't find hooks, dependency arrays, `$` prefixes or a virtual DOM here. A c
 ## Highlights
 
 - **Fast**: in a js-framework-benchmark style suite, OWT is faster than Vue 3.5 on every operation and faster than React 19 overall. It spends the least JavaScript time of the three on every operation. A typical app's runtime is about **7 KB gzipped**. See [Performance](#performance).
-- **Typed end to end**: props, generics, slots, events and bindings are all type-checked, in markup too. Editors flag a wrong prop type, an unknown attribute or an assignment to a `val`. `owt-tsc` reports the same errors in CI.
+- **Typed end to end and null-safe**:
+  - Props, generics, slots, events and bindings are type-checked, in markup too. Editors flag a wrong prop type, an unknown attribute or an assignment to a `val`, and `owt-tsc` reports the same errors in CI.
+  - `null` and `undefined` must be handled before use: `if (val user = find(id))` renders only with a value, and an uninitialized `var` must allow `undefined`.
+  - `match` checks exhaustiveness like Rust or Swift, so a forgotten case is a compile error.
 - **Readable control flow**:
   - `if` / `else if` / `else`;
   - keyed `for` loops with `track`, meta (`index`, `first`, `last`...) and an `empty` block;
   - ranges `1..10` and `rev`;
   - `switch` with multiple values and guards;
+  - `match` pattern matching with destructuring, guards and exhaustiveness checking;
+  - null-safe `if (val x = …)` bindings;
   - `await` / `then` / `catch` blocks;
   - `try` / `catch` error boundaries with reset;
   - `key` blocks.
@@ -129,10 +134,16 @@ import { Portal, onMount } from 'owt'
 import { fade, fly } from 'owt/transition'
 import { tooltip } from './actions'
 import { fetchUser } from './api'
-import { Chart, Likes, Posts } from './widgets.owt'
+import { Chart, Likes, Pin, Posts } from './widgets.owt'
 
 // three ways to declare props: (props: P), ({ a, b = 1 }: P), or named props
-export component Profile(userId: number, size: 'sm' | 'lg' = 'sm', class?: string) {
+type Status =
+  | { state: 'idle' }
+  | { state: 'loading'; progress: number }
+  | { state: 'failed'; error: Error }
+  | { state: 'done'; items: string[] }
+
+export component Profile(userId: number, status: Status, pins: { userId: number; title: string }[], size: 'sm' | 'lg' = 'sm', class?: string) {
   var tab = 'posts'
   var open = false
   val avatar = `/avatars/${userId}.png`          // re-computed when userId changes
@@ -142,7 +153,7 @@ export component Profile(userId: number, size: 'sm' | 'lg' = 'sm', class?: strin
   <window onKeyDown={(e) => e.key === 'Escape' && (open = false)} />
   <head><title>Profile #{userId}</title></head>
 
-  <section class={['profile', size, class]} class:open style:--accent="tomato">
+  <section class={['profile', size, props.class]} class:open style:--accent="tomato">
     <img src={avatar} alt="" use:tooltip={'User ' + userId} />
 
     await (fetchUser(userId)) {
@@ -161,6 +172,21 @@ export component Profile(userId: number, size: 'sm' | 'lg' = 'sm', class?: strin
       case 'posts' { <Posts {userId} /> }
       case 'likes' if (open) { <Likes {userId} /> }
       default { <p>Pick a tab</p> }
+    }
+
+    // pattern matching: destructure, guard, and every case must be handled
+    match (status) {
+      case { state: 'idle' } { <p>Idle</p> }
+      case { state: 'loading', progress } if (progress > 0) { <progress value={progress} /> }
+      case { state: 'loading' } { <p>Starting…</p> }
+      case { state: 'failed', error: { message } } { <p class="error">{message}</p> }
+      case { state: 'done', items: [first, ...rest] } { <p>{first} and {rest.length} more</p> }
+      case { state: 'done' } { <p>No results</p> }
+    }
+
+    // null-safe binding: renders only when the value is not null/undefined
+    if (val pinned = pins.find((p) => p.userId === userId)) {
+      <Pin title={pinned.title} />
     }
 
     try {
@@ -190,7 +216,7 @@ export component Profile(userId: number, size: 'sm' | 'lg' = 'sm', class?: strin
 Using it:
 
 ```owt
-<Profile userId={id} size="lg">
+<Profile userId={id} status={{ state: 'idle' }} pins={[]} size="lg">
   slot footer({ userId }) {
     <a href={`/users/${userId}`}>Open full profile</a>
   }

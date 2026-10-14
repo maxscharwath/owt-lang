@@ -83,6 +83,16 @@ class Collector {
         if (node.fallback) this.body(node.fallback);
         return;
       }
+      case 'MatchBlock': {
+        const open = node.subjectSpan.end + 1;
+        this.containers.push({ start: open, end: node.end - 1 });
+        for (const c of node.cases) {
+          this.zones.push({ start: c.patternsSpan.start, end: c.patternsSpan.end, shift: 'relative' });
+          this.body(c.body);
+        }
+        if (node.fallback) this.body(node.fallback);
+        return;
+      }
       case 'AwaitBlock':
         if (node.pending) this.body(node.pending);
         if (node.then) this.body(node.then.body);

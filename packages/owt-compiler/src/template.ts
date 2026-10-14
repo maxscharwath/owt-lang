@@ -15,14 +15,18 @@ import type {
   ForBlock,
   IfBlock,
   KeyBlock,
+  MatchBlock,
+  PatternBinding,
+  PatternInfo,
   SlotDefinition,
   SwitchBlock,
   TemplateNode,
   TryBlock,
   ValDecl,
 } from '@owt/ast';
+import { analyzePattern, renderPatternPath } from '@owt/ast';
 import { type Chunk, join, origin, text } from './chunks';
-import { type Binding, type BindingScope } from './bindings';
+import { type Binding, type BindingScope, plain } from './bindings';
 import type { ComponentContext } from './context';
 import {
   BOOLEAN_ATTRIBUTES,
@@ -78,7 +82,7 @@ const EACH_KEY_INDEX = 16;
 
 type TextPart = { text: string } | { expr: t.Expression };
 
-type Block = IfBlock | ForBlock | SwitchBlock | AwaitBlock | TryBlock | KeyBlock;
+type Block = IfBlock | ForBlock | SwitchBlock | MatchBlock | AwaitBlock | TryBlock | KeyBlock;
 
 type Item =
   | { k: 'element'; el: Element }
@@ -983,6 +987,8 @@ export class TemplateCompiler {
         return this.forBlock(block, anchor, scope, ns, parentTag, onlyChild);
       case 'SwitchBlock':
         return this.switchBlock(block, anchor, scope, ns, parentTag);
+      case 'MatchBlock':
+        return this.matchBlock(block, anchor, scope, ns, parentTag);
       case 'AwaitBlock':
         return this.awaitBlock(block, anchor, scope, ns, parentTag);
       case 'TryBlock':
@@ -999,18 +1005,88 @@ export class TemplateCompiler {
 
   private ifBlock(block: IfBlock, anchor: string, scope: BindingScope, ns: Namespace, parentTag: string | null): Chunk {
     const rt = this.rt;
-    const renders = block.branches.map((b) => this.renderFn(b.body.children, scope.child(), ns, '', parentTag));
+    // `if (val user = find(id))`: the value is computed once (derived), the branch renders when it is not null/undefined
+    const pre: Chunk[] = [];
+    const tests: Chunk[] = [];
+    const renders: Chunk[] = [];
+    block.branches.forEach((b, i) => {
+      const test = this.c.expr(this.requireExpr(b.test, b.start, i === 0 ? 'if' : 'else if'), scope);
+      const inner = scope.child();
+      if (b.binding === null) {
+        tests.push(test);
+      } else {
+        const value = this.c.file.name('v');
+        pre.push(origin(`const ${value} = ${rt}.derived(() => `, b.binding.span.start), test, ');\n');
+        tests.push(`${rt}.get(${value}) != null`);
+        inner.add({ name: b.binding.name, kind: 'path', read: `${rt}.get(${value})`, write: false, reactive: true, stable: false, description: 'if binding', start: b.binding.span.start });
+      }
+      renders.push(this.renderFn(b.body.children, inner, ns, '', parentTag));
+    });
     if (block.alternate !== null) renders.push(this.renderFn(block.alternate.children, scope.child(), ns, '', parentTag));
     if (block.branches.length === 1) {
-      const test = this.c.expr(this.requireExpr(block.branches[0]!.test, block.start, 'if'), scope);
-      return [origin(`${rt}.when(${anchor}, () => `, block.start), test, ', ', renders[0]!, block.alternate !== null ? [', ', renders[1]!] : '', ');'];
+      return [pre, origin(`${rt}.when(${anchor}, () => `, block.start), tests[0]!, ', ', renders[0]!, block.alternate !== null ? [', ', renders[1]!] : '', ');'];
     }
     const select: Chunk[] = [];
-    block.branches.forEach((b, i) => {
-      select.push('(', this.c.expr(this.requireExpr(b.test, b.start, 'else if'), scope), `) ? ${i} : `);
-    });
+    tests.forEach((test, i) => select.push('(', test, `) ? ${i} : `));
     select.push(block.alternate !== null ? String(block.branches.length) : '-1');
-    return [origin(`${rt}.branch(${anchor}, () => `, block.start), select, ', [', join(renders, ', '), ']);'];
+    return [pre, origin(`${rt}.branch(${anchor}, () => `, block.start), select, ', [', join(renders, ', '), ']);'];
+  }
+
+  /** Runtime checks of a match pattern against `target` (`true` when it matches anything). */
+  private patternTest(info: PatternInfo, target: string, scope: BindingScope): Chunk {
+    const parts: Chunk[] = info.checks.map((check) => {
+      const value = renderPatternPath(target, check.path);
+      if (check.kind === 'object') return `typeof ${value} === "object" && ${value} !== null`;
+      if (check.kind === 'array') return `Array.isArray(${value}) && ${value}.length ${check.rest ? '>=' : '==='} ${check.length}`;
+      return [`${value} === `, this.c.expr(check.value, scope)];
+    });
+    return parts.length === 0 ? 'true' : join(parts, ' && ');
+  }
+
+  private matchBlock(block: MatchBlock, anchor: string, scope: BindingScope, ns: Namespace, parentTag: string | null): Chunk {
+    const rt = this.rt;
+    const subject = this.c.file.name('m');
+    const v = this.c.file.name('v');
+    const bindingValue = (b: PatternBinding, base: string) => renderPatternPath(base, b.path) + (b.restFrom === null ? '' : `.slice(${b.restFrom})`);
+    const select: Chunk[] = [`{ const ${v} = ${rt}.get(${subject}); `];
+    const renders: Chunk[] = [];
+    let catchAll = false;
+    block.cases.forEach((c, i) => {
+      if (catchAll) this.c.warn('unreachable-case', 'This case never matches: an earlier case matches every value', c.start, c.patternsSpan.end);
+      const infos = c.patterns.map((p) => analyzePattern(p));
+      for (const info of infos) for (const e of info.errors) this.c.error('invalid-pattern', e.message, e.start, e.end);
+      if (infos.length > 1 && infos.some((info) => info.bindings.length > 0)) {
+        this.c.error('invalid-pattern', 'A pattern that binds names cannot be combined with other patterns in the same case', c.patternsSpan.start, c.patternsSpan.end);
+      }
+      const bindings = infos[0]?.bindings ?? [];
+      const alternatives = infos.map((info) => this.patternTest(info, v, scope));
+      let cond: Chunk = alternatives.length === 1 ? alternatives[0]! : join(alternatives.map((a) => ['(', a, ')']), ' || ');
+      if (c.guard !== null) {
+        // the guard sees the bindings as parameters
+        const guardScope = scope.child();
+        for (const b of bindings) guardScope.add(plain(b.name, b.id.start ?? 0, { write: false, description: 'pattern binding' }));
+        const params = bindings.map((b) => b.name).join(', ');
+        const args = bindings.map((b) => bindingValue(b, v)).join(', ');
+        cond = ['(', cond, `) && ((${params}) => `, this.c.expr(c.guard, guardScope), `)(${args})`];
+      } else if (infos.some((info) => info.checks.length === 0)) {
+        catchAll = true;
+      }
+      select.push('if (', cond, `) return ${i}; `);
+      const inner = scope.child();
+      for (const b of bindings) {
+        inner.add({ name: b.name, kind: 'path', read: bindingValue(b, `${rt}.get(${subject})`), write: false, reactive: true, stable: false, description: 'pattern binding', start: b.id.start ?? 0 });
+      }
+      renders.push(this.renderFn(c.body.children, inner, ns, '', parentTag));
+    });
+    if (block.fallback !== null) {
+      if (catchAll) this.c.warn('unreachable-case', 'default never renders: an earlier case matches every value', block.fallback.start, block.fallback.start + 7);
+      select.push(`return ${block.cases.length}; }`);
+      renders.push(this.renderFn(block.fallback.children, scope.child(), ns, '', parentTag));
+    } else {
+      select.push('return -1; }');
+    }
+    const value = this.c.expr(this.requireExpr(block.subject, block.start, 'match'), scope);
+    return [origin(`const ${subject} = ${rt}.derived(() => `, block.start), value, ');\n', `${rt}.branch(${anchor}, () => `, select, ', [', join(renders, ', '), ']);'];
   }
 
   private switchBlock(block: SwitchBlock, anchor: string, scope: BindingScope, ns: Namespace, parentTag: string | null): Chunk {

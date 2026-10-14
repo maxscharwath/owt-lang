@@ -2,7 +2,7 @@
 
 Version: 1.0 (beta)
 
-OWT is a typed UI language: TypeScript for logic, HTML for markup, two keywords for state (`var`, `val`) and readable control flow (`if`, `for`, `switch`, `await`, `try`). The compiler turns `.owt` files into small, fast JavaScript that updates the DOM directly through fine-grained signals — there is no virtual DOM and no re-rendering of components.
+OWT is a typed UI language: TypeScript for logic, HTML for markup, two keywords for state (`var`, `val`) and readable control flow (`if`, `for`, `switch`, `match`, `await`, `try`). The compiler turns `.owt` files into small, fast JavaScript that updates the DOM directly through fine-grained signals — there is no virtual DOM and no re-rendering of components.
 
 - [Files and modules](#files-and-modules)
 - [Components](#components)
@@ -79,7 +79,7 @@ The component body is TypeScript with markup:
 - markup: elements, `{expressions}` and control-flow blocks;
 - `<style>` blocks.
 
-Statements run in order, once. A line starting with `<` is markup; `if`, `for`, `switch`, `await`, `try` and `key` at the start of a line are markup blocks (use them inside functions for imperative logic). `return` and `await` at the top level of a component are errors: setup is synchronous (use `await` blocks or `onMount(async () => ...)`).
+Statements run in order, once. A line starting with `<` is markup; `if`, `for`, `switch`, `match`, `await`, `try` and `key` blocks at the start of a line are markup blocks (use them inside functions for imperative logic; a call like `match(x)` without a `{ }` body stays a statement). `return` and `await` at the top level of a component are errors: setup is synchronous (use `await` blocks or `onMount(async () => ...)`).
 
 ## State: `var` and `val`
 
@@ -263,6 +263,20 @@ if (user === null) {
 
 Branches are only re-created when the selected branch changes. TypeScript narrowing works inside branches.
 
+**Null-safe bindings.** `if (val name = expression)` evaluates the expression once and renders the branch when the value is not `null` or `undefined`. Inside the branch, `name` is the value with `null` and `undefined` removed from its type. It works like `if let` in Swift and Rust, or `?.let` in Kotlin:
+
+```owt
+if (val user = users.find((u) => u.id === selectedId)) {
+  <UserCard name={user.name} />     // user: User, not User | undefined
+} else if (val draft = drafts.get(selectedId)) {
+  <DraftCard {draft} />
+} else {
+  <p>Nothing selected</p>
+}
+```
+
+Unlike a plain `if`, only `null` and `undefined` skip the branch: `0`, `''` and `false` render it. The name only exists inside its branch. If the value changes but stays non-null, the branch is kept and updates in place.
+
 ### for
 
 ```owt
@@ -294,6 +308,44 @@ switch (status) {
 ```
 
 Cases compare with `===`, accept several values and an optional `if (guard)`. There is no fall-through.
+
+### match
+
+`match` is pattern matching, like `match` in Rust, `switch` in Swift or `when` in Kotlin. Cases destructure the value and test its shape. Without a `default`, TypeScript checks that every possible value is handled.
+
+```owt
+type Shape =
+  | { kind: 'circle'; radius: number }
+  | { kind: 'rect'; width: number; height: number }
+  | { kind: 'group'; items: Shape[] }
+
+match (shape) {
+  case { kind: 'circle', radius } { <Circle r={radius} /> }
+  case { kind: 'rect', width: w, height: h } if (w === h) { <Square size={w} /> }
+  case { kind: 'rect', width, height } { <Rect {width} {height} /> }
+  case { kind: 'group', items: [] } { <p>Empty group</p> }
+  case { kind: 'group', items: [first, ...others] } { <Group {first} {others} /> }
+}
+```
+
+| Pattern | Matches | Binds |
+|---|---|---|
+| `_` | anything | nothing |
+| `'circle'`, `42`, `-1`, `true`, `null`, `undefined` | that value (`===`) | nothing |
+| `Status.Active`, `MAX + 1`, any other expression | that value (`===`) | nothing |
+| `{ kind: 'circle', radius }` | an object (not `null`) whose properties match | `radius` |
+| `{ size: s }`, `{ user: { name } }` | nested properties | `s`, `name` |
+| `[a, b]` | an array of exactly two elements | `a`, `b` |
+| `[first, ...rest]` | an array with at least one element | `first`, `rest` |
+| `'a', 'b'` (several patterns) | any of them (they cannot bind names) | nothing |
+
+- At the top level, names compare by value (`case MAX`) and `_` matches anything. Inside object and array patterns, names bind (like destructuring) and `_` ignores a value.
+- `case pattern if (guard)` also requires the guard, which can use the names bound by the pattern.
+- The first matching case renders. When the value changes and the same case still matches, its content stays and its bindings update in place.
+- **Exhaustiveness**: without `default`, a `match` that does not handle every member of the value's type is a type error. For example: `Argument of type '{ kind: "group"; ... }' is not assignable to parameter of type 'never'`. The error is reported on `match` and names the unhandled members. Add the missing cases, or a `default { }` / `case _ { }`.
+- Exhaustiveness is worked out from the value's direct literal properties and values (`kind: 'circle'`, `case 'idle'`). A case that also tests nested values, array lengths or a guard only partly handles its member. End such a group with a broader case (`case { kind: 'group' }`) or a `default`. Nested object patterns like `{ error: { message } }` rely on the property's type: they are only an error when that property can be `null`.
+- Impossible patterns are type errors too: `case { kind: 'triangle' }` when no member has that kind, or a misspelled property such as `{ radiuss }`.
+- At runtime, a value that matches no case renders nothing. A case after a catch-all case (`case _` without a guard) gets an "unreachable" warning.
 
 ### await
 
@@ -450,7 +502,17 @@ Any component reading `cart.items` updates when it changes.
 
 - Everything is TypeScript: props, `var`/`val` annotations, generics, interfaces, enums, `satisfies`, `as`, non-null `!`.
 - Types are erased by the compiler (no `tsc` step). `enum` is supported; constructor parameter properties, namespaces with values and `import x = require()` are not.
-- Markup is type-checked by the editor tooling and `owt-tsc`: element attributes and event types (`event.currentTarget` is the element), component props (missing, unknown and mistyped props), narrowing inside `if`/`switch`, loop item types, slot argument types, binding targets (binding to a `val` is an error).
+- Markup is type-checked by the editor tooling and `owt-tsc`: element attributes and event types (`event.currentTarget` is the element), component props (missing, unknown and mistyped props), narrowing inside `if`/`switch`/`match`, loop item types, slot argument types, binding targets (binding to a `val` is an error), exhaustive `match` blocks.
+
+### Null safety
+
+OWT is null-safe when the project uses `"strict": true`, or at least `"strictNullChecks": true` (the `owt-tsc` CLI and the editor warn when it is off):
+
+- `null` and `undefined` are only allowed where the type says so. `user.name` on a `User | undefined` is an error until the value is narrowed: with `if (user)`, `if (val u = …)`, `match`, `?.` or `??`.
+- A `var` without an initializer starts as `undefined`, so its type must accept it. `var el: HTMLElement` is an error; write `var el: HTMLElement | null = null` (typical for `ref={el}`) or `var name: string | undefined`.
+- Optional props (`title?: string`) are `string | undefined` inside the component. Give them a default (`title = 'Untitled'`) to get a `string`.
+- `bind:this` and `ref` set `null` when the element is destroyed, so their variables must accept `null`.
+- `"noUncheckedIndexedAccess": true` is recommended: `items[0]` is then `T | undefined`, which `if (val first = items[0])` handles nicely.
 
 ## Tooling
 
@@ -492,15 +554,21 @@ AttrName        = [ ( "bind" | "class" | "style" | "use" | "on" | "transition" |
 ExpressionTag   = "{" [ TsExpression ] "}" ;
 Comment         = "<!--" ... "-->" ;
 
-Block           = IfBlock | ForBlock | SwitchBlock | AwaitBlock | TryBlock | KeyBlock ;
+Block           = IfBlock | ForBlock | SwitchBlock | MatchBlock | AwaitBlock | TryBlock | KeyBlock ;
 Body            = "{" [ ValDecl ] { Node } "}" ;
-IfBlock         = "if" "(" TsExpression ")" Body { "else" "if" "(" TsExpression ")" Body } [ "else" Body ] ;
+IfBlock         = "if" "(" Condition ")" Body { "else" "if" "(" Condition ")" Body } [ "else" Body ] ;
+Condition       = TsExpression | "val" Identifier "=" TsExpression ;   (* null-safe binding *)
 ForBlock        = "for" "(" TsPattern "of" [ "rev" ] Iterable [ "," Meta ] [ ";" "track" TsExpression ] ")" Body
                   [ "empty" Body ] ;
 Iterable        = TsExpression | TsExpression ".." TsExpression ;
 Meta            = Identifier | "{" MetaName { "," MetaName } "}" ;
 SwitchBlock     = "switch" "(" TsExpression ")" "{" { Case } [ "default" Body ] "}" ;
 Case            = "case" TsExpression { "," TsExpression } [ "if" "(" TsExpression ")" ] Body ;
+MatchBlock      = "match" "(" TsExpression ")" "{" { MatchCase } [ "default" Body ] "}" ;
+MatchCase       = "case" Pattern { "," Pattern } [ "if" "(" TsExpression ")" ] Body ;
+Pattern         = "_" | Literal | TsExpression | "{" [ PatternProp { "," PatternProp } ] "}"
+                | "[" [ Pattern { "," Pattern } ] [ "," "..." Identifier ] "]" ;
+PatternProp     = Name [ ":" ( Pattern | Identifier ) ] ;
 AwaitBlock      = "await" "(" TsExpression ")" [ Body ] [ "then" [ "(" TsPattern ")" ] Body ]
                   [ "catch" [ "(" TsPattern ")" ] Body ] ;
 TryBlock        = "try" Body "catch" [ "(" TsPattern [ "," Identifier ] ")" ] Body ;

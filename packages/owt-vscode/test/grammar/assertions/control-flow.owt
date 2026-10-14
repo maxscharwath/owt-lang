@@ -53,6 +53,22 @@ export component Flow() {
 //^^^ keyword.control.owt
 //                 ^^^^^ keyword.control.owt
 //                               ^^^^^ variable.other.readwrite.ts
+  match (shape) { case { kind: 'circle', radius } { <Circle r={radius}/> } case [first, ...rest] if (ok) { <List/> } case _ { <None/> } }
+//^^^^^ keyword.control.owt
+//       ^^^^^ variable.other.readwrite.ts
+//                ^^^^ keyword.control.owt
+//                             ^^^^^^^^ string.quoted.single.ts
+//                                                   ^^^^^^ support.class.component.owt
+//                                                                         ^^^^ keyword.control.owt
+//                                                                                               ^^ keyword.control.owt
+//                                                                                                          ^^^^ support.class.component.owt
+//                                                                                                                   ^^^^ keyword.control.owt
+//                                                                                                                             ^^^^ support.class.component.owt
+  if (val user = find(id)) { <p>{user.name}</p> }
+//^^ keyword.control.owt
+//    ^^^ storage.type.val.owt
+//        ^^^^ variable.other.constant.owt
+//               ^^^^ entity.name.function.ts
   key (userId) { <Profile id={userId}/> }
 //^^^ keyword.control.owt
 //                ^^^^^^^ support.class.component.owt

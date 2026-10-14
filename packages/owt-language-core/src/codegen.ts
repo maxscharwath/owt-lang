@@ -20,6 +20,10 @@ import type {
   ForBlock,
   IfBlock,
   KeyBlock,
+  MatchBlock,
+  PatternBinding,
+  PatternKeys,
+  PatternPath,
   Program,
   SlotDefinition,
   Span,
@@ -29,6 +33,7 @@ import type {
   ValDecl,
   VarDecl,
 } from '@owt/ast';
+import { analyzePattern, isPathKey } from '@owt/ast';
 import type { CodeInformation, CodeMapping } from '@volar/language-core';
 
 const FULL: CodeInformation = { verification: true, completion: true, semantic: true, navigation: true, structure: true, format: false };
@@ -387,7 +392,7 @@ class ComponentGen {
           if (n.alternate) visit(n.alternate.children);
         } else if (n.type === 'ForBlock' && n.empty) {
           visit(n.empty.children);
-        } else if (n.type === 'SwitchBlock') {
+        } else if (n.type === 'SwitchBlock' || n.type === 'MatchBlock') {
           for (const cs of n.cases) visit(cs.body.children);
           if (n.fallback) visit(n.fallback.children);
         } else if (n.type === 'AwaitBlock') {
@@ -425,7 +430,19 @@ class ComponentGen {
   private declaration(decl: VarDecl | ValDecl): void {
     const b = this.b;
     b.text(decl.type === 'VarDecl' ? 'let' : 'const');
-    b.map(decl.start + 3, decl.end);
+    // `var user: User` starts as undefined at runtime: check it as `let user: User = undefined`
+    // so a type that does not accept undefined is an error (null safety)
+    let cursor = decl.start + 3;
+    if (decl.type === 'VarDecl') {
+      for (const d of decl.declarations) {
+        if (d.init !== null || d.type === null) continue;
+        b.map(cursor, d.end);
+        b.text(' = ');
+        b.mapAs('undefined', d.id.start ?? d.start, d.name.length, VERIFY);
+        cursor = d.end;
+      }
+    }
+    b.map(cursor, decl.end);
     b.text(';\n');
   }
 
@@ -462,6 +479,9 @@ class ComponentGen {
         return;
       case 'SwitchBlock':
         this.switchBlock(node);
+        return;
+      case 'MatchBlock':
+        this.matchBlock(node);
         return;
       case 'AwaitBlock':
         this.awaitBlock(node);
@@ -557,7 +577,8 @@ class ComponentGen {
       this.attrKey(attr);
       b.text(': ');
       if (eventName(attr.name) && this.isStatementHandler(attr) && attr.value.type === 'Expression') {
-        b.text('(event) => { ');
+        // `event` is available to inline statements (`onClick={x = event.clientX}`), not required
+        b.text('(event) => { void event; ');
         this.expr(attr.value.span);
         b.text('; }');
       } else {
@@ -585,7 +606,8 @@ class ComponentGen {
           b.text(');\n');
         } else {
           this.expr(value.span);
-          b.text(` = ${v};\n`);
+          // the element is stored for later use: a ref-only variable is not "unused"
+          b.text(` = ${v};\nvoid (${this.src.slice(value.span.start, value.span.end)});\n`);
         }
         continue;
       }
@@ -695,7 +717,8 @@ class ComponentGen {
       this.attrKey(attr);
       b.text(': ');
       if (eventName(attr.name) && this.isStatementHandler(attr) && attr.value.type === 'Expression') {
-        b.text('(event) => { ');
+        // `event` is available to inline statements (`onClick={x = event.clientX}`), not required
+        b.text('(event) => { void event; ');
         this.expr(attr.value.span);
         b.text('; }');
       } else {
@@ -769,8 +792,24 @@ class ComponentGen {
 
   private ifBlock(node: IfBlock): void {
     const b = this.b;
+    // `if (val user = find(id)) { ... }` becomes
+    // `{ const __v = (find(id)); if (__v != null) { const user = __v; ... } ... }`
+    let scopes = 0;
     node.branches.forEach((br, i) => {
-      b.text(i === 0 ? 'if ' : 'else if ');
+      if (i > 0) b.text('else ');
+      if (br.binding !== null) {
+        scopes++;
+        const value = this.id('value');
+        b.text(`{\nconst ${value} = `);
+        this.expr(br.testSpan);
+        b.text(`;\nif (${value} != null) {\nconst `);
+        b.map(br.binding.span.start, br.binding.span.end, NAME);
+        b.text(` = ${value};\n`);
+        this.nodes(br.body.children);
+        b.text('}\n');
+        return;
+      }
+      b.text('if ');
       this.expr(br.testSpan);
       b.text(' ');
       this.block(br.body.children);
@@ -779,6 +818,7 @@ class ComponentGen {
       b.text('else ');
       this.block(node.alternate.children);
     }
+    b.text('}\n'.repeat(scopes));
   }
 
   private forBlock(node: ForBlock): void {
@@ -837,6 +877,116 @@ class ComponentGen {
     if (node.fallback !== null) {
       b.text('default: ');
       this.block(node.fallback.children);
+    }
+    b.text('}\n');
+  }
+
+  /** `subject.key[0]` with property keys mapped to the pattern (typos are reported there). */
+  private patternPath(subject: string, path: PatternPath, keys: PatternKeys, binding: PatternBinding | null): void {
+    const b = this.b;
+    // array positions go through `__owt.at` (the pattern checked the length, so no `| undefined`)
+    b.text('__owt.at('.repeat(path.filter((seg) => typeof seg === 'number').length));
+    b.text(subject);
+    path.forEach((seg, i) => {
+      const key = keys[i] ?? null;
+      if (typeof seg === 'number') {
+        b.text(`, ${seg})`);
+      } else if (isPathKey(seg) && key !== null) {
+        b.text('.');
+        // a shorthand `{ radius }` maps its name to the binding instead
+        b.mapAs(seg, key.start ?? 0, seg.length, binding !== null && binding.id === key ? VERIFY : FULL);
+      } else {
+        b.text(`[${JSON.stringify(seg)}]`);
+      }
+    });
+    if (binding !== null && binding.restFrom !== null) b.text(`.slice(${binding.restFrom})`);
+  }
+
+  private matchBlock(node: MatchBlock): void {
+    const b = this.b;
+    const subject = this.id('match');
+    b.text(`{\nconst ${subject} = `);
+    this.expr(node.subjectSpan);
+    b.text(';\n');
+    let catchAll = false;
+    node.cases.forEach((c, i) => {
+      if (i > 0) b.text('else ');
+      b.text('if (');
+      const infos = c.patterns.map((p) => analyzePattern(p));
+      const bindings = infos[0]?.bindings ?? [];
+      if (infos.length === 0) b.text('true');
+      infos.forEach((info, k) => {
+        if (k > 0) b.text(' || ');
+        b.text('(');
+        // Nested object checks are left to the property types: TypeScript narrows `x.error`,
+        // not `x`, on `typeof x.error === "object"`, which would defeat exhaustiveness.
+        const checks = info.checks.filter((check) => check.kind !== 'object' || check.path.length === 0);
+        if (checks.length === 0) b.text('true');
+        checks.forEach((check, j) => {
+          if (j > 0) b.text(' && ');
+          const from = b.code.length;
+          if (check.kind === 'object') {
+            b.text('typeof ');
+            this.patternPath(subject, check.path, check.keys, null);
+            b.text(' === "object" && ');
+            this.patternPath(subject, check.path, check.keys, null);
+            b.text(' !== null');
+          } else if (check.kind === 'array') {
+            b.text('Array.isArray(');
+            this.patternPath(subject, check.path, check.keys, null);
+            b.text(') && ');
+            this.patternPath(subject, check.path, check.keys, null);
+            b.text(`.length ${check.rest ? '>=' : '==='} ${check.length}`);
+          } else {
+            this.patternPath(subject, check.path, check.keys, null);
+            b.text(' === ');
+            this.expr({ start: check.value.start ?? 0, end: check.value.end ?? 0 });
+          }
+          b.wrap(from, { start: check.node.start ?? 0, end: check.node.end ?? 0 });
+        });
+        b.text(')');
+      });
+      if (c.guard !== null) {
+        b.text(' && ((');
+        bindings.forEach((binding, k) => {
+          if (k > 0) b.text(', ');
+          b.map(binding.id.start ?? 0, binding.id.end ?? 0, NAME);
+        });
+        b.text(') => {\n');
+        // the guard does not have to use every binding
+        for (const binding of bindings) b.text(`void ${binding.name};\n`);
+        b.text('return ');
+        this.expr({ start: c.guard.start ?? 0, end: c.guard.end ?? 0 });
+        b.text(';\n})(');
+        bindings.forEach((binding, k) => {
+          if (k > 0) b.text(', ');
+          this.patternPath(subject, binding.path, binding.keys, binding);
+        });
+        b.text(')');
+      } else if (infos.some((info) => info.checks.length === 0)) {
+        catchAll = true;
+      }
+      b.text(') {\n');
+      for (const binding of bindings) {
+        b.text('const ');
+        b.map(binding.id.start ?? 0, binding.id.end ?? 0, NAME);
+        b.text(' = ');
+        this.patternPath(subject, binding.path, binding.keys, binding);
+        // bindings may only be needed by the pattern or the guard
+        b.text(`;\nvoid ${binding.name};\n`);
+      }
+      this.nodes(c.body.children);
+      b.text('}\n');
+    });
+    if (node.fallback !== null) {
+      b.text(node.cases.length > 0 ? 'else ' : '');
+      this.block(node.fallback.children);
+    } else if (!catchAll) {
+      // no default: every possible value must be handled
+      b.text(node.cases.length > 0 ? 'else {\n' : '{\n');
+      b.text('__owt.exhaustive(');
+      b.mapAs(subject, node.start, 5, VERIFY);
+      b.text(');\n}\n');
     }
     b.text('}\n');
   }

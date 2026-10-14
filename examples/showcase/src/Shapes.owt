@@ -1,0 +1,44 @@
+// Pattern matching and null-safe bindings.
+// `match` has no default here: forgetting a kind of Shape is a type error.
+export type Shape =
+  | { kind: 'circle'; radius: number }
+  | { kind: 'rect'; width: number; height: number }
+  | { kind: 'group'; items: Shape[] }
+
+const SAMPLES: Record<string, Shape> = {
+  circle: { kind: 'circle', radius: 3 },
+  square: { kind: 'rect', width: 4, height: 4 },
+  rect: { kind: 'rect', width: 6, height: 2 },
+  group: { kind: 'group', items: [{ kind: 'circle', radius: 1 }, { kind: 'rect', width: 2, height: 1 }] },
+  empty: { kind: 'group', items: [] },
+}
+
+export component Shapes() {
+  var name = 'circle'
+  val shape = SAMPLES[name]
+
+  <div class="row">
+    for (key of Object.keys(SAMPLES)) {
+      <button id={`shape-${key}`} class:active={name === key} onClick={name = key}>{key}</button>
+    }
+    <button id="shape-none" onClick={name = 'none'}>none</button>
+  </div>
+  <p id="shape">
+    if (val s = shape) {
+      match (s) {
+        case { kind: 'circle', radius } { Circle of area {(Math.PI * radius ** 2).toFixed(1)} }
+        case { kind: 'rect', width: w, height: h } if (w === h) { Square of side {w} }
+        case { kind: 'rect', width, height } { Rectangle {width}×{height} }
+        case { kind: 'group', items: [first, ...rest] } { Group: a {first.kind} and {rest.length} more }
+        case { kind: 'group' } { Empty group }
+      }
+    } else {
+      No shape called “{name}”
+    }
+  </p>
+
+  <style>
+    .row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .active { font-weight: 600; }
+  </style>
+}
