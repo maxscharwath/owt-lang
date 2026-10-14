@@ -5,6 +5,7 @@ import { type Chunk, join, origin } from './chunks';
 import { BindingScope, plain } from './bindings';
 import { ComponentContext, type FileContext } from './context';
 import { hash, scopeCss } from './css';
+import { compoundCanMatch, elementShapes, type ElementShape } from './css-usage';
 import { transformStatement } from './js';
 import { TemplateCompiler } from './template';
 import { visitComponent } from './traverse';
@@ -179,7 +180,7 @@ export function compileComponent(component: ComponentDecl, file: FileContext): C
     join(lines, '\n'),
     '\n});\n}\n',
   ];
-  return { name: component.name, code, css: componentCss(component.styles, cssScope), cssScope };
+  return { name: component.name, code, css: componentCss(component, cssScope, c), cssScope };
 }
 
 function declaresName(component: ComponentDecl, name: string): boolean {
@@ -194,9 +195,22 @@ function declaresName(component: ComponentDecl, name: string): boolean {
   return false;
 }
 
-function componentCss(styles: readonly StyleBlock[], cssScope: string | null): string {
-  return styles
-    .map((s) => (s.global || cssScope === null ? s.content : scopeCss(s.content, cssScope)))
+function componentCss(component: ComponentDecl, cssScope: string | null, c: ComponentContext): string {
+  let shapes: ElementShape[] | null = null;
+  return component.styles
+    .map((s) => {
+      if (s.global || cssScope === null) return s.content;
+      return scopeCss(s.content, cssScope, {
+        canMatch: (compound) => compoundCanMatch(compound, (shapes ??= elementShapes(component))),
+        unused: (start, end, selector) =>
+          c.warn(
+            'css-unused-selector',
+            `Unused CSS selector "${selector}": no element of ${component.name} can match it (child components have their own styles; use :global(...) to style them)`,
+            s.contentSpan.start + start,
+            s.contentSpan.start + end,
+          ),
+      });
+    })
     .join('\n')
     .trim();
 }

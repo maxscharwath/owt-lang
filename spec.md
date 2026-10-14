@@ -515,6 +515,7 @@ export component Card() {
 - `:global(...)` (or `:global` followed by a selector) opts out; `<style global>` makes the whole block global.
 - Nesting (`&`), `@media`, `@supports`, `@container`, `@layer` are supported; `@keyframes` and `@font-face` are left untouched.
 - With Vite, component CSS goes through the normal CSS pipeline (PostCSS, Tailwind, minification, extraction, HMR).
+- Selectors that can never match are reported at compile time (`css-unused-selector` warning, in the editor and in Vite). This covers a class, id or tag that no element of the component renders, such as `.card h3` without an `h3`. The check counts `class:` directives and the string literals of `class={...}` expressions. When a class comes from something it cannot read (a variable, a spread), it assumes any class can be present. Elements of child components are never matched by scoped styles: use `:global(...)` for them.
 
 ## Runtime API
 

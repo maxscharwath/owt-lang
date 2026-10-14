@@ -24,6 +24,12 @@ function isNameChar(c: number): boolean {
   return (c >= 48 && c <= 57) || (c >= 65 && c <= 90) || (c >= 97 && c <= 122) || c === 45 || c === 95;
 }
 
+/** Optional usage check: report selectors whose scoped compounds match no element of the component. */
+export type CssUsage = {
+  canMatch(compound: string): boolean;
+  unused(start: number, end: number, selector: string): void;
+};
+
 class CssScoper {
   private pos = 0;
   private out = '';
@@ -31,6 +37,7 @@ class CssScoper {
   constructor(
     private readonly css: string,
     private readonly scope: string,
+    private readonly usage: CssUsage | null,
   ) {}
 
   run(): string {
@@ -140,7 +147,7 @@ class CssScoper {
       const stop = this.scanUntil(this.pos, ';{}');
       const segment = css.slice(this.pos, stop);
       if (css[stop] === '{') {
-        this.out += `${this.selectorList(segment, inRule)}{`;
+        this.out += `${this.selectorList(segment, inRule, this.pos)}{`;
         this.pos = stop + 1;
         this.block(true);
         if (css[this.pos] === '}') {
@@ -206,9 +213,14 @@ class CssScoper {
     return parts;
   }
 
-  private selectorList(text: string, nested: boolean): string {
+  private selectorList(text: string, nested: boolean, offset: number): string {
+    let at = offset;
     return this.splitTopLevel(text, ',')
-      .map((sel) => this.complexSelector(sel, nested))
+      .map((sel) => {
+        const out = this.complexSelector(sel, nested, at);
+        at += sel.length + 1;
+        return out;
+      })
       .join(',');
   }
 
@@ -248,11 +260,12 @@ class CssScoper {
     return { parts, separators };
   }
 
-  private complexSelector(sel: string, nested: boolean): string {
+  private complexSelector(sel: string, nested: boolean, offset: number): string {
     const { parts, separators } = this.compounds(sel);
     let out = '';
     let global = false;
     let scoped = 0;
+    let unmatched = false;
     parts.forEach((part, index) => {
       let compound = part;
       if (compound === ':global') {
@@ -264,6 +277,7 @@ class CssScoper {
         compound = unwrapped.text;
         const relative = nested && compound.startsWith('&');
         if (!isGlobal && !relative && !UNSCOPED_COMPOUNDS.has(compound.toLowerCase())) {
+          if (this.usage !== null && !unmatched && !this.usage.canMatch(compound)) unmatched = true;
           const cls = scoped === 0 ? `.${this.scope}` : `:where(.${this.scope})`;
           compound = insertScope(compound, cls);
           scoped++;
@@ -273,6 +287,11 @@ class CssScoper {
       const sep = separators[index];
       if (sep !== undefined) out += compound === '' && sep.trim() === '' && part === ':global' ? '' : sep;
     });
+    if (unmatched && this.usage !== null) {
+      const trimmed = sel.trim();
+      const start = offset + (sel.length - sel.trimStart().length);
+      this.usage.unused(start, start + trimmed.length, trimmed);
+    }
     return out;
   }
 }
@@ -327,8 +346,8 @@ function insertScope(compound: string, cls: string): string {
   return compound.slice(0, at) + cls + compound.slice(at);
 }
 
-export function scopeCss(css: string, scope: string): string {
-  return new CssScoper(css, scope).run();
+export function scopeCss(css: string, scope: string, usage: CssUsage | null = null): string {
+  return new CssScoper(css, scope, usage).run();
 }
 
 /** Short, stable hash (FNV-1a, base36). */

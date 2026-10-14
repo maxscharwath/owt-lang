@@ -67,7 +67,7 @@ You won't find hooks, dependency arrays, `$` prefixes or a virtual DOM here. A c
   - `<window>`, `<document>` and `<head>` elements;
   - deeply reactive objects and arrays;
   - async data with `resource()` (aborts outdated requests) and code-split `lazy()` components;
-  - scoped CSS with `:global`.
+  - scoped CSS with `:global`, and compile-time warnings for selectors that match nothing.
 - **First-class tooling**:
   - a Vite 8 plugin with HMR that keeps component state and an error overlay with code frames;
   - a Volar-based language server used by the VS Code extension, the JetBrains plugin, Neovim, Zed and Helix;
