@@ -50,6 +50,9 @@
       ],
       "@owt/language-core": [
         "./packages/owt-language-core/src/index.ts"
+      ],
+      "@owt/router": [
+        "./packages/owt-router/src/index.ts"
       ]
     }
   }

@@ -706,6 +706,17 @@ export const cart = reactive({ items: [] as Item[], get total() { return this.it
 
 Any component reading `cart.items` updates when it changes.
 
+### Routing
+
+Client-side routing is a separate package, `@owt/router`. Its params are inferred from the patterns, and links and `navigate()` are checked against the routes, in markup too:
+
+```ts
+export const router = createRouter({ routes: { '/': Home, '/users/:id': User, '*': NotFound } })
+export const { Link } = router
+```
+
+`<Router {router} />` renders the matched route, and `<Link to="/users/:id" params={{ id }}>` renders a link to it. When only the params change, the mounted component stays and its `params` prop updates. See the [routing guide](docs/router.md) for nested layouts, guards, lazy routes and hash mode.
+
 ## TypeScript
 
 - Everything is TypeScript: props, `var`/`val` annotations, generics, interfaces, enums, `satisfies`, `as`, non-null `!`.
@@ -728,6 +739,7 @@ OWT is null-safe when the project uses `"strict": true`, or at least `"strictNul
 |---|---|
 | `owt` | runtime (≈7 KB gzipped for a typical app) |
 | `@owt/vite` | Vite 7/8 plugin: compilation, scoped CSS modules, HMR that keeps state of unaffected components, error overlay with code frames |
+| `@owt/router` | typed client-side router: typed params and links, nested layouts, lazy routes, guards, history/hash modes ([guide](docs/router.md)) |
 | `@owt/compiler` | `compile(source, { filename, dev, hmr, css })` for other build tools |
 | `@owt/language-server` | LSP server (diagnostics, completions, hover, go to definition, references, rename, symbols, folding, auto-closing tags, linked tag editing, CSS features in `<style>`) |
 | `@owt/typescript-plugin` | lets `.ts` files import `.owt` components with full types |

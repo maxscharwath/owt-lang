@@ -19,6 +19,7 @@ export default defineConfig({
       { find: /^@owt\/parser$/, replacement: r('./packages/owt-parser/src/index.ts') },
       { find: /^@owt\/compiler$/, replacement: r('./packages/owt-compiler/src/index.ts') },
       { find: /^@owt\/language-core$/, replacement: r('./packages/owt-language-core/src/index.ts') },
+      { find: /^@owt\/router$/, replacement: r('./packages/owt-router/src/index.ts') },
     ],
   },
 });

@@ -18,6 +18,7 @@ Conventions for this repository. They are intentionally short and opinionated.
 | `packages/owt-parser` (`@owt/parser`) | Hand-written markup parser + JS-aware scanner; never throws, collects diagnostics |
 | `packages/owt-compiler` (`@owt/compiler`) | `compile()` → JS module + CSS + source map |
 | `packages/vite-plugin-owt` (`@owt/vite`) | Vite 7/8 plugin |
+| `packages/owt-router` (`@owt/router`) | Typed client-side router: patterns and matching (`path.ts`), history/guards/scroll (`router.ts`), `<Router>` (`view.ts`), `<Link>` (`link.ts`), types (`types.ts`); guide in `docs/router.md` |
 | `packages/owt-language-core` (`@owt/language-core`) | Volar language plugin: `.owt` → virtual TypeScript; formatter |
 | `packages/owt-language-server` (`@owt/language-server`) | LSP server (Volar + TS + CSS + OWT services), bundled with TypeScript |
 | `packages/owt-typescript-plugin` (`@owt/typescript-plugin`) | tsserver plugin (types for `.owt` imports in `.ts`) |
