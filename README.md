@@ -66,7 +66,8 @@ You won't find hooks, dependency arrays, `$` prefixes or a virtual DOM here. A c
   - context and portals;
   - `<window>`, `<document>` and `<head>` elements;
   - deeply reactive objects and arrays;
-  - async data with `resource()` (aborts outdated requests) and code-split `lazy()` components;
+  - async data with `resource()` (aborts outdated requests), code-split `lazy()` components and `<Defer on="viewport">` blocks;
+  - `selector()` for O(1) selection in large lists, `uid()` for accessible ids;
   - scoped CSS with `:global`, and compile-time warnings for selectors that match nothing.
 - **First-class tooling**:
   - a Vite 8 plugin with HMR that keeps component state and an error overlay with code frames;

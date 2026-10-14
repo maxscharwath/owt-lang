@@ -545,6 +545,9 @@ Everything is exported from `owt`, except the built-in transitions (`owt/transit
 | `tick()` / `flushSync()` | wait for / force pending DOM updates (updates are applied in a microtask) |
 | `createContext<T>()`, `setContext(key, value)`, `getContext(key)` | values provided to descendants |
 | `Portal` | render children elsewhere |
+| `Defer` | render children later: `on="idle"` (default), `"viewport"`, `"interaction"`, `"hover"`, a delay in ms or a condition; `slot placeholder { }` meanwhile |
+| `selector(() => selectedId)` | `isSelected(key)` checks that only update the keys that changed (large lists) |
+| `uid(prefix?)` | unique id for `id` / `for` / `aria-*` attributes |
 | `resource(fetcher)`, `resource(source, fetcher, { initialValue? })` | reactive async data: `value`, `loading`, `error`, `state`, `refetch()`, `mutate(value)` |
 | `lazy(() => import('./Chart.owt'), 'Chart')` | code-split component, loaded the first time it renders (`Chart.preload()` starts loading early) |
 | `range(a, b)`, `rev(list)` | helpers behind `a..b` and `rev` |
@@ -580,6 +583,20 @@ export const Chart = lazy(() => import('./Chart.owt'), 'Chart')   // or a defaul
 ```
 
 Nothing renders until the module has loaded. Wrap the component in an `if`, or show a placeholder while `Chart.preload()` is pending, if you need a loading state. Load errors go to the closest `try` block.
+
+`Defer` renders its content later, like Angular's `@defer`. Combined with `lazy`, the code is only downloaded when needed:
+
+```owt
+import { Defer, lazy } from 'owt'
+const Comments = lazy(() => import('./Comments.owt'), 'Comments')
+
+<Defer on="viewport">
+  <Comments {postId} />
+  slot placeholder { <p class="skeleton">Comments</p> }
+</Defer>
+```
+
+`viewport`, `interaction` and `hover` watch the placeholder's first element, or an empty marker when there is no placeholder. Once rendered, the content stays.
 
 Shared state is just TypeScript:
 

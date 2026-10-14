@@ -330,6 +330,26 @@ describe('components', () => {
   });
 });
 
+describe('runtime components', () => {
+  it('renders Defer content on interaction with its placeholder slot', async () => {
+    const m = await render(`import { Defer } from 'owt'\nexport component App() {\n  <Defer on="interaction">\n    <p>Comments</p>\n    slot placeholder { <button>Show comments</button> }\n  </Defer>\n}`);
+    const before = m.html();
+
+    m.click('button');
+
+    expect(before).toContain('Show comments');
+    expect(text(m, 'p')).toBe('Comments');
+  });
+
+  it('highlights the selected row with a selector', async () => {
+    const m = await render(`import { selector } from 'owt'\nexport component App() {\n  var selected = 1\n  const isSelected = selector(() => selected)\n  <ul>\n    for (id of [1, 2, 3]) { <li class:on={isSelected(id)} onClick={() => selected = id}>{id}</li> }\n  </ul>\n}`);
+
+    m.click('li:nth-child(3)');
+
+    expect(Array.from(m.root.querySelectorAll('li.on'), (li) => li.textContent)).toEqual(['3']);
+  });
+});
+
 describe('typescript', () => {
   it('erases types, generics, enums and type-only imports', async () => {
     const src = `import type { Foo } from './nope'\nenum Color { Red, Green = 'g' }\ninterface P { a: number }\nfunction first<T>(xs: T[]): T | undefined { return xs[0] }\nexport component App() {\n  val c: string = Color.Green as string\n  val n = first<number>([1, 2])!\n  <p>{c}{n}{Color.Red}</p>\n}`;

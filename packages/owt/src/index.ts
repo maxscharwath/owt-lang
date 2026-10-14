@@ -42,6 +42,8 @@ export { range, rev, type LoopMeta, type Snippet } from './dom/blocks';
 export type { Action, ActionReturn } from './dom/bindings';
 export type { Animate, AnimationRects, Transition, TransitionConfig, TransitionDirection } from './dom/transitions';
 export { lazy, resource, type LazyComponent, type Resource, type ResourceInfo, type ResourceOptions, type ResourceState } from './resource';
+export { selector, uid } from './selector';
+export { Defer, type DeferProps, type DeferTrigger } from './dom/defer';
 export { toClass } from './dom/attributes';
 
 /** A readable reactive value. */
