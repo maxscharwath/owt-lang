@@ -1,22 +1,22 @@
 # OWT benchmark results
 
-Chromium 141.0.7390.37 (headless), Node v22.22.0, Intel(R) Xeon(R) Processor @ 2.80GHz x4, 2026-10-13 23:53 UTC.
+Chromium 141.0.7390.37 (headless), Node v22.22.0, Intel(R) Xeon(R) Processor @ 2.80GHz x4, 2026-10-14 00:24 UTC.
 10 runs per benchmark (5 for 10k rows) after 5 in-page warmup steps; fresh page per run; CPU throttling 4x where noted. Durations are click -> next frame painted (rAF, rAF, setTimeout 0), in ms.
 
 ## Duration (ms): median (slowdown vs fastest)
 
 | Benchmark | vanilla | vue 3.5.44 | react 19.3.0 | owt 1.0.0-beta.1 |
 |:---|---:|---:|---:|---:|
-| `run` create rows: creating 1,000 rows | **111.6** (1.00) | 141.2 (1.26) | 142.6 (1.28) | 127.7 (1.14) |
-| `replace` replace all rows: replacing all 1,000 rows | **122.1** (1.00) | 163.4 (1.34) | 166.8 (1.37) | 139.8 (1.15) |
-| `update` partial update: updating every 10th row of 1,000 rows (4x CPU slowdown) | **56.5** (1.00) | 91.1 (1.61) | 82.6 (1.46) | 80.0 (1.42) |
-| `select` select row: highlighting a selected row (4x CPU slowdown) | **36.1** (1.00) | 54.3 (1.50) | 41.9 (1.16) | 39.0 (1.08) |
-| `swap` swap rows: swapping 2 rows of a 1,000-row table (4x CPU slowdown) | **72.9** (1.00) | 98.3 (1.35) | 658.7 (9.04) | 76.4 (1.05) |
-| `remove` remove row: removing one row (4x CPU slowdown) | **128.6** (1.00) | 148.6 (1.16) | 137.6 (1.07) | 129.1 (1.00) |
-| `runlots` create many rows: creating 10,000 rows | **1163.9** (1.00) | 1379.2 (1.18) | 1528.5 (1.31) | 1213.7 (1.04) |
-| `add` append rows to large table: appending 1,000 rows to a table of 1,000 rows | **133.0** (1.00) | 168.0 (1.26) | 162.8 (1.22) | 159.3 (1.20) |
-| `clear` clear rows: clearing a table with 1,000 rows | **10.0** (1.00) | 12.7 (1.27) | 17.4 (1.75) | 12.4 (1.24) |
-| **geometric mean** of slowdown | **1.00** | **1.32** | **1.63** | **1.14** |
+| `run` create rows: creating 1,000 rows | **112.7** (1.00) | 144.3 (1.28) | 146.8 (1.30) | 121.5 (1.08) |
+| `replace` replace all rows: replacing all 1,000 rows | **118.0** (1.00) | 159.5 (1.35) | 172.3 (1.46) | 139.8 (1.19) |
+| `update` partial update: updating every 10th row of 1,000 rows (4x CPU slowdown) | **85.6** (1.00) | 112.1 (1.31) | 100.8 (1.18) | 97.2 (1.13) |
+| `select` select row: highlighting a selected row (4x CPU slowdown) | **33.6** (1.00) | 60.0 (1.78) | 41.7 (1.24) | 42.5 (1.26) |
+| `swap` swap rows: swapping 2 rows of a 1,000-row table (4x CPU slowdown) | **86.4** (1.00) | 109.2 (1.26) | 722.0 (8.36) | 90.7 (1.05) |
+| `remove` remove row: removing one row (4x CPU slowdown) | **138.9** (1.00) | 161.4 (1.16) | 147.3 (1.06) | 150.5 (1.08) |
+| `runlots` create many rows: creating 10,000 rows | **1121.8** (1.00) | 1276.5 (1.14) | 1479.9 (1.32) | 1209.0 (1.08) |
+| `add` append rows to large table: appending 1,000 rows to a table of 1,000 rows | **143.4** (1.00) | 176.3 (1.23) | 170.6 (1.19) | 160.8 (1.12) |
+| `clear` clear rows: clearing a table with 1,000 rows | **10.4** (1.00) | 13.1 (1.26) | 17.6 (1.69) | 12.2 (1.17) |
+| **geometric mean** of slowdown | **1.00** | **1.30** | **1.59** | **1.13** |
 
 ## Duration details (ms)
 
@@ -25,53 +25,53 @@ animation frame callback (event handler + framework work + microtasks, before st
 
 | Benchmark | Framework | n | median | mean | stddev | min | max | JS |
 |:---|---:|---:|---:|---:|---:|---:|---:|---:|
-| `run` | vanilla | 10 | 111.6 | 117.7 | 18.1 | 97.5 | 141.2 | 7.5 |
-| `run` | vue | 10 | 141.2 | 141.9 | 13.4 | 126.9 | 173.5 | 22.5 |
-| `run` | react | 10 | 142.6 | 142.0 | 10.6 | 124.8 | 160.7 | 29.4 |
-| `run` | owt | 10 | 127.7 | 128.9 | 14.4 | 106.6 | 159.4 | 14.9 |
-| `replace` | vanilla | 10 | 122.1 | 125.7 | 18.1 | 106.8 | 158.8 | 14.0 |
-| `replace` | vue | 10 | 163.4 | 164.5 | 20.4 | 142.6 | 208.6 | 34.2 |
-| `replace` | react | 10 | 166.8 | 166.8 | 10.5 | 153.9 | 183.5 | 38.1 |
-| `replace` | owt | 10 | 139.8 | 140.6 | 13.9 | 115.9 | 159.6 | 25.0 |
-| `update` | vanilla | 10 | 56.5 | 58.0 | 13.5 | 37.0 | 74.8 | 2.7 |
-| `update` | vue | 10 | 91.1 | 93.8 | 22.7 | 66.1 | 145.0 | 29.1 |
-| `update` | react | 10 | 82.6 | 83.9 | 22.8 | 61.5 | 138.0 | 16.7 |
-| `update` | owt | 10 | 80.0 | 80.5 | 6.8 | 66.7 | 92.5 | 10.5 |
-| `select` | vanilla | 10 | 36.1 | 38.0 | 4.9 | 33.0 | 46.9 | 2.1 |
-| `select` | vue | 10 | 54.3 | 54.7 | 5.1 | 45.5 | 63.9 | 23.7 |
-| `select` | react | 10 | 41.9 | 45.9 | 9.3 | 36.0 | 61.3 | 10.4 |
-| `select` | owt | 10 | 39.0 | 39.8 | 4.9 | 32.4 | 46.8 | 8.2 |
-| `swap` | vanilla | 10 | 72.9 | 73.9 | 12.1 | 55.8 | 96.0 | 1.9 |
-| `swap` | vue | 10 | 98.3 | 99.1 | 11.2 | 82.1 | 121.9 | 24.3 |
-| `swap` | react | 10 | 658.7 | 663.4 | 37.3 | 606.7 | 720.6 | 75.4 |
-| `swap` | owt | 10 | 76.4 | 79.2 | 11.9 | 61.5 | 101.2 | 4.5 |
-| `remove` | vanilla | 10 | 128.6 | 132.3 | 18.4 | 114.1 | 180.1 | 2.1 |
-| `remove` | vue | 10 | 148.6 | 146.2 | 16.2 | 103.9 | 160.3 | 23.1 |
-| `remove` | react | 10 | 137.6 | 134.2 | 15.7 | 101.9 | 162.3 | 10.4 |
-| `remove` | owt | 10 | 129.1 | 127.2 | 10.8 | 101.3 | 139.5 | 5.9 |
-| `runlots` | vanilla | 5 | 1163.9 | 1149.7 | 45.2 | 1080.6 | 1201.7 | 102.3 |
-| `runlots` | vue | 5 | 1379.2 | 1348.6 | 68.0 | 1246.3 | 1418.1 | 234.4 |
-| `runlots` | react | 5 | 1528.5 | 1549.5 | 94.1 | 1461.6 | 1702.7 | 455.4 |
-| `runlots` | owt | 5 | 1213.7 | 1227.3 | 41.7 | 1192.5 | 1295.6 | 156.9 |
-| `add` | vanilla | 10 | 133.0 | 134.2 | 6.5 | 123.9 | 146.5 | 6.9 |
-| `add` | vue | 10 | 168.0 | 168.3 | 9.3 | 156.2 | 181.8 | 28.0 |
-| `add` | react | 10 | 162.8 | 163.0 | 9.4 | 146.8 | 179.7 | 25.8 |
-| `add` | owt | 10 | 159.3 | 156.1 | 12.2 | 136.1 | 175.3 | 15.7 |
-| `clear` | vanilla | 10 | 10.0 | 11.8 | 2.9 | 9.3 | 17.2 | 7.6 |
-| `clear` | vue | 10 | 12.7 | 13.1 | 1.2 | 12.0 | 15.9 | 10.4 |
-| `clear` | react | 10 | 17.4 | 17.7 | 1.2 | 16.2 | 20.0 | 15.0 |
-| `clear` | owt | 10 | 12.4 | 13.1 | 2.3 | 10.6 | 16.6 | 9.4 |
+| `run` | vanilla | 10 | 112.7 | 112.1 | 4.4 | 105.0 | 118.1 | 7.0 |
+| `run` | vue | 10 | 144.3 | 152.0 | 21.1 | 131.9 | 199.8 | 21.5 |
+| `run` | react | 10 | 146.8 | 149.2 | 16.3 | 131.1 | 182.5 | 25.7 |
+| `run` | owt | 10 | 121.5 | 124.6 | 8.1 | 116.7 | 138.3 | 16.3 |
+| `replace` | vanilla | 10 | 118.0 | 124.0 | 20.2 | 111.4 | 180.3 | 14.3 |
+| `replace` | vue | 10 | 159.5 | 164.4 | 16.0 | 139.5 | 195.4 | 31.1 |
+| `replace` | react | 10 | 172.3 | 175.2 | 15.0 | 157.0 | 204.4 | 39.5 |
+| `replace` | owt | 10 | 139.8 | 138.7 | 10.2 | 123.1 | 151.3 | 23.7 |
+| `update` | vanilla | 10 | 85.6 | 87.4 | 9.7 | 71.3 | 105.2 | 3.6 |
+| `update` | vue | 10 | 112.1 | 113.1 | 10.7 | 100.3 | 131.6 | 29.1 |
+| `update` | react | 10 | 100.8 | 101.6 | 11.2 | 86.6 | 128.9 | 19.9 |
+| `update` | owt | 10 | 97.2 | 100.5 | 13.6 | 85.7 | 128.8 | 9.6 |
+| `select` | vanilla | 10 | 33.6 | 33.9 | 7.4 | 22.5 | 45.8 | 1.5 |
+| `select` | vue | 10 | 60.0 | 60.3 | 8.2 | 49.5 | 77.6 | 24.5 |
+| `select` | react | 10 | 41.7 | 43.5 | 4.0 | 37.7 | 50.3 | 10.4 |
+| `select` | owt | 10 | 42.5 | 41.3 | 6.9 | 25.8 | 48.1 | 7.6 |
+| `swap` | vanilla | 10 | 86.4 | 87.6 | 9.4 | 73.7 | 104.1 | 2.0 |
+| `swap` | vue | 10 | 109.2 | 114.0 | 12.7 | 99.9 | 135.4 | 25.1 |
+| `swap` | react | 10 | 722.0 | 716.9 | 25.4 | 673.1 | 750.0 | 79.6 |
+| `swap` | owt | 10 | 90.7 | 90.7 | 9.7 | 69.7 | 105.6 | 5.0 |
+| `remove` | vanilla | 10 | 138.9 | 141.9 | 10.6 | 127.3 | 162.0 | 1.8 |
+| `remove` | vue | 10 | 161.4 | 165.9 | 13.9 | 152.2 | 198.7 | 27.0 |
+| `remove` | react | 10 | 147.3 | 149.7 | 12.1 | 133.8 | 173.9 | 10.9 |
+| `remove` | owt | 10 | 150.5 | 148.6 | 15.3 | 122.9 | 177.2 | 5.9 |
+| `runlots` | vanilla | 5 | 1121.8 | 1114.1 | 43.9 | 1046.5 | 1158.9 | 92.6 |
+| `runlots` | vue | 5 | 1276.5 | 1258.2 | 44.8 | 1205.2 | 1297.9 | 203.7 |
+| `runlots` | react | 5 | 1479.9 | 1478.1 | 33.9 | 1439.1 | 1527.1 | 420.3 |
+| `runlots` | owt | 5 | 1209.0 | 1215.7 | 43.6 | 1160.0 | 1260.5 | 137.3 |
+| `add` | vanilla | 10 | 143.4 | 143.5 | 9.8 | 125.8 | 157.8 | 6.7 |
+| `add` | vue | 10 | 176.3 | 175.0 | 11.2 | 160.1 | 199.1 | 28.7 |
+| `add` | react | 10 | 170.6 | 168.8 | 9.4 | 155.8 | 180.5 | 25.6 |
+| `add` | owt | 10 | 160.8 | 158.9 | 7.8 | 144.7 | 171.8 | 16.1 |
+| `clear` | vanilla | 10 | 10.4 | 10.5 | 0.6 | 9.8 | 11.9 | 7.9 |
+| `clear` | vue | 10 | 13.1 | 13.1 | 0.6 | 12.3 | 14.1 | 10.8 |
+| `clear` | react | 10 | 17.6 | 17.7 | 0.6 | 17.0 | 18.7 | 15.2 |
+| `clear` | owt | 10 | 12.2 | 13.2 | 2.7 | 11.3 | 18.5 | 9.3 |
 
 ## Memory (MB, JS heap used after forced GC)
 
 | Measurement | vanilla | vue 3.5.44 | react 19.3.0 | owt 1.0.0-beta.1 |
 |:---|---:|---:|---:|---:|
 | ready memory (after page load) | 1.77 | 2.02 | 2.24 | 1.82 |
-| run memory (after creating 1,000 rows) | 2.12 | 4.13 | 4.37 | 2.93 |
+| run memory (after creating 1,000 rows) | 2.12 | 4.12 | 4.36 | 2.95 |
 
 ## Production bundle size (all JS)
 
 | Size | vanilla | vue 3.5.44 | react 19.3.0 | owt 1.0.0-beta.1 |
 |:---|---:|---:|---:|---:|
-| raw | 2.2 KiB | 63.9 KiB | 216.9 KiB | 16.7 KiB |
-| gzip (level 9) | 1.2 KiB | 24.8 KiB | 67.0 KiB | 6.2 KiB |
+| raw | 2.2 KiB | 63.9 KiB | 216.9 KiB | 18.6 KiB |
+| gzip (level 9) | 1.2 KiB | 24.8 KiB | 67.0 KiB | 6.9 KiB |

@@ -456,7 +456,7 @@ Any component reading `cart.items` updates when it changes.
 
 | Package | Purpose |
 |---|---|
-| `owt` | runtime (≈6 KB gzipped for a typical app) |
+| `owt` | runtime (≈7 KB gzipped for a typical app) |
 | `@owt/vite` | Vite 7/8 plugin: compilation, scoped CSS modules, HMR that keeps state of unaffected components, error overlay with code frames |
 | `@owt/compiler` | `compile(source, { filename, dev, hmr, css })` for other build tools |
 | `@owt/language-server` | LSP server (diagnostics, completions, hover, go to definition, references, rename, symbols, folding, auto-closing tags, linked tag editing, CSS features in `<style>`) |
