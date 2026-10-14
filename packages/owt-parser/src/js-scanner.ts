@@ -439,7 +439,9 @@ const BLOCK_STATEMENT_STARTS = new Set(['function', 'async', 'class', 'interface
 function continues(first: Token | null, beforeLast: Token | null, last: Token, next: Token): boolean {
   if (last.kind === 'punct' && CONTINUE_AFTER.has(last.value)) return true;
   const isMember = beforeLast !== null && beforeLast.kind === 'punct' && (beforeLast.value === '.' || beforeLast.value === '?.');
-  if (last.kind === 'ident' && !isMember && CONTINUE_AFTER_WORDS.has(last.value)) return true;
+  // `x as const` is complete: `const` only continues when it starts a declaration
+  const asConst = last.value === 'const' && beforeLast !== null && beforeLast.kind === 'ident' && beforeLast.value === 'as';
+  if (last.kind === 'ident' && !isMember && !asConst && CONTINUE_AFTER_WORDS.has(last.value)) return true;
   if (next.kind === 'punct') {
     if (CONTINUE_BEFORE.has(next.value)) return true;
     if (next.value === '{') return first !== null && first.kind === 'ident' && BLOCK_STATEMENT_STARTS.has(first.value);

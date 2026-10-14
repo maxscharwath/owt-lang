@@ -312,6 +312,18 @@ describe('statement scanner', () => {
     expect(src.slice(0, scanStatementEnd(src, 0))).toBe('val k = item.type');
   });
 
+  it('ends a statement after `as const`', () => {
+    const src = "var pair = [1, 'x'] as const\nval next = 2";
+
+    expect(src.slice(0, scanStatementEnd(src, 0))).toBe("var pair = [1, 'x'] as const");
+  });
+
+  it('continues after a trailing const keyword', () => {
+    const src = 'export const\n  x = 1\n<p/>';
+
+    expect(src.slice(0, scanStatementEnd(src, 0))).toBe('export const\n  x = 1');
+  });
+
   it('handles regex literals and division', () => {
     const src = 'val r = /}/.test(s) ? a / b : c\n<p/>';
 
