@@ -8,8 +8,12 @@ export component Card(
 ) {
   var open = true
 
+  function toggle() {
+    open = !open
+  }
+
   <section class="card" class:warn={tone === 'warn'}>
-    <header onClick={() => open = !open}>
+    <header role="button" tabindex="0" aria-expanded={open} onClick={toggle} onKeyDown|enter|space|preventDefault={toggle}>
       <slot name="header" title={title} open={open}>
         <h2>{title}</h2>
       </slot>

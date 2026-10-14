@@ -357,6 +357,22 @@ function isBlank(c: string): boolean {
   return c === ' ' || c === '\t';
 }
 
+/** Words of a whitespace-separated list (`role="button link"`); `separators` adds characters like `,`. */
+export function splitTokens(text: string, separators = ''): string[] {
+  const out: string[] = [];
+  let word = '';
+  for (const ch of text) {
+    if (ch === ' ' || ch === '\t' || ch === '\n' || ch === '\r' || ch === '\f' || separators.includes(ch)) {
+      if (word !== '') out.push(word);
+      word = '';
+    } else {
+      word += ch;
+    }
+  }
+  if (word !== '') out.push(word);
+  return out;
+}
+
 /**
  * JSX whitespace rules: lines are trimmed, blank lines dropped, remaining
  * lines joined with a single space. Text on a single line is kept as is.

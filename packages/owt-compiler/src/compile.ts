@@ -7,6 +7,7 @@ import { BindingScope } from './bindings';
 import { compileComponent } from './component';
 import { FileContext } from './context';
 import { CompileError, Reporter } from './errors';
+import { ignoreRanges } from './ignore';
 import { transformModule } from './js';
 import { visitComponent } from './traverse';
 import { Walker } from './walk';
@@ -100,7 +101,7 @@ export function compile(source: string, options: CompileOptions = {}): CompileRe
   const firstError = ast.diagnostics.find((d) => d.severity === 'error');
   if (firstError !== undefined) throw new CompileError(firstError, source, filename);
 
-  const reporter = new Reporter(source, filename);
+  const reporter = new Reporter(source, filename, ignoreRanges(ast));
   const { all, used } = analyzeNames(ast);
   const rt = all.has('$') ? (all.has('$owt') ? '$owt$' : '$owt') : '$';
   const file = new FileContext(source, filename, reporter, rt, options.dev === true, all);

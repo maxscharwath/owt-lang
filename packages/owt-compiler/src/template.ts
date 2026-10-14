@@ -43,8 +43,9 @@ import {
   invalidNesting,
   templateLiteralText,
 } from './html';
+import { A11yChecker } from './a11y';
 import { destructure } from './js';
-import { parseModifiers, splitModifiers } from './modifiers';
+import { eventInfo, parseModifiers, splitModifiers } from './modifiers';
 import { patternNames } from './walk';
 
 export type Namespace = 'html' | 'svg' | 'mathml';
@@ -184,20 +185,6 @@ function isStatementLike(node: t.Node): boolean {
   return false;
 }
 
-function eventInfo(name: string): { type: string; capture: boolean } | null {
-  if (name.length > 2 && name.startsWith('on') && name.charCodeAt(2) >= 65 && name.charCodeAt(2) <= 90) {
-    let base = name.slice(2);
-    let capture = false;
-    if (base.length > 7 && base.endsWith('Capture') && base !== 'GotPointerCapture' && base !== 'LostPointerCapture') {
-      base = base.slice(0, -7);
-      capture = true;
-    }
-    const type = base.toLowerCase();
-    return { type: type === 'doubleclick' ? 'dblclick' : type, capture };
-  }
-  return null;
-}
-
 function isIdentifierName(name: string): boolean {
   if (name === '') return false;
   for (let i = 0; i < name.length; i++) {
@@ -241,11 +228,14 @@ function identifier(name: string, start: number): t.Identifier {
 
 export class TemplateCompiler {
   private readonly templateCache = new Map<string, string>();
+  private readonly a11y: A11yChecker;
 
   /** root elements of `for` rows: where `animate:` is allowed */
   private readonly rowRoots = new Set<Element>();
 
-  constructor(private readonly c: ComponentContext) {}
+  constructor(private readonly c: ComponentContext) {
+    this.a11y = new A11yChecker(c);
+  }
 
   private get rt(): string {
     return this.c.rt;
@@ -545,6 +535,7 @@ export class TemplateCompiler {
       const problem = invalidNesting(tag, parentTag);
       if (problem !== null) this.c.error('invalid-nesting', problem, el.start, el.nameSpan.end);
     }
+    this.a11y.check(el);
     const node = new DNode('el', tag, '');
     this.attributes(el, node, scope, elNs, ops);
 

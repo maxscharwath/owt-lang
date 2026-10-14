@@ -3,10 +3,12 @@ import { fade, fly, scale } from 'owt/transition'
 
 // Portal renders into document.body; <window> listens to global events.
 // Transitions play when `open` changes, and the modal stays until its outro has finished.
+// Clicking the backdrop is a mouse shortcut (keyboard users have Escape and the Close button),
+// so the backdrop is presentational.
 export component Modal(open: boolean, onClose: () => void) {
   if (open) {
     <Portal>
-      <div class="backdrop" onClick|self={onClose} transition:fade={{ duration: 150 }}>
+      <div class="backdrop" role="presentation" onClick|self={onClose} transition:fade={{ duration: 150 }}>
         <div class="modal" role="dialog" in:fly={{ y: 24, duration: 200 }} out:scale={{ start: 0.95, duration: 150 }}>
           <slot />
           <button class="close" onClick={onClose}>Close</button>
