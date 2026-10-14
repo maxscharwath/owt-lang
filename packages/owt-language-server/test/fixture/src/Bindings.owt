@@ -1,0 +1,7 @@
+export component Bindings() {
+  var age = 0
+  var agree = false
+  <input type="number" bind:value={age} />
+  <input type="checkbox" bind:checked={agree} />
+  <p>{age} {agree}</p>
+}

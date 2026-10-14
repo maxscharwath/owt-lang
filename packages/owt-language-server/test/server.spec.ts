@@ -16,6 +16,7 @@ beforeAll(async () => {
   await server.openTextDocument(resolve(fixture, 'src/Errors.owt'), 'owt');
   await server.openTextDocument(resolve(fixture, 'src/Patterns.owt'), 'owt');
   await server.openTextDocument(resolve(fixture, 'src/Modifiers.owt'), 'owt');
+  await server.openTextDocument(resolve(fixture, 'src/Bindings.owt'), 'owt');
 }, 60000);
 
 afterAll(async () => {
@@ -66,6 +67,12 @@ describe('language server', () => {
     const errors = await messages('src/Patterns.owt');
 
     expect(errors).toHaveLength(2);
+  }, 30000);
+
+  it('types two-way bindings with the value the element writes', async () => {
+    const errors = await messages('src/Bindings.owt');
+
+    expect(errors).toEqual(["Type 'number | null' is not assignable to type 'number'.\n  Type 'null' is not assignable to type 'number'."]);
   }, 30000);
 
   it('completes event modifiers after |', async () => {

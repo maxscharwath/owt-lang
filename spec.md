@@ -226,7 +226,7 @@ Guards (`self`, `trusted`, keys, buttons) are checked first. Then `preventDefaul
 | `bind:open`, `bind:files`, `bind:textContent`, `bind:innerHTML`, `bind:innerText`, `bind:currentTime`, `bind:volume`, `bind:muted`, `bind:playbackRate`, `bind:indeterminate` | matching elements | the DOM property |
 | `bind:clientWidth`, `bind:clientHeight`, `bind:offsetWidth`, `bind:offsetHeight` | any element | read-only size, via `ResizeObserver` |
 
-The target can be a `var`, a bindable prop or a property (`bind:value={todo.text}`).
+The target can be a `var`, a bindable prop or a property (`bind:value={todo.text}`). Targets are type-checked against what the binding writes. `bind:value` gives a `string` on text inputs and textareas, and `number | null` on number and range inputs (`null` when the field is empty). `bind:checked` gives a `boolean`. `bind:group` gives the type of the `value` attribute on radios, and an array of it on checkboxes. So `var age = 0` bound to `<input type="number">` is an error: write `var age: number | null = 0`. The type of `<select>` values and of inputs with a dynamic `type` is not checked.
 
 ### Actions
 

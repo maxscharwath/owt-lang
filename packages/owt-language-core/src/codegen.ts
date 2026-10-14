@@ -103,6 +103,48 @@ function isIdentifierName(name: string): boolean {
   return true;
 }
 
+function staticAttribute(el: Element, name: string): string | null {
+  for (const a of el.attributes) {
+    if (a.type === 'Attribute' && a.directive === null && a.name === name) return a.value.type === 'Static' ? a.value.value.toLowerCase() : null;
+  }
+  return null;
+}
+
+/** Type of the value a two-way binding writes (null: not known statically, left unchecked). */
+function boundType(el: Element, arg: string): string | null {
+  switch (arg) {
+    case 'value': {
+      if (el.name === 'textarea') return 'string';
+      if (el.name !== 'input') return null;
+      const hasType = el.attributes.some((a) => a.type === 'Attribute' && a.name === 'type');
+      const type = staticAttribute(el, 'type');
+      if (type === 'number' || type === 'range') return 'number | null';
+      return hasType && type === null ? null : 'string';
+    }
+    case 'checked':
+    case 'indeterminate':
+    case 'open':
+    case 'muted':
+      return 'boolean';
+    case 'files':
+      return 'FileList | null';
+    case 'textContent':
+    case 'innerHTML':
+    case 'innerText':
+      return 'string';
+    case 'currentTime':
+    case 'volume':
+    case 'playbackRate':
+    case 'clientWidth':
+    case 'clientHeight':
+    case 'offsetWidth':
+    case 'offsetHeight':
+      return 'number';
+    default:
+      return null;
+  }
+}
+
 /** Event attributes repeating an earlier one with other modifiers (`onKeyDown|enter`, `onKeyDown|escape`). */
 function repeatedEvents(el: Element): Set<Attribute> {
   const seen = new Set<string>();
@@ -631,8 +673,14 @@ class ComponentGen {
       const value = attr.value;
       const argStart = attr.nameSpan.start + attr.name.indexOf(':') + 1;
       const target = () => {
-        if (value.type === 'Expression') this.expr(value.span);
-        else this.identifierRef(attr.arg, argStart);
+        if (value.type !== 'Expression') {
+          this.identifierRef(attr.arg, argStart);
+          return;
+        }
+        // no parentheses around assignment targets: TypeScript reports type errors on them
+        const e = value.expression;
+        if (e !== null && (e.type === 'Identifier' || e.type === 'MemberExpression')) this.b.map(value.span.start, value.span.end);
+        else this.expr(value.span);
       };
       if (attr.name === 'ref' && value.type === 'Expression' && v !== null) {
         const fn = value.expression !== null && (value.expression.type === 'ArrowFunctionExpression' || value.expression.type === 'FunctionExpression');
@@ -641,7 +689,7 @@ class ComponentGen {
           this.expr(value.span);
           b.text(');\n');
         } else {
-          this.expr(value.span);
+          target();
           // the element is stored for later use: a ref-only variable is not "unused"
           b.text(` = ${v};\nvoid (${this.src.slice(value.span.start, value.span.end)});\n`);
         }
@@ -660,10 +708,26 @@ class ComponentGen {
             b.text(');\n');
           }
           break;
-        case 'bind':
+        case 'bind': {
           target();
-          b.text(attr.arg === 'this' && v !== null ? ` = ${v};\n` : ' = __owt.bound;\n');
+          if (attr.arg === 'this' && v !== null) {
+            b.text(` = ${v};\n`);
+            break;
+          }
+          if (attr.arg === 'group') {
+            // radio: the value's type; checkbox: an array of it
+            const valueAttr = el.attributes.find((a) => a.type === 'Attribute' && a.name === 'value' && a.directive === null);
+            const checkbox = staticAttribute(el, 'type') === 'checkbox';
+            b.text(checkbox ? ' = __owt.groupList(' : ' = __owt.group(');
+            if (valueAttr !== undefined && valueAttr.type === 'Attribute') this.attrValue(valueAttr);
+            else b.text('undefined');
+            b.text(');\n');
+            break;
+          }
+          const type = boundType(el, attr.arg);
+          b.text(type === null ? ' = __owt.bound;\n' : ` = __owt.value<${type}>();\n`);
           break;
+        }
         case 'use':
           if (v === null) break;
           b.text('__owt.action(');

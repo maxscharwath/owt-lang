@@ -88,8 +88,14 @@ export interface Helpers {
   target(kind: 'window', attrs: TargetAttributes<Window, WindowOnlyEvents>): void;
   target(kind: 'document', attrs: TargetAttributes<Document, DocumentOnlyEvents>): void;
   target(kind: 'body', attrs: TargetAttributes<HTMLBodyElement, WindowOnlyEvents>): void;
-  /** value produced by two-way bindings (`bind:value`): assignable to anything */
+  /** value written by a two-way binding whose type is not known statically: assignable to anything */
   readonly bound: never;
+  /** value written by a two-way binding (`bind:checked` → boolean, number input → number | null...) */
+  value<T>(): T;
+  /** `bind:group` on radio inputs: the value of the checked input */
+  group<T>(value: T): T;
+  /** `bind:group` on checkboxes: the values of the checked inputs */
+  groupList<T>(value: T): T[];
   /** what component functions return */
   readonly node: Node;
 }
