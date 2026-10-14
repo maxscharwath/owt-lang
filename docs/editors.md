@@ -5,6 +5,7 @@ All editors use the same language server, `@owt/language-server`, so features ar
 - diagnostics: OWT syntax and compiler errors, TypeScript type errors in code **and markup** (unknown attributes, wrong prop types, missing props, assignments to `val`...), CSS errors in `<style>`;
 - completions: TypeScript in expressions, element names, attribute names and values, event names, component props, CSS properties;
 - hover, go to definition, find references, rename (across `.owt` and `.ts` files), document symbols, folding;
+- completions for event modifiers after `|` (`onKeyDown|` → `enter`, `escape`, `ctrl`, `preventDefault`...);
 - auto-closing tags, linked editing of opening/closing tag names, document formatting;
 - semantic highlighting.
 

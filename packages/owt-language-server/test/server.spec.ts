@@ -15,6 +15,7 @@ beforeAll(async () => {
   await server.openTextDocument(resolve(fixture, 'src/App.owt'), 'owt');
   await server.openTextDocument(resolve(fixture, 'src/Errors.owt'), 'owt');
   await server.openTextDocument(resolve(fixture, 'src/Patterns.owt'), 'owt');
+  await server.openTextDocument(resolve(fixture, 'src/Modifiers.owt'), 'owt');
 }, 60000);
 
 afterAll(async () => {
@@ -65,6 +66,15 @@ describe('language server', () => {
     const errors = await messages('src/Patterns.owt');
 
     expect(errors).toHaveLength(2);
+  }, 30000);
+
+  it('completes event modifiers after |', async () => {
+    const list = await server.sendCompletionRequest(uri('src/Modifiers.owt'), { line: 1, character: 24 });
+    const labels = list?.items.map((i) => i.label) ?? [];
+
+    expect(labels).toContain('enter');
+    expect(labels).toContain('preventDefault');
+    expect(labels).not.toContain('ctrl');
   }, 30000);
 
   it('completes object members inside expressions', async () => {

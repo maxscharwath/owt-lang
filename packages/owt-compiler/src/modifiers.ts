@@ -113,3 +113,37 @@ export function parseModifiers(modifiers: readonly string[], type: string): Even
   if (out.passive && out.flags & MOD_PREVENT) return '|passive listeners cannot call preventDefault';
   return out;
 }
+
+const DOCS: Record<string, string> = {
+  preventDefault: 'Call `event.preventDefault()` before the handler',
+  stopPropagation: 'Call `event.stopPropagation()` before the handler',
+  stopImmediatePropagation: 'Call `event.stopImmediatePropagation()` before the handler',
+  self: 'Only when the event targets this element itself, not a child',
+  trusted: 'Only for events dispatched by the browser (`event.isTrusted`)',
+  once: 'Run the handler at most once',
+  capture: 'Listen during the capture phase',
+  passive: 'Passive listener: cannot call preventDefault (smooth scrolling)',
+  ctrl: 'Only while Ctrl is held',
+  shift: 'Only while Shift is held',
+  alt: 'Only while Alt is held',
+  meta: 'Only while Meta (⌘ / Windows key) is held',
+  exact: 'No other Ctrl / Shift / Alt / Meta key held',
+  left: 'Left mouse button (keyboard events: ArrowLeft)',
+  right: 'Right mouse button (keyboard events: ArrowRight)',
+  middle: 'Middle mouse button',
+};
+
+/** Modifiers that apply to an event type, with a description (editor completions). */
+export function eventModifiers(type: string): { name: string; description: string }[] {
+  const key = isKeyEvent(type);
+  const out: { name: string; description: string }[] = [];
+  for (const name of Object.keys(FLAGS)) out.push({ name, description: DOCS[name] ?? name });
+  out.push({ name: 'capture', description: DOCS['capture']! }, { name: 'passive', description: DOCS['passive']! });
+  if (key) {
+    for (const [name, keys] of Object.entries(KEYS)) out.push({ name, description: `Only for the ${keys.map((k) => (k === ' ' ? 'Space' : k)).join(' / ')} key` });
+    out.push({ name: 'left', description: 'Only for the ArrowLeft key' }, { name: 'right', description: 'Only for the ArrowRight key' });
+  } else {
+    for (const name of ['left', 'middle', 'right']) out.push({ name, description: `Only for the ${name} mouse button` });
+  }
+  return out;
+}

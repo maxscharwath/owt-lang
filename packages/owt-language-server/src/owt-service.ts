@@ -7,7 +7,7 @@ import type { LanguageServicePlugin, LanguageServicePluginInstance } from '@vola
 import type { TextDocument } from 'vscode-languageserver-textdocument';
 import type * as vscode from '@volar/language-server';
 import { parse } from '@owt/parser';
-import { compile, CompileError } from '@owt/compiler';
+import { compile, CompileError, eventInfo, eventModifiers, splitModifiers } from '@owt/compiler';
 import { walkTemplate, type ComponentDecl, type Element, type Program, type TemplateNode } from '@owt/ast';
 import { format } from '@owt/language-core';
 
@@ -86,6 +86,7 @@ export function createOwtService(): LanguageServicePlugin {
       hoverProvider: true,
       documentFormattingProvider: true,
       autoInsertionProvider: { triggerCharacters: ['>'] },
+      completionProvider: { triggerCharacters: ['|'] },
     },
     create(context): LanguageServicePluginInstance {
       const cache = new WeakMap<TextDocument, { version: number; program: Program }>();
@@ -135,6 +136,37 @@ export function createOwtService(): LanguageServicePlugin {
             }
           }
           return out;
+        },
+
+        provideCompletionItems(doc, position) {
+          // event modifiers: `onKeyDown|` → enter, escape, ctrl, preventDefault...
+          const program = programOf(doc);
+          if (program === null) return null;
+          const offset = doc.offsetAt(position);
+          const el = elementAt(program, offset);
+          if (el === null || offset > el.openEnd) return null;
+          const attr = el.attributes.find((a) => a.type === 'Attribute' && a.nameSpan.start < offset && offset <= a.nameSpan.end);
+          if (attr === undefined || attr.type !== 'Attribute') return null;
+          const typed = doc.getText().slice(attr.nameSpan.start, offset);
+          const bar = typed.lastIndexOf('|');
+          if (bar < 0) return null;
+          const { name, modifiers } = splitModifiers(typed.slice(0, bar));
+          const event = attr.directive === 'on' ? { type: splitModifiers(attr.arg).name } : eventInfo(name);
+          if (event === null) return null;
+          const used = new Set(modifiers);
+          const from = doc.positionAt(attr.nameSpan.start + bar + 1);
+          return {
+            isIncomplete: false,
+            items: eventModifiers(event.type)
+              .filter((m) => !used.has(m.name))
+              .map((m) => ({
+                label: m.name,
+                kind: 14 /* Keyword */,
+                detail: 'event modifier',
+                documentation: m.description,
+                textEdit: { range: { start: from, end: position }, newText: m.name },
+              })),
+          };
         },
 
         provideDocumentSymbols(doc) {
