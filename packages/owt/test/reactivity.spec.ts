@@ -118,6 +118,56 @@ describe('signals and computeds', () => {
   });
 });
 
+describe('computed chains', () => {
+  it('updates an effect that only reads the end of a computed chain', () => {
+    const n = new Source(1);
+    const a = new Computed(() => get(n) * 2);
+    const b = new Computed(() => get(a) + 1);
+    const seen: number[] = [];
+    createRoot(() => renderEffect(() => seen.push(get(b))));
+
+    set(n, 2);
+    flushSync();
+    set(n, 3);
+    flushSync();
+
+    expect(seen).toEqual([3, 5, 7]);
+  });
+
+  it('updates a long chain read by a user effect', () => {
+    const n = new Source(0);
+    let last: Computed<number> = new Computed(() => get(n));
+    for (let i = 0; i < 5; i++) {
+      const prev = last;
+      last = new Computed(() => get(prev) + 1);
+    }
+    const end = last;
+    const seen: number[] = [];
+    createRoot(() => effect(() => void seen.push(get(end))));
+    flushSync();
+
+    set(n, 10);
+    flushSync();
+
+    expect(seen).toEqual([5, 15]);
+  });
+
+  it('updates a chain whose head was read before being watched', () => {
+    const n = new Source(1);
+    const a = new Computed(() => get(n) * 2);
+    const b = new Computed(() => get(a) + 1);
+    get(b);
+    set(n, 5);
+    const seen: number[] = [];
+    createRoot(() => renderEffect(() => seen.push(get(b))));
+
+    set(n, 6);
+    flushSync();
+
+    expect(seen).toEqual([11, 13]);
+  });
+});
+
 describe('effects and scheduling', () => {
   it('batches writes until the microtask flush', async () => {
     const s = new Source(0);

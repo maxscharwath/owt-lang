@@ -54,6 +54,15 @@ describe('state and events', () => {
     expect(text(m, 'button')).toBe('2-1');
   });
 
+  it('updates a val that depends on another val shown alone', async () => {
+    const m = await render(`export component App() {\n  var n = 1\n  val a = n * 2\n  val b = a + 1\n  <p onClick={() => n++}>{b}</p>\n}`);
+
+    m.click('p');
+    m.click('p');
+
+    expect(text(m, 'p')).toBe('7');
+  });
+
   it('derives object literals', async () => {
     const m = await render(`export component App() {\n  var n = 1\n  val pair = { n, double: n * 2 }\n  <p onClick={() => n++}>{pair.n}:{pair.double}</p>\n}`);
 

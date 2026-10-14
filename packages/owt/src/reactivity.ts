@@ -301,9 +301,12 @@ function unsubscribe(link: Link): void {
 }
 
 function watch(c: Computed): void {
+  // An unwatched computed may be stale: bring it up to date (through its
+  // version check) before it relies on notifications. A watched computed must
+  // be CLEAN unless a notification marked it, because `mark` stops at nodes
+  // that are already CHECK / DIRTY, assuming their subscribers were marked too.
+  if (c.state !== DIRTY) updateComputed(c);
   c.watched = true;
-  // A computed that was not watched may be stale: validate on next read.
-  if (c.state === CLEAN) c.state = CHECK;
   for (let l = c.deps; l !== null; l = l.nextDep) subscribe(l);
 }
 
