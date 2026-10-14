@@ -63,12 +63,19 @@ const scenarios = {
     assert((await page.locator('.list li').count()) === 4, 'fruit added');
     assert((await text('#notifications')) === '1', 'store update rendered');
     const leaving = await page.evaluate(async () => {
-      const li = document.querySelector('.list li');
+      const [li, ...others] = document.querySelectorAll('.list li');
       li.querySelector('.remove').click();
       await new Promise((r) => setTimeout(r, 0));
-      return { connected: li.isConnected, animations: li.getAnimations().length };
+      return {
+        connected: li.isConnected,
+        outro: li.getAnimations().length,
+        position: getComputedStyle(li).position,
+        moving: others.filter((o) => o.getAnimations().length > 0).length,
+      };
     });
-    assert(leaving.connected && leaving.animations === 1, 'removed fruit stays while its outro plays');
+    assert(leaving.connected && leaving.outro === 1, 'removed fruit stays while its outro plays');
+    assert(leaving.position === 'absolute', 'leaving row is taken out of the flow');
+    assert(leaving.moving === 3, `remaining rows slide into place with animate:flip (got ${leaving.moving})`);
     await page.waitForFunction(() => document.querySelectorAll('.list li').length === 3);
     // pattern matching + null-safe if (val ...)
     const shape = async (id) => {

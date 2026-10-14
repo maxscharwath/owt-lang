@@ -270,4 +270,41 @@ export component App() {
 
     expect(() => compile(source, { filename: 'App.owt' })).toThrow(/no modifiers/);
   });
+
+  it('animates moved list rows from their old position (animate:)', async () => {
+    const rect = Element.prototype.getBoundingClientRect;
+    Element.prototype.getBoundingClientRect = function (this: Element) {
+      const index = this.parentNode === null ? 0 : Array.prototype.indexOf.call(this.parentNode.children, this);
+      return { left: 0, top: index * 20, width: 100, height: 20, right: 100, bottom: index * 20 + 20, x: 0, y: index * 20, toJSON: () => ({}) };
+    };
+    const m = await render(`
+const moves: string[] = []
+function slide(node: Element, rects: { from: DOMRect; to: DOMRect }) {
+  moves.push(node.textContent + ':' + rects.from.top + '>' + rects.to.top)
+  return { duration: 100, keyframes: [{ transform: 'translateY(' + (rects.from.top - rects.to.top) + 'px)' }, { transform: 'none' }] }
+}
+export component App() {
+  var items = ['a', 'b', 'c']
+  <button onClick={() => items = [items[1]!, items[0]!, items[2]!]}>swap</button>
+  <ul>
+    for (item of items; track item) {
+      <li animate:slide>{item}</li>
+    }
+  </ul>
+  <output>{moves.join(' ')}</output>
+}
+`);
+
+    m.click('button');
+    Element.prototype.getBoundingClientRect = rect;
+
+    expect(animations.map((a) => a.el.textContent)).toEqual(['b', 'a']);
+    expect(animations.map((a) => a.options.fill)).toEqual(['backwards', 'backwards']);
+  });
+
+  it('rejects animate: outside a for row', () => {
+    const source = `${grow}\nexport component App() {\n  <p animate:grow>Hi</p>\n}\n`;
+
+    expect(() => compile(source, { filename: 'App.owt' })).toThrow(/directly inside a for block/);
+  });
 });

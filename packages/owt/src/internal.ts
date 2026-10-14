@@ -39,7 +39,7 @@ export {
 export { scope, propDefault, setProp, restProps, spreadProps, hmr, hmrUpdate, hmrAccept } from './dom/component';
 export { head, title, injectCss } from './dom/document';
 export { bindValue, bindChecked, bindGroup, bindThis, bindProperty, bindSize, action, optionValueProp } from './dom/bindings';
-export { transition, TRANSITION_IN, TRANSITION_OUT } from './dom/transitions';
+export { transition, animate, TRANSITION_IN, TRANSITION_OUT } from './dom/transitions';
 
 /** `var x = v` */
 export function state<T>(value: T): Source<T> {

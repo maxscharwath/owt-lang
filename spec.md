@@ -164,6 +164,7 @@ function add() {
 | `ref={el}` / `bind:this={el}` | element reference (also accepts a callback `ref={(el) => ...}`) |
 | `use:action={params}` | attach an action |
 | `transition:fade`, `in:fly={{ y: 20 }}`, `out:slide` | animate when entering / leaving |
+| `animate:flip` | animate list rows when they move |
 
 ### Events
 
@@ -273,6 +274,25 @@ export function spin(node: Element, params: { turns?: number; duration?: number 
 ```
 
 The third argument tells the direction (`{ direction: 'in' | 'out' | 'both' }`); returning `null` skips the animation. Elements receive `introstart`, `introend`, `outrostart` and `outroend` events (`onIntroEnd={...}`).
+
+#### List animations: `animate:`
+
+`animate:flip` makes the rows of a `for` block slide from their old position to their new one when the list is reordered (FLIP: first, last, invert, play):
+
+```owt
+import { flip, fade } from 'owt/transition'
+
+<ul>
+  for (todo of todos; track todo.id) {
+    <li animate:flip={{ duration: 200 }} transition:fade>{todo.text}</li>
+  }
+</ul>
+```
+
+- `animate:` goes on an element directly inside the `for` body (the row's root element); anywhere else it is a compile error.
+- `flip` accepts `delay`, `easing` and `duration`: milliseconds, or a function of the distance in pixels (default `d => Math.sqrt(d) * 120`).
+- Combined with an outro, a leaving row is taken out of the flow (`position: absolute` where it stands) so the other rows slide into its place while it fades out.
+- Custom animations are functions `(node, { from, to }, params) => TransitionConfig | null`. `from` and `to` are the element's `DOMRect` before and after the update. The keyframes go from the old position to the new one.
 
 ## Control flow
 
@@ -514,8 +534,41 @@ Everything is exported from `owt`, except the built-in transitions (`owt/transit
 | `tick()` / `flushSync()` | wait for / force pending DOM updates (updates are applied in a microtask) |
 | `createContext<T>()`, `setContext(key, value)`, `getContext(key)` | values provided to descendants |
 | `Portal` | render children elsewhere |
+| `resource(fetcher)`, `resource(source, fetcher, { initialValue? })` | reactive async data: `value`, `loading`, `error`, `state`, `refetch()`, `mutate(value)` |
+| `lazy(() => import('./Chart.owt'), 'Chart')` | code-split component, loaded the first time it renders (`Chart.preload()` starts loading early) |
 | `range(a, b)`, `rev(list)` | helpers behind `a..b` and `rev` |
 | types | `Component<P>`, `Snippet<A>`, `LoopMeta`, `Action<E, P>`, `Transition<E, P>`, `TransitionConfig` |
+
+### Async data and code splitting
+
+`resource` turns an async function into reactive state. With a source, it loads again whenever the source changes, and aborts the previous request through `signal`. A `null`, `undefined` or `false` source means "not yet":
+
+```owt
+import { resource } from 'owt'
+
+export component UserPage(id: number) {
+  const user = resource(() => id, (id, { signal }) => api.user(id, { signal }))
+
+  match (user.state) {
+    case 'unresolved', 'pending' { <Spinner /> }
+    case 'errored' { <p class="error">Could not load the user <button onClick={user.refetch}>Retry</button></p> }
+    case 'ready', 'refreshing' {
+      if (val u = user.value) { <Profile user={u} dimmed={user.loading} /> }
+    }
+  }
+}
+```
+
+`state` goes `unresolved` (waiting for a source) → `pending` → `ready` or `errored`. Later loads are `refreshing`, and the previous `value` stays available. Responses to outdated requests are ignored. `mutate(value)` sets the value locally, for optimistic updates. Requests are aborted when the component is destroyed.
+
+`lazy` loads a component with a dynamic `import()` the first time it is rendered (Vite splits it into its own chunk):
+
+```ts
+import { lazy } from 'owt'
+export const Chart = lazy(() => import('./Chart.owt'), 'Chart')   // or a default export: lazy(() => import('./Page.owt'))
+```
+
+Nothing renders until the module has loaded. Wrap the component in an `if`, or show a placeholder while `Chart.preload()` is pending, if you need a loading state. Load errors go to the closest `try` block.
 
 Shared state is just TypeScript:
 
@@ -579,7 +632,7 @@ TagName         = Name { ( "." | "-" | ":" ) Name } ;
 Attribute       = AttrName [ "=" ( String | Unquoted | "{" TsExpression "}" ) ]
                 | "{" Identifier "}"
                 | "{" "..." TsExpression "}" ;
-AttrName        = [ ( "bind" | "class" | "style" | "use" | "on" | "transition" | "in" | "out" ) ":" ] Name ;
+AttrName        = [ ( "bind" | "class" | "style" | "use" | "on" | "transition" | "in" | "out" | "animate" ) ":" ] Name { "|" Modifier } ;
 ExpressionTag   = "{" [ TsExpression ] "}" ;
 Comment         = "<!--" ... "-->" ;
 

@@ -48,11 +48,30 @@ type Entry = {
   animation: Animation | null;
 };
 
+/** Rectangles of an element before and after a list update. */
+export type AnimationRects = { from: DOMRect; to: DOMRect };
+
+/** `animate:flip`: called after a keyed list moved the element; returns keyframes from the old position to the new one. */
+export type Animate<E extends Element = Element, P = undefined> = (
+  node: E,
+  rects: AnimationRects,
+  params: P,
+) => TransitionConfig | null | undefined | false;
+
+type AnimateEntry = {
+  el: Element;
+  fn: Animate<Element, unknown>;
+  params: (() => unknown) | null;
+  animation: Animation | null;
+};
+
 /** Scope of a piece of content rendered by a block (branch, row, await state...). */
 export class BlockScope extends Owner {
   /** created by an update rather than by the first render of its block: intros play */
   intro: boolean;
   transitions: Entry[] | null = null;
+  /** `animate:` elements of a list row */
+  animations: AnimateEntry[] | null = null;
   constructor(owner: Owner | null, intro: boolean) {
     super(owner);
     this.intro = intro;
@@ -138,6 +157,10 @@ export function destroyContent(scope: Owner, first: Node, last: Node): void {
     return;
   }
   const running: Animation[] = [];
+  // a leaving `animate:` row is taken out of the flow so the other rows can move into its place
+  if (scope instanceof BlockScope && scope.animations !== null && entries.some((e) => e.flags & TRANSITION_OUT && e.el.isConnected)) {
+    for (const entry of scope.animations) fixPosition(entry.el);
+  }
   for (const entry of entries) {
     const intro = entry.animation;
     const state = entry.state;
@@ -174,4 +197,77 @@ export function destroyContent(scope: Owner, first: Node, last: Node): void {
     for (const node of nodes) node.parentNode?.removeChild(node);
   };
   for (const animation of running) animation.finished.then(done, done);
+}
+
+/** Keep an element where it is while taking it out of the layout (position: absolute + correction). */
+function fixPosition(el: Element): void {
+  if (!(el instanceof HTMLElement) || !el.isConnected) return;
+  const style = getComputedStyle(el);
+  if (style.position === 'absolute' || style.position === 'fixed') return;
+  const { width, height } = style;
+  const before = el.getBoundingClientRect();
+  el.style.position = 'absolute';
+  el.style.width = width;
+  el.style.height = height;
+  const after = el.getBoundingClientRect();
+  if (before.left !== after.left || before.top !== after.top) {
+    const transform = style.transform === 'none' ? '' : `${style.transform} `;
+    el.style.transform = `${transform}translate(${before.left - after.left}px, ${before.top - after.top}px)`;
+  }
+}
+
+/** Register `animate:fn` on the root element of a list row. */
+export function animate(el: Element, fn: Animate<Element, unknown>, params: (() => unknown) | null): void {
+  let scope = getOwner();
+  while (scope !== null && !(scope instanceof BlockScope)) scope = scope.owner;
+  if (scope === null) return;
+  (scope.animations ??= []).push({ el, fn, params, animation: null });
+}
+
+/** Whether list rows rendered like this one use `animate:`. */
+export function hasAnimations(scope: Owner): boolean {
+  return scope instanceof BlockScope && scope.animations !== null;
+}
+
+/** Positions of the animated elements of list rows, before the list is updated (null when none animate). */
+export function measureRows(scopes: readonly Owner[]): Map<AnimateEntry, DOMRect> | null {
+  const first = scopes[0];
+  if (first === undefined || !(first instanceof BlockScope) || first.animations === null) return null;
+  const rects = new Map<AnimateEntry, DOMRect>();
+  for (const scope of scopes) {
+    if (!(scope instanceof BlockScope) || scope.animations === null) continue;
+    for (const entry of scope.animations) if (entry.el.isConnected) rects.set(entry, entry.el.getBoundingClientRect());
+  }
+  return rects;
+}
+
+/** After the update: animate every measured element that is still in the list from its old position. */
+export function animateRows(rects: Map<AnimateEntry, DOMRect>, scopes: readonly Owner[]): void {
+  for (const scope of scopes) {
+    if (!(scope instanceof BlockScope) || scope.animations === null) continue;
+    for (const entry of scope.animations) {
+      const from = rects.get(entry);
+      if (from === undefined || typeof entry.el.animate !== 'function') continue;
+      entry.animation?.cancel();
+      entry.animation = null;
+      const to = entry.el.getBoundingClientRect();
+      if (from.left === to.left && from.top === to.top && from.width === to.width && from.height === to.height) continue;
+      const params = entry.params === null ? undefined : untrack(entry.params);
+      const config = untrack(() => entry.fn(entry.el, { from, to }, params));
+      if (!config) continue;
+      const animation = entry.el.animate(config.keyframes, {
+        duration: config.duration ?? 300,
+        delay: config.delay ?? 0,
+        easing: config.easing ?? 'linear',
+        fill: 'backwards',
+      });
+      entry.animation = animation;
+      animation.finished.then(
+        () => {
+          if (entry.animation === animation) entry.animation = null;
+        },
+        () => {},
+      );
+    }
+  }
 }

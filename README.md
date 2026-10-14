@@ -61,11 +61,12 @@ You won't find hooks, dependency arrays, `$` prefixes or a virtual DOM here. A c
   - two-way bindings (`bind:value`, `bind:checked`, `bind:group`, `bind:this`, element sizes, media...);
   - `class:` and `style:` directives and actions (`use:`);
   - event and key modifiers (`onSubmit|preventDefault`, `onKeyDown|ctrl|enter`, `onClick|self`, `|once`, `|passive`);
-  - transitions (`transition:`, `in:`, `out:`) with built-in `fade`, `fly`, `slide`, `scale` and `blur`, running on the Web Animations API;
+  - transitions (`transition:`, `in:`, `out:`) with built-in `fade`, `fly`, `slide`, `scale` and `blur`, and `animate:flip` list animations, running on the Web Animations API;
   - named slots with arguments;
   - context and portals;
   - `<window>`, `<document>` and `<head>` elements;
   - deeply reactive objects and arrays;
+  - async data with `resource()` (aborts outdated requests) and code-split `lazy()` components;
   - scoped CSS with `:global`.
 - **First-class tooling**:
   - a Vite 8 plugin with HMR that keeps component state and an error overlay with code frames;

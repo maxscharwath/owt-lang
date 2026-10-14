@@ -21,7 +21,7 @@ import {
 } from '../reactivity';
 import { reactive, toRaw, trackArray } from '../proxy';
 import { insertContent, moveRange, type NodeRange } from './nodes';
-import { BlockScope, destroyContent, hasOutros } from './transitions';
+import { BlockScope, animateRows, destroyContent, hasAnimations, hasOutros, measureRows } from './transitions';
 
 type Render = () => Node;
 
@@ -600,7 +600,10 @@ export function each<T>(
     }
     untrack(() => {
       set(length, n);
+      // `animate:` rows: measure, update the list, then play from the old positions (FLIP)
+      const rects = rows.length > 0 && hasAnimations(rows[0]!.scope) ? measureRows(rows.map((row) => row.scope)) : null;
       reconcile(items, keys);
+      if (rects !== null) animateRows(rects, rows.map((row) => row.scope));
     });
     ready = true;
   });

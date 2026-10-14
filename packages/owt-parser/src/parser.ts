@@ -87,9 +87,9 @@ export const VOID_ELEMENTS = new Set([
 ]);
 
 const RAW_TEXT_ELEMENTS = new Set(['script', 'style']);
-const DIRECTIVES = new Set<DirectiveKind>(['bind', 'class', 'style', 'use', 'on', 'transition', 'in', 'out']);
+const DIRECTIVES = new Set<DirectiveKind>(['bind', 'class', 'style', 'use', 'on', 'transition', 'in', 'out', 'animate']);
 /** directives whose value is optional parameters (`use:tooltip`, `transition:fade`) */
-const PARAM_DIRECTIVES = new Set<DirectiveKind>(['use', 'transition', 'in', 'out']);
+const PARAM_DIRECTIVES = new Set<DirectiveKind>(['use', 'transition', 'in', 'out', 'animate']);
 const SPECIAL_ELEMENTS: Record<string, ElementKind> = {
   window: 'window',
   document: 'document',

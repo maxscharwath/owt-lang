@@ -30,7 +30,7 @@ export function visitTemplate(nodes: readonly TemplateNode[], v: JsVisitor): voi
             expr(a.expression);
             continue;
           }
-          if (a.directive === 'use' || a.directive === 'transition' || a.directive === 'in' || a.directive === 'out') v.name?.(a.arg.split('.')[0]!, a.nameSpan.start);
+          if (a.directive === 'use' || a.directive === 'transition' || a.directive === 'in' || a.directive === 'out' || a.directive === 'animate') v.name?.(a.arg.split('.')[0]!, a.nameSpan.start);
           if (a.value.type === 'Expression') {
             const e = a.value.expression;
             if (e === null) continue;

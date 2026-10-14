@@ -1,5 +1,5 @@
 import type { Snippet } from 'owt'
-import { slide } from 'owt/transition'
+import { flip, slide } from 'owt/transition'
 
 // A generic component: T is inferred from `items` at each use site.
 export component DataList<T>(
@@ -9,7 +9,7 @@ export component DataList<T>(
 ) {
   <ul class="list">
     for (item of items, { index }; track key(item)) {
-      <li class:odd={index % 2 === 1} transition:slide={{ duration: 200 }}>
+      <li class:odd={index % 2 === 1} transition:slide={{ duration: 200 }} animate:flip={{ duration: 200 }}>
         <slot name="row" item={item} index={index}>{String(item)}</slot>
       </li>
     } empty {

@@ -40,7 +40,8 @@ export { isReactive, markRaw, reactive, toRaw } from './proxy';
 export { mount, unmount, Portal, type App, type Component, type MountOptions, type PortalProps } from './dom/component';
 export { range, rev, type LoopMeta, type Snippet } from './dom/blocks';
 export type { Action, ActionReturn } from './dom/bindings';
-export type { Transition, TransitionConfig, TransitionDirection } from './dom/transitions';
+export type { Animate, AnimationRects, Transition, TransitionConfig, TransitionDirection } from './dom/transitions';
+export { lazy, resource, type LazyComponent, type Resource, type ResourceInfo, type ResourceOptions, type ResourceState } from './resource';
 export { toClass } from './dom/attributes';
 
 /** A readable reactive value. */

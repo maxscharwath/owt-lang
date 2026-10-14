@@ -241,6 +241,9 @@ function identifier(name: string, start: number): t.Identifier {
 export class TemplateCompiler {
   private readonly templateCache = new Map<string, string>();
 
+  /** root elements of `for` rows: where `animate:` is allowed */
+  private readonly rowRoots = new Set<Element>();
+
   constructor(private readonly c: ComponentContext) {}
 
   private get rt(): string {
@@ -799,6 +802,16 @@ export class TemplateCompiler {
         ops.post.push(() => [`${rt}.action(${node.ref}, `, fn, params === null ? '' : [', ', this.getterFn(params, scope)], ');']);
         return;
       }
+      case 'animate': {
+        if (!this.rowRoots.has(el)) {
+          this.c.error('invalid-animate', `${attr.name} only works on an element directly inside a for block body (a list row)`, attr.start, attr.end);
+        }
+        const parts = arg.split('.');
+        const fn: Chunk = [this.c.expr(identifier(parts[0]!, attr.nameSpan.start + 8), scope), parts.length > 1 ? `.${parts.slice(1).join('.')}` : ''];
+        const params = value.type === 'Expression' && value.expression !== null ? value.expression : null;
+        ops.post.push(() => [`${rt}.animate(${node.ref}, `, fn, ', ', params === null ? 'null' : this.getterFn(params, scope), ');']);
+        return;
+      }
       case 'transition':
       case 'in':
       case 'out': {
@@ -1254,6 +1267,7 @@ export class TemplateCompiler {
     if (block.reverse) list = [`${rt}.rev(`, list, ')'];
 
     const params = metaParam !== '' ? `${itemParam}, ${this.c.file.name('i')}, ${metaParam}` : itemParam;
+    for (const child of block.body.children) if (child.type === 'Element') this.rowRoots.add(child);
     const render = this.renderFn(block.body.children, inner, ns, params, parentTag);
     const empty: Chunk = block.empty !== null ? this.renderFn(block.empty.children, scope.child(), ns, '', parentTag) : 'null';
     return [origin(`${rt}.each(${anchor}, () => `, block.start), list, ', ', render, ', ', keyFn, `, ${flags}, `, empty, ');'];

@@ -12,9 +12,9 @@
  * A transition is any function `(node, params, { direction }) => TransitionConfig`
  * returning Web Animations keyframes from the hidden to the visible state.
  */
-import type { TransitionConfig } from './dom/transitions';
+import type { AnimationRects, TransitionConfig } from './dom/transitions';
 
-export type { Transition, TransitionConfig, TransitionDirection } from './dom/transitions';
+export type { Animate, AnimationRects, Transition, TransitionConfig, TransitionDirection } from './dom/transitions';
 
 /** Common timing options. */
 export type TransitionTiming = {
@@ -142,4 +142,32 @@ export function slide(node: Element, params: SlideParams = {}): TransitionConfig
     }
   }
   return { ...timing(params, 400, cubicOut), keyframes: [closed, open] };
+}
+
+export type FlipParams = Omit<TransitionTiming, 'duration'> & {
+  /** ms, or a function of the distance in px (default: `d => Math.sqrt(d) * 120`) */
+  duration?: number | ((distance: number) => number);
+};
+
+/**
+ * `animate:flip` on the root element of a keyed `for` row: when the list is
+ * reordered, rows slide from their old position to the new one (FLIP).
+ */
+export function flip(node: Element, { from, to }: AnimationRects, params: FlipParams = {}): TransitionConfig | null {
+  const style = getComputedStyle(node);
+  const base = baseTransform(style);
+  const [ox = 0, oy = 0] = style.transformOrigin.split(' ').map(parseFloat);
+  const sx = to.width === 0 ? 1 : from.width / to.width;
+  const sy = to.height === 0 ? 1 : from.height / to.height;
+  const dx = from.left + from.width * (ox / (to.width || 1)) - (to.left + ox);
+  const dy = from.top + from.height * (oy / (to.height || 1)) - (to.top + oy);
+  if (dx === 0 && dy === 0 && sx === 1 && sy === 1) return null;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+  const duration = typeof params.duration === 'function' ? params.duration(distance) : (params.duration ?? Math.sqrt(distance) * 120);
+  return {
+    delay: params.delay ?? 0,
+    duration,
+    easing: params.easing ?? cubicOut,
+    keyframes: [{ transform: `${base}translate(${dx}px, ${dy}px) scale(${sx}, ${sy})` }, { transform: `${base}translate(0px, 0px) scale(1, 1)` }],
+  };
 }
