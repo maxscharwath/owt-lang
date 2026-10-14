@@ -1,0 +1,18 @@
+export component App(name: string) {
+  var count = 0
+  val doubled = count * 2
+
+  <main>
+    <h1>Hello {name}!</h1>
+    <button onClick={() => count++}>Clicked {count} {count === 1 ? 'time' : 'times'}</button>
+    if (count > 0) {
+      <p>Doubled: {doubled}</p>
+    }
+    <p class="hint">Edit <code>src/App.owt</code> and save: the page updates and keeps its state.</p>
+  </main>
+
+  <style>
+    main { text-align: center; }
+    .hint { opacity: 0.7; }
+  </style>
+}

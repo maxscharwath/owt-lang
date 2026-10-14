@@ -1,0 +1,21 @@
+{
+  "name": "{{name}}",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "owt-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "owt-tsc --noEmit"
+  },
+  "dependencies": {
+    "owt": "{{owtVersion}}"
+  },
+  "devDependencies": {
+    "@owt/vite": "{{owtVersion}}",
+    "owt-tsc": "{{owtVersion}}",
+    "typescript": "~6.0.3",
+    "vite": "^8.3.4"
+  }
+}

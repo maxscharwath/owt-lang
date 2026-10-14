@@ -1,0 +1,23 @@
+{
+  "name": "create-owt",
+  "version": "1.0.0-beta.1",
+  "description": "Create an OWT app: npm create owt@latest",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "create-owt": "./index.mjs"
+  },
+  "files": [
+    "index.mjs",
+    "templates"
+  ],
+  "engines": {
+    "node": ">=20.19"
+  },
+  "keywords": [
+    "owt",
+    "create",
+    "scaffold",
+    "vite"
+  ]
+}

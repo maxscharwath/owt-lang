@@ -1,0 +1,82 @@
+import { effect } from 'owt'
+import { fade, flip, slide } from 'owt/transition'
+import type { Filter, Todo } from './types'
+
+const FILTERS: Filter[] = ['all', 'active', 'done']
+
+export component App(name: string) {
+  var todos: Todo[] = JSON.parse(localStorage.getItem('todos') ?? '[]')
+  var draft = ''
+  var filter: Filter = 'all'
+  var editing: number | null = null
+
+  val visible = todos.filter((t) => filter === 'all' || (filter === 'done') === t.done)
+  val remaining = todos.filter((t) => !t.done).length
+
+  effect(() => localStorage.setItem('todos', JSON.stringify(todos)))
+
+  function add() {
+    const text = draft.trim()
+    if (text === '') return
+    todos.push({ id: Date.now(), text, done: false })
+    draft = ''
+  }
+
+  function remove(todo: Todo) {
+    todos = todos.filter((t) => t.id !== todo.id)
+  }
+
+  <head><title>{remaining} left · {name}</title></head>
+
+  <main>
+    <h1>{name}</h1>
+
+    <form onSubmit|preventDefault={add}>
+      <input bind:value={draft} placeholder="What needs to be done?" aria-label="New todo" />
+      <button disabled={draft.trim() === ''}>Add</button>
+    </form>
+
+    <nav>
+      for (f of FILTERS) {
+        <button class:active={filter === f} aria-pressed={filter === f} onClick={filter = f}>{f}</button>
+      }
+    </nav>
+
+    <ul>
+      for (todo of visible; track todo.id) {
+        <li animate:flip={{ duration: 200 }} transition:slide={{ duration: 150 }}>
+          <input type="checkbox" bind:checked={todo.done} aria-label="Done" />
+          if (editing === todo.id) {
+            <input bind:value={todo.text} onKeyDown|enter|escape={editing = null} onBlur={editing = null} aria-label="Edit todo" />
+          } else {
+            <span class:done={todo.done} role="button" tabindex="0" onDblClick={editing = todo.id} onKeyDown|enter={editing = todo.id}>{todo.text}</span>
+          }
+          <button class="remove" onClick={() => remove(todo)} aria-label="Delete">×</button>
+        </li>
+      } empty {
+        <li class="empty" transition:fade>
+          match (filter) {
+            case 'all' { Nothing to do yet. }
+            case 'active' { Everything is done! }
+            case 'done' { Nothing done yet. }
+          }
+        </li>
+      }
+    </ul>
+
+    <p>{remaining} {remaining === 1 ? 'item' : 'items'} left</p>
+  </main>
+
+  <style>
+    main { width: min(32rem, 100vw - 2rem); }
+    form, nav { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    form input { flex: 1; font: inherit; padding: 0.4rem 0.6rem; }
+    .active { font-weight: 700; }
+    ul { list-style: none; padding: 0; }
+    li { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0; border-bottom: 1px solid #8883; background: Canvas; }
+    li span { flex: 1; }
+    .done { text-decoration: line-through; opacity: 0.6; }
+    .remove { border: none; background: none; }
+    .empty { opacity: 0.7; }
+  </style>
+}

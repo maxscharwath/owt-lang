@@ -78,6 +78,13 @@ You won't find hooks, dependency arrays, `$` prefixes or a virtual DOM here. A c
 ## Quick start
 
 ```bash
+npm create owt@latest my-app      # templates: todo (default) or minimal
+cd my-app && npm install && npm run dev
+```
+
+Or add OWT to an existing Vite project:
+
+```bash
 pnpm add owt
 pnpm add -D @owt/vite vite
 ```
@@ -286,6 +293,7 @@ Where the speed comes from:
 | [`@owt/language-server`](packages/owt-language-server) | LSP server: diagnostics, completions, hover, go to definition, references, rename, symbols, folding, formatting, CSS in `<style>` |
 | [`@owt/typescript-plugin`](packages/owt-typescript-plugin) | Typed `.owt` imports in `.ts` files |
 | [`owt-tsc`](packages/owt-tsc) | `tsc` with `.owt` support for CI |
+| [`create-owt`](packages/create-owt) | `npm create owt@latest`: new app from a template |
 | [VS Code extension](packages/owt-vscode) | Language client, TextMate grammar, snippets, compiled-output and virtual-code previews |
 | [JetBrains plugin](packages/owt-jetbrains) | File type, highlighting and LSP integration for IntelliJ IDEA, WebStorm and other JetBrains IDEs 2025.2+ |
 
