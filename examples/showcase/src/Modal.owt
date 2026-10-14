@@ -6,15 +6,15 @@ import { fade, fly, scale } from 'owt/transition'
 export component Modal(open: boolean, onClose: () => void) {
   if (open) {
     <Portal>
-      <div class="backdrop" onClick={onClose} transition:fade={{ duration: 150 }}>
-        <div class="modal" role="dialog" onClick={(e) => e.stopPropagation()} in:fly={{ y: 24, duration: 200 }} out:scale={{ start: 0.95, duration: 150 }}>
+      <div class="backdrop" onClick|self={onClose} transition:fade={{ duration: 150 }}>
+        <div class="modal" role="dialog" in:fly={{ y: 24, duration: 200 }} out:scale={{ start: 0.95, duration: 150 }}>
           <slot />
           <button class="close" onClick={onClose}>Close</button>
         </div>
       </div>
     </Portal>
   }
-  <window onKeyDown={(e) => e.key === 'Escape' && onClose()} />
+  <window onKeyDown|escape={onClose} />
 
   <style>
     .backdrop {

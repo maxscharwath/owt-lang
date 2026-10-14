@@ -103,6 +103,20 @@ function isIdentifierName(name: string): boolean {
   return true;
 }
 
+/** Event attributes repeating an earlier one with other modifiers (`onKeyDown|enter`, `onKeyDown|escape`). */
+function repeatedEvents(el: Element): Set<Attribute> {
+  const seen = new Set<string>();
+  const out = new Set<Attribute>();
+  for (const attr of el.attributes) {
+    if (attr.type !== 'Attribute' || attr.directive !== null) continue;
+    const name = attr.name.split('|')[0]!;
+    if (!eventName(name)) continue;
+    if (seen.has(name)) out.add(attr);
+    seen.add(name);
+  }
+  return out;
+}
+
 function eventName(name: string): boolean {
   return name.length > 2 && name.startsWith('on') && name.charCodeAt(2) >= 65 && name.charCodeAt(2) <= 90;
 }
@@ -533,10 +547,17 @@ class ComponentGen {
       this.slotOutlet(el);
       return;
     }
+    const repeated = repeatedEvents(el);
     if (el.kind === 'window' || el.kind === 'document' || el.kind === 'body') {
       b.text(`__owt.target(${JSON.stringify(el.kind)}, {`);
-      this.attributeEntries(el, null);
+      this.attributeEntries(el, null, repeated);
       b.text('});\n');
+      // `onKeyDown|enter={a} onKeyDown|escape={b}`: one check per extra handler
+      for (const attr of repeated) {
+        b.text(`__owt.target(${JSON.stringify(el.kind)}, {`);
+        this.attributeEntry(attr);
+        b.text('});\n');
+      }
       return;
     }
     if (el.kind === 'fragment' || el.kind === 'head') {
@@ -552,17 +573,22 @@ class ComponentGen {
     b.text('", ');
     const objStart = b.code.length;
     b.text('{');
-    this.attributeEntries(el, v);
+    this.attributeEntries(el, v, repeated);
     b.anchor(el.openEnd - (el.selfClosing ? 2 : 1));
     b.text('}');
     b.wrap(objStart, { start: el.start, end: el.nameSpan.end });
     b.text(');\n');
     if (v !== null) b.text(`void ${v};\n`);
+    for (const attr of repeated) {
+      b.text(`__owt.el<${JSON.stringify(el.name)}>(${JSON.stringify(el.name)}, {`);
+      this.attributeEntry(attr);
+      b.text('});\n');
+    }
     this.directives(el, v);
     this.nodes(el.children);
   }
 
-  private attributeEntries(el: Element, _var: string | null): void {
+  private attributeEntries(el: Element, _var: string | null, skip: ReadonlySet<Attribute> = new Set()): void {
     const b = this.b;
     for (const attr of el.attributes) {
       if (attr.type === 'SpreadAttribute') {
@@ -572,20 +598,30 @@ class ComponentGen {
         b.text(',');
         continue;
       }
-      if (attr.directive !== null || attr.name === 'ref') continue;
-      b.text(' ');
-      this.attrKey(attr);
-      b.text(': ');
-      if (eventName(attr.name) && this.isStatementHandler(attr) && attr.value.type === 'Expression') {
-        // `event` is available to inline statements (`onClick={x = event.clientX}`), not required
-        b.text('(event) => { void event; ');
-        this.expr(attr.value.span);
-        b.text('; }');
-      } else {
-        this.attrValue(attr);
-      }
-      b.text(',');
+      if (attr.directive !== null || attr.name === 'ref' || skip.has(attr)) continue;
+      this.attributeEntry(attr);
     }
+  }
+
+  private attributeEntry(attr: Attribute): void {
+    const b = this.b;
+    b.text(' ');
+    // `onKeyDown|enter`: the key is the event prop, modifiers are checked by the compiler
+    const bar = attr.name.indexOf('|');
+    const name = bar < 0 ? attr.name : attr.name.slice(0, bar);
+    this.attrKey(attr, name);
+    b.text(': ');
+    if (bar >= 0 && attr.value.type === 'Boolean') {
+      b.text('undefined');
+    } else if (eventName(name) && this.isStatementHandler(attr) && attr.value.type === 'Expression') {
+      // `event` is available to inline statements (`onClick={x = event.clientX}`), not required
+      b.text('(event) => { void event; ');
+      this.expr(attr.value.span);
+      b.text('; }');
+    } else {
+      this.attrValue(attr);
+    }
+    b.text(',');
   }
 
   private directives(el: Element, v: string | null): void {
@@ -714,9 +750,14 @@ class ComponentGen {
       }
       if (attr.directive !== null) continue;
       b.text(' ');
-      this.attrKey(attr);
+      // `onKeyDown|enter`: the key is the event prop, modifiers are checked by the compiler
+      const bar = attr.name.indexOf('|');
+      const name = bar < 0 ? attr.name : attr.name.slice(0, bar);
+      this.attrKey(attr, name);
       b.text(': ');
-      if (eventName(attr.name) && this.isStatementHandler(attr) && attr.value.type === 'Expression') {
+      if (bar >= 0 && attr.value.type === 'Boolean') {
+        b.text('undefined');
+      } else if (eventName(name) && this.isStatementHandler(attr) && attr.value.type === 'Expression') {
         // `event` is available to inline statements (`onClick={x = event.clientX}`), not required
         b.text('(event) => { void event; ');
         this.expr(attr.value.span);

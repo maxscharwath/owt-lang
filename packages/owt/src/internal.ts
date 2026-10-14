@@ -17,7 +17,7 @@ export {
 } from './reactivity';
 export { reactive } from './proxy';
 export { template, str, replace, comment, insertContent, TEMPLATE_FRAGMENT, TEMPLATE_SVG, TEMPLATE_MATHML } from './dom/nodes';
-export { delegate, setDelegated as ev, on, listen } from './dom/events';
+export { delegate, setDelegated as ev, on, listen, withModifiers } from './dom/events';
 export { attr, attrNS, prop, cls, toggleClass, style, styleProp, spread } from './dom/attributes';
 export {
   branch,

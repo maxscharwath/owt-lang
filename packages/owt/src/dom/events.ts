@@ -102,3 +102,56 @@ export function eventType(attribute: string): { type: string; capture: boolean }
   const type = name.toLowerCase();
   return { type: type === 'doubleclick' ? 'dblclick' : type, capture };
 }
+
+// Event modifiers (`onClick|once|preventDefault`): flags shared with the compiler.
+const MOD_PREVENT = 1;
+const MOD_STOP = 2;
+const MOD_STOP_IMMEDIATE = 4;
+const MOD_SELF = 8;
+const MOD_TRUSTED = 16;
+const MOD_ONCE = 32;
+const MOD_CTRL = 64;
+const MOD_SHIFT = 128;
+const MOD_ALT = 256;
+const MOD_META = 512;
+const MOD_EXACT = 1024;
+
+type ModifierEvent = Event & Partial<Pick<KeyboardEvent, 'key' | 'ctrlKey' | 'shiftKey' | 'altKey' | 'metaKey'>> & { button?: number };
+
+/**
+ * Wrap a handler with event modifiers: guards first (self, trusted, system
+ * keys, key, mouse button), then preventDefault / stopPropagation, then the
+ * handler (which may be omitted: `onSubmit|preventDefault`).
+ */
+export function withModifiers(handler: Handler | null | undefined, flags: number, keys: readonly string[] | null, button = -1): Handler {
+  let done = false;
+  return function (this: unknown, event: Event) {
+    if (done) return undefined;
+    const e: ModifierEvent = event;
+    if (flags & MOD_SELF && e.target !== e.currentTarget) return undefined;
+    if (flags & MOD_TRUSTED && !e.isTrusted) return undefined;
+    if (flags & MOD_CTRL && !e.ctrlKey) return undefined;
+    if (flags & MOD_SHIFT && !e.shiftKey) return undefined;
+    if (flags & MOD_ALT && !e.altKey) return undefined;
+    if (flags & MOD_META && !e.metaKey) return undefined;
+    if (
+      flags & MOD_EXACT &&
+      ((!(flags & MOD_CTRL) && e.ctrlKey === true) ||
+        (!(flags & MOD_SHIFT) && e.shiftKey === true) ||
+        (!(flags & MOD_ALT) && e.altKey === true) ||
+        (!(flags & MOD_META) && e.metaKey === true))
+    ) {
+      return undefined;
+    }
+    if (keys !== null) {
+      const key = e.key;
+      if (typeof key !== 'string' || !keys.includes(key.length === 1 ? key.toLowerCase() : key)) return undefined;
+    }
+    if (button >= 0 && e.button !== button) return undefined;
+    if (flags & MOD_PREVENT) e.preventDefault();
+    if (flags & MOD_STOP) e.stopPropagation();
+    if (flags & MOD_STOP_IMMEDIATE) e.stopImmediatePropagation();
+    if (flags & MOD_ONCE) done = true;
+    return typeof handler === 'function' ? handler.call(this, event) : undefined;
+  };
+}

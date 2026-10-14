@@ -1314,7 +1314,8 @@ class Parser {
         end = q;
       }
     }
-    if (directive !== null && directive !== 'class' && !PARAM_DIRECTIVES.has(directive) && value.type !== 'Expression') {
+    const onlyModifiers = directive === 'on' && arg.includes('|') && value.type === 'Boolean';
+    if (directive !== null && directive !== 'class' && !PARAM_DIRECTIVES.has(directive) && !onlyModifiers && value.type !== 'Expression') {
       if (!(directive === 'style' && value.type === 'Static')) {
         this.error('directive-value', `${name} needs an expression value: ${name}={...}`, pos, end);
       }

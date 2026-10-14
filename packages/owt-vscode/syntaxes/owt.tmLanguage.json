@@ -498,7 +498,7 @@
       ]
     },
     "attribute-directive": {
-      "match": "(?<![^\\s\"\\'}])(bind|class|style|use|on|transition|in|out)(:)([^\\s\"\\'<>/={}]*)",
+      "match": "(?<![^\\s\"\\'}])(bind|class|style|use|on|transition|in|out)(:)([^\\s\"\\'<>/={}|]*)((?:\\|[\\w-]+)*)",
       "captures": {
         "1": {
           "name": "keyword.control.directive.owt"
@@ -508,12 +508,30 @@
         },
         "3": {
           "name": "entity.other.attribute-name.owt"
+        },
+        "4": {
+          "patterns": [
+            {
+              "include": "#event-modifier"
+            }
+          ]
         }
       }
     },
     "attribute-event": {
-      "match": "(?<![^\\s\"\\'}])on[A-Z][\\w$]*(?=[\\s=/>]|$)",
-      "name": "entity.other.attribute-name.event.owt"
+      "match": "(?<![^\\s\"\\'}])(on[A-Z][\\w$]*)((?:\\|[\\w-]+)*)(?=[\\s=/>]|$)",
+      "captures": {
+        "1": {
+          "name": "entity.other.attribute-name.event.owt"
+        },
+        "2": {
+          "patterns": [
+            {
+              "include": "#event-modifier"
+            }
+          ]
+        }
+      }
     },
     "attribute-name": {
       "match": "(?<![^\\s\"\\'}])[^\\s\"\\'<>/={}]+",
@@ -1152,6 +1170,17 @@
           ]
         }
       ]
+    },
+    "event-modifier": {
+      "match": "(\\|)([\\w-]+)",
+      "captures": {
+        "1": {
+          "name": "punctuation.separator.modifier.owt"
+        },
+        "2": {
+          "name": "storage.modifier.event.owt"
+        }
+      }
     }
   }
 }

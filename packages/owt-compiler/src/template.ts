@@ -43,6 +43,7 @@ import {
   invalidNesting,
   templateLiteralText,
 } from './html';
+import { parseModifiers, splitModifiers } from './modifiers';
 import { patternNames } from './walk';
 
 export type Namespace = 'html' | 'svg' | 'mathml';
@@ -570,18 +571,26 @@ export class TemplateCompiler {
     const use = () => {
       node.used = true;
     };
+    // several handlers for one event (`onKeyDown|enter`, `onKeyDown|escape`) cannot share the delegated slot
+    const eventCounts = new Map<string, number>();
+    for (const attr of el.attributes) {
+      if (attr.type !== 'Attribute' || attr.directive !== null) continue;
+      const ev = eventInfo(splitModifiers(attr.name).name);
+      if (ev !== null) eventCounts.set(ev.type, (eventCounts.get(ev.type) ?? 0) + 1);
+    }
 
     for (const attr of el.attributes) {
       if (attr.type === 'SpreadAttribute') {
         if (attr.expression !== null) spreadEntries.push(['...', this.c.expr(attr.expression, scope)]);
         continue;
       }
-      const name = ATTRIBUTE_ALIASES[attr.name] ?? attr.name;
       const value = attr.value;
       if (attr.directive !== null) {
         this.directive(el, attr, node, scope, ops);
         continue;
       }
+      const split = splitModifiers(attr.name);
+      const name = ATTRIBUTE_ALIASES[split.name] ?? split.name;
       if (name === 'ref') {
         if (value.type !== 'Expression' || value.expression === null) this.c.error('ref-value', 'ref needs an expression: ref={el}', attr.start, attr.end);
         use();
@@ -590,6 +599,17 @@ export class TemplateCompiler {
         continue;
       }
       const event = eventInfo(name);
+      if (split.modifiers.length > 0 && event === null) {
+        this.c.error('invalid-modifier', `Modifiers (|${split.modifiers.join('|')}) only apply to event handlers`, attr.start, attr.end);
+      }
+      if (event !== null && (value.type === 'Expression' || (value.type === 'Boolean' && split.modifiers.length > 0))) {
+        // `onSubmit|preventDefault` without a value only applies the modifiers
+        const expr = value.type === 'Expression' ? value.expression : null;
+        if (value.type === 'Expression' && expr === null) continue;
+        use();
+        this.eventListener(node, event.type, event.capture, expr, split.modifiers, attr, scope, ops, (eventCounts.get(event.type) ?? 0) > 1);
+        continue;
+      }
       if (hasSpread && event === null) {
         spreadEntries.push([JSON.stringify(name), ': ', this.attrValueChunk(attr, scope)]);
         continue;
@@ -606,11 +626,6 @@ export class TemplateCompiler {
       }
       const expr = value.expression;
       if (expr === null) continue;
-      if (event !== null) {
-        use();
-        this.eventListener(node, event.type, event.capture, expr, scope, ops);
-        continue;
-      }
       if (isLiteral(expr) && name !== 'value' && !DOM_PROPERTIES.has(name)) {
         const lit = literalValue(expr);
         if (typeof lit === 'boolean' && stringBoolean(name)) {
@@ -669,13 +684,45 @@ export class TemplateCompiler {
     return value.expression === null ? 'undefined' : this.c.expr(value.expression, scope);
   }
 
-  private eventListener(node: DNode, type: string, capture: boolean, expr: t.Expression, scope: BindingScope, ops: Ops): void {
-    const handler = this.handler(expr, scope);
-    if (DELEGATED.has(type) && !capture) {
+  /** Handler chunk and listener options for an event attribute with optional modifiers. */
+  private listenerOf(
+    type: string,
+    capture: boolean,
+    expr: t.Expression | null,
+    modifiers: readonly string[],
+    attr: { start: number; end: number },
+    scope: BindingScope,
+  ): { handler: Chunk; options: string; delegate: boolean } {
+    let handler: Chunk = expr === null ? 'null' : this.handler(expr, scope);
+    let passive = false;
+    if (modifiers.length > 0) {
+      const m = parseModifiers(modifiers, type);
+      if (typeof m === 'string') return this.c.error('invalid-modifier', m, attr.start, attr.end);
+      capture ||= m.capture;
+      passive = m.passive;
+      handler = [`${this.rt}.withModifiers(`, handler, `, ${m.flags}, ${m.keys === null ? 'null' : JSON.stringify(m.keys)}${m.button >= 0 ? `, ${m.button}` : ''})`];
+    }
+    const options = passive ? `, { passive: true${capture ? ', capture: true' : ''} }` : capture ? ', true' : '';
+    return { handler, options, delegate: DELEGATED.has(type) && !capture && !passive };
+  }
+
+  private eventListener(
+    node: DNode,
+    type: string,
+    capture: boolean,
+    expr: t.Expression | null,
+    modifiers: readonly string[],
+    attr: { start: number; end: number },
+    scope: BindingScope,
+    ops: Ops,
+    shared: boolean,
+  ): void {
+    const { handler, options, delegate } = this.listenerOf(type, capture, expr, modifiers, attr, scope);
+    if (delegate && !shared) {
       this.c.file.delegated.add(type);
       ops.setup.push(() => [`${node.ref}.$$${type} = `, handler, ';']);
     } else {
-      ops.setup.push(() => [`${this.rt}.listen(${node.ref}, ${JSON.stringify(type)}, `, handler, capture ? ', true);' : ');']);
+      ops.setup.push(() => [`${this.rt}.listen(${node.ref}, ${JSON.stringify(type)}, `, handler, `${options});`]);
     }
   }
 
@@ -737,8 +784,10 @@ export class TemplateCompiler {
         return;
       }
       case 'on': {
-        const expr = exprOf();
-        ops.setup.push(() => [`${rt}.listen(${node.ref}, ${JSON.stringify(arg)}, `, this.handler(expr, scope), ');']);
+        const split = splitModifiers(arg);
+        const expr = value.type === 'Boolean' && split.modifiers.length > 0 ? null : exprOf();
+        const { handler, options } = this.listenerOf(split.name, false, expr, split.modifiers, attr, scope);
+        ops.setup.push(() => [`${rt}.listen(${node.ref}, ${JSON.stringify(split.name)}, `, handler, `${options});`]);
         return;
       }
       case 'use': {
@@ -866,6 +915,9 @@ export class TemplateCompiler {
       if (attr.directive !== null) {
         this.c.error('component-directive', `${attr.directive}: directives are not supported on components`, attr.start, attr.end);
       }
+      if (attr.name.includes('|')) {
+        this.c.error('invalid-modifier', 'Event modifiers only apply to elements: a component decides how it calls its callbacks', attr.start, attr.end);
+      }
       const value = attr.value;
       if (value.type !== 'Expression') {
         entries.push([key, ': ', this.attrValueChunk(attr, scope)]);
@@ -963,11 +1015,15 @@ export class TemplateCompiler {
     const target = el.kind === 'window' ? 'window' : el.kind === 'document' ? 'document' : 'document.body';
     const out: Chunk[] = [];
     for (const attr of el.attributes) {
-      const event = attr.type === 'Attribute' ? (attr.directive === 'on' ? { type: attr.arg, capture: false } : eventInfo(attr.name)) : null;
-      if (attr.type !== 'Attribute' || event === null || attr.value.type !== 'Expression' || attr.value.expression === null) {
+      const split = attr.type === 'Attribute' ? splitModifiers(attr.directive === 'on' ? attr.arg : attr.name) : null;
+      const event = attr.type === 'Attribute' && split !== null ? (attr.directive === 'on' ? { type: split.name, capture: false } : eventInfo(split.name)) : null;
+      const valid = attr.type === 'Attribute' && (attr.value.type === 'Expression' ? attr.value.expression !== null : attr.value.type === 'Boolean' && split !== null && split.modifiers.length > 0);
+      if (attr.type !== 'Attribute' || event === null || split === null || !valid) {
         return this.c.error('special-element', `<${el.name}> only supports event attributes (e.g. onResize={...})`, attr.start, attr.end);
       }
-      out.push([`${rt}.on(${target}, ${JSON.stringify(event.type)}, `, this.handler(attr.value.expression, scope), event.capture ? ', true);' : ');']);
+      const expr = attr.value.type === 'Expression' ? attr.value.expression : null;
+      const { handler, options } = this.listenerOf(event.type, event.capture, expr, split.modifiers, attr, scope);
+      out.push([`${rt}.on(${target}, ${JSON.stringify(event.type)}, `, handler, `${options});`]);
     }
     if (el.children.some((c) => c.type !== 'Text' || c.raw.trim() !== '')) {
       this.c.error('special-element', `<${el.name}> cannot have children`, el.start, el.openEnd);

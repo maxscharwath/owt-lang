@@ -39,6 +39,14 @@ export component Markup() {
 //                        ^^^ entity.other.attribute-name.owt
 //                                        ^^^ keyword.control.directive.owt
 //                                            ^^^^^ entity.other.attribute-name.owt
+    <form onSubmit|preventDefault={save} on:ping|once={log}><input onKeyDown|ctrl|enter={send} /></form>
+//        ^^^^^^^^ entity.other.attribute-name.event.owt
+//                ^ punctuation.separator.modifier.owt
+//                 ^^^^^^^^^^^^^^ storage.modifier.event.owt
+//                                               ^^^^ storage.modifier.event.owt
+//                                                                 ^^^^^^^^^ entity.other.attribute-name.event.owt
+//                                                                           ^^^^ storage.modifier.event.owt
+//                                                                                ^^^^^ storage.modifier.event.owt
     <input {...rest} {disabled} type="checkbox" checked>
 //          ^^^ source.ts keyword.operator.spread.ts
 //             ^^^^ source.ts variable.other.readwrite.ts

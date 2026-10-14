@@ -76,7 +76,7 @@ export component App() {
             placeholder="What needs to be done?"
             class="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
             bind:value={draft}
-            onKeyDown={(e) => e.key === 'Enter' && addTodo()}
+            onKeyDown|enter={addTodo}
           />
           <button
             onClick={addTodo}

@@ -159,6 +159,7 @@ function add() {
 | `onClick={handler}` | event listener (`onKeyDown` → `keydown`, `onDoubleClick` → `dblclick`) |
 | `onClickCapture={h}` | capture phase listener |
 | `on:my-event={h}` | listener for a custom (case-sensitive) event name |
+| `onSubmit\|preventDefault={h}`, `onKeyDown\|enter={h}` | event modifiers (see below) |
 | `bind:value={name}` | two-way binding |
 | `ref={el}` / `bind:this={el}` | element reference (also accepts a callback `ref={(el) => ...}`) |
 | `use:action={params}` | attach an action |
@@ -172,6 +173,34 @@ The handler is any expression:
 - an assignment or update, run as a statement: `onClick={count = 0}`, `onClick={open = !open}`; the event is available as `event`.
 
 Common bubbling events (`click`, `input`, `keydown`, `pointerdown`...) are delegated to the document, so large lists don't pay for thousands of listeners. `event.stopPropagation()` works as usual.
+
+#### Modifiers
+
+Modifiers follow the event name, separated by `|`, as in Vue's `@submit.prevent`. The value is optional when the modifiers are all you need:
+
+```owt
+<form onSubmit|preventDefault={save}>…</form>
+<a href="/next" onClick|preventDefault>…</a>
+<input onKeyDown|enter={add} onKeyDown|escape={cancel} />
+<textarea onKeyDown|ctrl|enter={send} />
+<div class="backdrop" onClick|self={close}>…</div>
+<div onWheel|passive={track}>…</div>
+<window onKeyDown|meta|k={openSearch} />
+```
+
+| Modifier | Effect |
+|---|---|
+| `preventDefault`, `stopPropagation`, `stopImmediatePropagation` | called before the handler |
+| `once` | the handler runs at most once |
+| `self` | only when the event targets the element itself, not a child |
+| `trusted` | only for events dispatched by the user agent (`event.isTrusted`) |
+| `capture`, `passive` | listener options (`passive` cannot be combined with `preventDefault`) |
+| `enter`, `escape` (`esc`), `space`, `tab`, `delete` (Delete or Backspace), `backspace`, `up`, `down`, `left`, `right`, `home`, `end`, `page-up`, `page-down`, or a letter or digit (`k`, `1`) | keyboard events: only for these keys (several key modifiers mean any of them) |
+| `ctrl`, `shift`, `alt`, `meta` | only while these keys are held |
+| `exact` | no other `ctrl` / `shift` / `alt` / `meta` key is held |
+| `left`, `middle`, `right` | mouse and pointer events: only for this button |
+
+Guards (`self`, `trusted`, keys, buttons) are checked first. Then `preventDefault` and `stopPropagation` run, then the handler. An unknown modifier, a key modifier on a mouse event, or a modifier on a component prop is a compile error. Modifiers also work on `on:custom-event|once` and on `<window>`, `<document>` and `<body>` events.
 
 ### Bindings
 

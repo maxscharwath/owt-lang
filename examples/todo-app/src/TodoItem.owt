@@ -46,10 +46,8 @@ export component TodoItem({ todo, position, first, last, onToggle, onRename, onD
         class="flex-1 px-2 py-1 border border-blue-300 rounded"
         ref={input}
         bind:value={draft}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') commit()
-          if (e.key === 'Escape') editing = false
-        }}
+        onKeyDown|enter={commit}
+        onKeyDown|escape={editing = false}
         onBlur={commit}
       />
     } else {

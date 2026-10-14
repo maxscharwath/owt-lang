@@ -60,6 +60,7 @@ You won't find hooks, dependency arrays, `$` prefixes or a virtual DOM here. A c
 - **Batteries included**:
   - two-way bindings (`bind:value`, `bind:checked`, `bind:group`, `bind:this`, element sizes, media...);
   - `class:` and `style:` directives and actions (`use:`);
+  - event and key modifiers (`onSubmit|preventDefault`, `onKeyDown|ctrl|enter`, `onClick|self`, `|once`, `|passive`);
   - transitions (`transition:`, `in:`, `out:`) with built-in `fade`, `fly`, `slide`, `scale` and `blur`, running on the Web Animations API;
   - named slots with arguments;
   - context and portals;
@@ -150,7 +151,7 @@ export component Profile(userId: number, status: Status, pins: { userId: number;
 
   onMount(() => console.log('mounted'))
 
-  <window onKeyDown={(e) => e.key === 'Escape' && (open = false)} />
+  <window onKeyDown|escape={open = false} />
   <head><title>Profile #{userId}</title></head>
 
   <section class={['profile', size, props.class]} class:open style:--accent="tomato">
